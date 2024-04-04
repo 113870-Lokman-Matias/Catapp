@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\mati_\\OneDrive\\Escritorio\\backend\\API\\API.csproj": {}
+    "C:\\Users\\mati_\\OneDrive\\Escritorio\\Catapp\\backend\\API\\API.csproj": {}
   },
   "projects": {
-    "C:\\Users\\mati_\\OneDrive\\Escritorio\\backend\\API\\API.csproj": {
+    "C:\\Users\\mati_\\OneDrive\\Escritorio\\Catapp\\backend\\API\\API.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\mati_\\OneDrive\\Escritorio\\backend\\API\\API.csproj",
+        "projectUniqueName": "C:\\Users\\mati_\\OneDrive\\Escritorio\\Catapp\\backend\\API\\API.csproj",
         "projectName": "API",
-        "projectPath": "C:\\Users\\mati_\\OneDrive\\Escritorio\\backend\\API\\API.csproj",
+        "projectPath": "C:\\Users\\mati_\\OneDrive\\Escritorio\\Catapp\\backend\\API\\API.csproj",
         "packagesPath": "C:\\Users\\mati_\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\mati_\\OneDrive\\Escritorio\\backend\\API\\obj\\",
+        "outputPath": "C:\\Users\\mati_\\OneDrive\\Escritorio\\Catapp\\backend\\API\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\mati_\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -40,9 +40,59 @@
         "net6.0": {
           "targetAlias": "net6.0",
           "dependencies": {
+            "AutoMapper": {
+              "target": "Package",
+              "version": "[12.0.1, )"
+            },
+            "AutoMapper.Extensions.Microsoft.DependencyInjection": {
+              "target": "Package",
+              "version": "[12.0.1, )"
+            },
+            "BCrypt.Net": {
+              "target": "Package",
+              "version": "[0.1.0, )"
+            },
+            "CloudinaryDotNet": {
+              "target": "Package",
+              "version": "[1.20.0, )"
+            },
+            "FluentValidation.AspNetCore": {
+              "target": "Package",
+              "version": "[11.3.0, )"
+            },
+            "MediatR": {
+              "target": "Package",
+              "version": "[12.0.1, )"
+            },
+            "Microsoft.AspNetCore.Authentication.JwtBearer": {
+              "target": "Package",
+              "version": "[6.0.6, )"
+            },
+            "Microsoft.AspNetCore.WebSockets": {
+              "target": "Package",
+              "version": "[2.2.1, )"
+            },
+            "Microsoft.EntityFrameworkCore.Design": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[6.0.5, )"
+            },
+            "Npgsql.EntityFrameworkCore.PostgreSQL": {
+              "target": "Package",
+              "version": "[6.0.4, )"
+            },
             "Swashbuckle.AspNetCore": {
               "target": "Package",
               "version": "[6.2.3, )"
+            },
+            "System.IdentityModel.Tokens.Jwt": {
+              "target": "Package",
+              "version": "[6.27.0, )"
+            },
+            "mercadopago-sdk": {
+              "target": "Package",
+              "version": "[2.3.5, )"
             }
           },
           "imports": [
