@@ -2870,11 +2870,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\mati_\\OneDrive\\Escritorio\\Catapp\\backend\\API\\API.csproj",
+      "projectUniqueName": "c:\\Users\\mati_\\OneDrive\\Escritorio\\Catapp\\backend\\API\\API.csproj",
       "projectName": "API",
-      "projectPath": "C:\\Users\\mati_\\OneDrive\\Escritorio\\Catapp\\backend\\API\\API.csproj",
+      "projectPath": "c:\\Users\\mati_\\OneDrive\\Escritorio\\Catapp\\backend\\API\\API.csproj",
       "packagesPath": "C:\\Users\\mati_\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\mati_\\OneDrive\\Escritorio\\Catapp\\backend\\API\\obj\\",
+      "outputPath": "c:\\Users\\mati_\\OneDrive\\Escritorio\\Catapp\\backend\\API\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\mati_\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -2885,6 +2885,7 @@
       ],
       "sources": {
         "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+        "C:\\Program Files\\dotnet\\sdk\\7.0.304\\Sdks\\Microsoft.NET.Sdk.Web\\library-packs": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
@@ -2969,6 +2970,24 @@
         ],
         "assetTargetFallback": true,
         "warn": true,
+        "downloadDependencies": [
+          {
+            "name": "Microsoft.AspNetCore.App.Ref",
+            "version": "[6.0.18, 6.0.18]"
+          },
+          {
+            "name": "Microsoft.NETCore.App.Host.win-x64",
+            "version": "[6.0.18, 6.0.18]"
+          },
+          {
+            "name": "Microsoft.NETCore.App.Ref",
+            "version": "[6.0.18, 6.0.18]"
+          },
+          {
+            "name": "Microsoft.WindowsDesktop.App.Ref",
+            "version": "[6.0.18, 6.0.18]"
+          }
+        ],
         "frameworkReferences": {
           "Microsoft.AspNetCore.App": {
             "privateAssets": "none"
@@ -2977,7 +2996,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.408\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.304\\RuntimeIdentifierGraph.json"
       }
     }
   },

@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "kwoXi/hbqzFuFkISDLEKzLEeWZ9uskrD8LdPaS082mgREn94JtXyiXfX6VojHu6tWAmUcJ/W4TPM0bXYAWYIdw==",
+  "dgSpecHash": "a/Lqm39PzpuQlvd3iZqzbW0M+S5dI2VlQzsk2C8w64NVho+NWrNHhWoeTfq6qrVj4QyXLJFrSggE77UdvlaUAg==",
   "success": true,
-  "projectFilePath": "C:\\Users\\mati_\\OneDrive\\Escritorio\\Catapp\\backend\\API\\API.csproj",
+  "projectFilePath": "c:\\Users\\mati_\\OneDrive\\Escritorio\\Catapp\\backend\\API\\API.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\mati_\\.nuget\\packages\\automapper\\12.0.1\\automapper.12.0.1.nupkg.sha512",
     "C:\\Users\\mati_\\.nuget\\packages\\automapper.extensions.microsoft.dependencyinjection\\12.0.1\\automapper.extensions.microsoft.dependencyinjection.12.0.1.nupkg.sha512",
@@ -73,7 +73,11 @@
     "C:\\Users\\mati_\\.nuget\\packages\\system.text.encoding\\4.3.0\\system.text.encoding.4.3.0.nupkg.sha512",
     "C:\\Users\\mati_\\.nuget\\packages\\system.text.encodings.web\\4.7.2\\system.text.encodings.web.4.7.2.nupkg.sha512",
     "C:\\Users\\mati_\\.nuget\\packages\\system.text.json\\4.7.2\\system.text.json.4.7.2.nupkg.sha512",
-    "C:\\Users\\mati_\\.nuget\\packages\\system.windows.extensions\\5.0.0\\system.windows.extensions.5.0.0.nupkg.sha512"
+    "C:\\Users\\mati_\\.nuget\\packages\\system.windows.extensions\\5.0.0\\system.windows.extensions.5.0.0.nupkg.sha512",
+    "C:\\Users\\mati_\\.nuget\\packages\\microsoft.netcore.app.ref\\6.0.18\\microsoft.netcore.app.ref.6.0.18.nupkg.sha512",
+    "C:\\Users\\mati_\\.nuget\\packages\\microsoft.windowsdesktop.app.ref\\6.0.18\\microsoft.windowsdesktop.app.ref.6.0.18.nupkg.sha512",
+    "C:\\Users\\mati_\\.nuget\\packages\\microsoft.aspnetcore.app.ref\\6.0.18\\microsoft.aspnetcore.app.ref.6.0.18.nupkg.sha512",
+    "C:\\Users\\mati_\\.nuget\\packages\\microsoft.netcore.app.host.win-x64\\6.0.18\\microsoft.netcore.app.host.win-x64.6.0.18.nupkg.sha512"
   ],
   "logs": [
     {
