@@ -18,6 +18,10 @@ using API.Services.UsuarioServices.Commands.VerifyUsuarioCommand;
 using API.Services.UsuarioServices.Commands.UpdateUsuarioNoLogueadoPasswordCommand;
 using API.Services.UsuarioServices.Commands.UpdateUsuarioPasswordCommand;
 
+using API.Services.CategoriaServices.Commands.CreateCategoriaCommand;
+using API.Services.CategoriaServices.Commands.UpdateCategoriaCommand;
+using API.Services.CategoriaServices.Commands.DeleteCategoriaCommand;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -71,6 +75,11 @@ builder.Services.AddScoped<IValidator<SearchUsuarioCommand>, SearchUsuarioComman
 builder.Services.AddScoped<IValidator<VerifyUsuarioCommand>, VerifyUsuarioCommandValidator>();
 builder.Services.AddScoped<IValidator<UpdateUsuarioNoLogueadoPasswordCommand>, UpdateUsuarioNoLogueadoPasswordCommandValidator>();
 builder.Services.AddScoped<IValidator<UpdateUsuarioPasswordCommand>, UpdateUsuarioPasswordCommandValidator>();
+
+// Validaciones para los servicios de Categorias
+builder.Services.AddScoped<IValidator<CreateCategoriaCommand>, CreateCategoriaCommandValidator>();
+builder.Services.AddScoped<IValidator<UpdateCategoriaCommand>, UpdateCategoriaCommandValidator>();
+builder.Services.AddScoped<IValidator<DeleteCategoriaCommand>, DeleteCategoriaCommandValidator>();
 
 builder.Services.AddControllers();
 

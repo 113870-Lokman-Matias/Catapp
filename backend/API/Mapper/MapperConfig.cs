@@ -12,6 +12,12 @@ using API.Services.UsuarioServices.Commands.VerifyUsuarioCommand;
 using API.Services.UsuarioServices.Commands.UpdateUsuarioNoLogueadoPasswordCommand;
 using API.Services.UsuarioServices.Commands.UpdateUsuarioPasswordCommand;
 
+using API.Dtos.CategoriaDtos;
+using API.Services.CategoriaServices.Commands.CreateCategoriaCommand;
+using API.Services.CategoriaServices.Commands.UpdateCategoriaCommand;
+using API.Services.CategoriaServices.Commands.DeleteCategoriaCommand;
+
+
 namespace API.Mapper
 {
   public class MapperConfig : Profile
@@ -30,6 +36,12 @@ namespace API.Mapper
       CreateMap<Usuario, VerifyUsuarioCommand>().ReverseMap();
       CreateMap<Usuario, UpdateUsuarioNoLogueadoPasswordCommand>().ReverseMap();
       CreateMap<Usuario, UpdateUsuarioPasswordCommand>().ReverseMap();
+
+      // Mapper para Categorías
+      CreateMap<CategoriaDto, Categoria>().ReverseMap();
+      CreateMap<Categoria, CreateCategoriaCommand>().ReverseMap();
+      CreateMap<Categoria, UpdateCategoriaCommand>().ReverseMap();
+      CreateMap<Categoria, DeleteCategoriaCommand>().ReverseMap();
     }
   }
 }
