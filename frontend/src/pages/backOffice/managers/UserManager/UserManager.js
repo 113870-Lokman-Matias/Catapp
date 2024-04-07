@@ -55,7 +55,6 @@ function UserManager() {
   const [prevEmail, setPrevEmail] = useState("");
 
   const [password, setPassword] = useState("");
-  const [prevPassword, setPrevPassword] = useState("");
 
   const [passwordRepeat, setPasswordRepeat] = useState("");
 
@@ -64,8 +63,6 @@ function UserManager() {
 
   const [activo, setActivo] = useState("");
   const [prevActivo, setPrevActivo] = useState("");
-
-  var checkbox = document.getElementById("activo");
 
   const [modalTitle, setModalTitle] = useState("");
 
@@ -905,8 +902,7 @@ function UserManager() {
       prevNombre.toLowerCase() !== nombre.toLocaleLowerCase() ||
       prevUsername.toLowerCase() !== username.toLocaleLowerCase() ||
       prevEmail.toLowerCase() !== email.toLocaleLowerCase() ||
-      prevPassword.toLowerCase() !== password.toLocaleLowerCase() ||
-      (pathname.includes("usuarios") && prevRol !== rol) ||
+      (pathname.includes("usuarios") && prevRol != rol) ||
       prevActivo !== activo
     ) {
       return true;
@@ -1393,8 +1389,8 @@ function UserManager() {
                         ) : null}
                       </div>
 
-                      {(rol !== 6 ||
-                        (rol === 6 &&
+                      {(rol != 6 ||
+                        (rol == 6 &&
                           (pathname.includes("vendedores") ||
                             pathname.includes("supervisores") ||
                             pathname.includes("gerentes")))) && (
@@ -1405,8 +1401,8 @@ function UserManager() {
                             className="form-check-input tick"
                             id="activo"
                             checked={activo}
-                            onChange={() => {
-                              setActivo(checkbox.checked);
+                            onChange={(e) => {
+                              setActivo(e.target.checked);
                             }}
                           />
                           <label
