@@ -16,6 +16,7 @@ import ResetPassword from "./pages/frontOffice/ResetPassword/ResetPassword";
 
 import AdminPanel from "./pages/backOffice/AdminPanel/AdminPanel";
 import UserManager from "./pages/backOffice/managers/UserManager/UserManager";
+import CategoryManager from './pages/backOffice/managers/CategoryManager/CategoryManager';
 
 import { ProtectedRoute } from "./components/ProtectedRoute/ProtectedRoute";
 
@@ -35,6 +36,7 @@ function App() {
           <Route path="administrar-gerentes" element={<UserManager />} />
           <Route path="administrar-supervisores" element={<UserManager />} />
           <Route path="administrar-vendedores" element={<UserManager />} />
+          <Route path='administrar-categorias' element={<CategoryManager />} />
         </Route>
 
         <Route path="*" element={<NotFound />} />
