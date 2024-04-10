@@ -17,6 +17,9 @@ using API.Services.CategoriaServices.Commands.CreateCategoriaCommand;
 using API.Services.CategoriaServices.Commands.UpdateCategoriaCommand;
 using API.Services.CategoriaServices.Commands.DeleteCategoriaCommand;
 
+using API.Dtos.CotizacionDto;
+using API.Services.CotizacionServices.Commands.UpdateCotizacionDolarCommand;
+
 
 namespace API.Mapper
 {
@@ -42,6 +45,10 @@ namespace API.Mapper
       CreateMap<Categoria, CreateCategoriaCommand>().ReverseMap();
       CreateMap<Categoria, UpdateCategoriaCommand>().ReverseMap();
       CreateMap<Categoria, DeleteCategoriaCommand>().ReverseMap();
+
+      // Mapper para Cotizacion
+      CreateMap<CotizacionDto, Cotizacion>().ReverseMap();
+      CreateMap<Cotizacion, UpdateCotizacionDolarCommand>().ReverseMap();
     }
   }
 }

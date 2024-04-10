@@ -22,6 +22,8 @@ using API.Services.CategoriaServices.Commands.CreateCategoriaCommand;
 using API.Services.CategoriaServices.Commands.UpdateCategoriaCommand;
 using API.Services.CategoriaServices.Commands.DeleteCategoriaCommand;
 
+using API.Services.CotizacionServices.Commands.UpdateCotizacionDolarCommand;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -80,6 +82,9 @@ builder.Services.AddScoped<IValidator<UpdateUsuarioPasswordCommand>, UpdateUsuar
 builder.Services.AddScoped<IValidator<CreateCategoriaCommand>, CreateCategoriaCommandValidator>();
 builder.Services.AddScoped<IValidator<UpdateCategoriaCommand>, UpdateCategoriaCommandValidator>();
 builder.Services.AddScoped<IValidator<DeleteCategoriaCommand>, DeleteCategoriaCommandValidator>();
+
+// Validacion para el servicio de Cotización
+builder.Services.AddScoped<IValidator<UpdateCotizacionDolarCommand>, UpdateCotizacionDolarCommandValidator>();
 
 builder.Services.AddControllers();
 
