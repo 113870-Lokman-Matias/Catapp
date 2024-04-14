@@ -20,6 +20,11 @@ using API.Services.CategoriaServices.Commands.DeleteCategoriaCommand;
 using API.Dtos.CotizacionDto;
 using API.Services.CotizacionServices.Commands.UpdateCotizacionDolarCommand;
 
+using API.Dtos.ProductoDtos;
+using API.Services.ProductoServices.Commands.CreateProductoCommand;
+using API.Services.ProductoServices.Commands.UpdateProductoCommand;
+using API.Services.ProductoServices.Commands.DeleteProductoCommand;
+using API.Services.ProductoServices.Commands.UpdateStockProductoCommand;
 
 namespace API.Mapper
 {
@@ -49,6 +54,14 @@ namespace API.Mapper
       // Mapper para Cotizacion
       CreateMap<CotizacionDto, Cotizacion>().ReverseMap();
       CreateMap<Cotizacion, UpdateCotizacionDolarCommand>().ReverseMap();
+
+      // Mapper para Productos
+      CreateMap<Producto, ProductoDto>()
+          .ForMember(dest => dest.NombreCategoria, opt => opt.MapFrom(src => src.IdCategoriaNavigation.Nombre));
+      CreateMap<Producto, CreateProductoCommand>().ReverseMap();
+      CreateMap<Producto, UpdateProductoCommand>().ReverseMap();
+      CreateMap<Producto, UpdateStockProductoCommand>().ReverseMap();
+      CreateMap<Producto, DeleteProductoCommand>().ReverseMap();
     }
   }
 }

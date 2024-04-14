@@ -24,6 +24,12 @@ using API.Services.CategoriaServices.Commands.DeleteCategoriaCommand;
 
 using API.Services.CotizacionServices.Commands.UpdateCotizacionDolarCommand;
 
+using API.Services.ProductoServices.Queries.GetProductosByCategoryQuery;
+using API.Services.ProductoServices.Commands.CreateProductoCommand;
+using API.Services.ProductoServices.Commands.UpdateProductoCommand;
+using API.Services.ProductoServices.Commands.UpdateStockProductoCommand;
+using API.Services.ProductoServices.Commands.DeleteProductoCommand;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -85,6 +91,13 @@ builder.Services.AddScoped<IValidator<DeleteCategoriaCommand>, DeleteCategoriaCo
 
 // Validacion para el servicio de Cotización
 builder.Services.AddScoped<IValidator<UpdateCotizacionDolarCommand>, UpdateCotizacionDolarCommandValidator>();
+
+// Validacion para los servicios de Productos
+builder.Services.AddScoped<IValidator<CreateProductoCommand>, CreateProductoCommandValidator>();
+builder.Services.AddScoped<IValidator<UpdateProductoCommand>, UpdateProductoCommandValidator>();
+builder.Services.AddScoped<IValidator<UpdateStockProductoCommand>, UpdateStockProductoCommandValidator>();
+builder.Services.AddScoped<IValidator<DeleteProductoCommand>, DeleteProductoCommandValidator>();
+builder.Services.AddScoped<IValidator<GetProductosByCategoryQuery>, GetProductosByCategoryQueryValidator>();
 
 builder.Services.AddControllers();
 
