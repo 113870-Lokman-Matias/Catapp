@@ -10,6 +10,8 @@ import WhatsApp from "./components/Whatsapp/Whatsapp";
 import ScrollToTopBtn from "./components/ScrollToTopBtn/ScrollToTopBtn";
 import Footer from "./components/Footer/Footer";
 
+import Catalogo from "./pages/frontOffice/Catalogo/Catalogo";
+
 import Login from "./pages/frontOffice/Login/Login";
 import CreateUser from "./pages/frontOffice/CreateUser/CreateUser";
 import ResetPassword from "./pages/frontOffice/ResetPassword/ResetPassword";
@@ -28,6 +30,11 @@ function App() {
       <ScrollToTop />
       <Header />
       <Routes>
+        <Route index element={<Catalogo />} />
+        <Route path="/" element={<Catalogo />} />
+        <Route path="catalogo-minorista" element={<Catalogo />} />
+        <Route path="catalogo-mayorista" element={<Catalogo />} />
+
         <Route path="login" element={<Login />} />
         <Route path="create-user" element={<CreateUser />} />
         <Route path="reset-password" element={<ResetPassword />} />

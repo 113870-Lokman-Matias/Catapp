@@ -911,9 +911,9 @@ input[type="number"] {
     width: 100%;
   }
 
-  .filter-container {
+  /* .filter-container {
     display: inline-block;
-  }
+  } */
 }
 
 @media (max-width: 400px) {
