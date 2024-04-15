@@ -1,0 +1,132 @@
+.items-collapse {
+  padding: 5px 0;
+  margin: 0;
+  cursor: pointer;
+  font-weight: 300;
+}
+
+.items-collapse:hover {
+  text-decoration: underline;
+}
+
+.items-collapse {
+  font-weight: normal;
+  cursor: pointer;
+}
+
+.items-collapse.active {
+  font-weight: 600;
+}
+
+.table-list-none {
+  display: none;
+}
+
+.porc-text {
+  white-space: nowrap;
+}
+
+.porc-btn-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.nombre-input,
+.password-input,
+.desc-input,
+.divisa-input,
+.tipoPrecio-input {
+  margin-bottom: 25px;
+}
+
+.title-header {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.title-product {
+  margin: 0;
+  text-align: center;
+}
+
+.header-excel {
+  width: 33.33%;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.btn-excel {
+  width: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 36px;
+  border-radius: 50px;
+  margin: 5px;
+}
+
+.excel {
+  transform: translateX(-3px);
+  width: 23px;
+  height: 23px;
+  fill: #ffffff;
+}
+
+.input-textarea {
+  min-height: 100px;
+}
+
+.input-group-svg-divisa {
+  height: 20px;
+  width: 20px;
+}
+
+.input-group-svg-divisa-big {
+  height: 23px;
+  width: 23px;
+}
+
+.input-group-svg-divisa-big2 {
+  height: 20px;
+  width: 20px;
+  margin-right: 5px;
+  margin-bottom: 3px;
+}
+
+.precio-pesos {
+  background-color: #6c757d;
+  border-radius: 5px;
+}
+
+.stock-btns {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.zero-stock {
+  background-color: #422323e0 !important;
+  text-align: center;
+}
+
+.divisa-div {
+  margin-bottom: 0px !important;
+}
+
+.establecer-cotizacion-div {
+  justify-content: flex-start;
+}
+
+@media (max-width: 800px) {
+  .title-header {
+    flex-direction: column !important;
+    margin-bottom: 10px;
+  }
+
+  .header-excel {
+    width: auto;
+  }
+}
