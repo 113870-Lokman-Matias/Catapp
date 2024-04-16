@@ -30,6 +30,8 @@ using API.Services.ProductoServices.Commands.UpdateProductoCommand;
 using API.Services.ProductoServices.Commands.UpdateStockProductoCommand;
 using API.Services.ProductoServices.Commands.DeleteProductoCommand;
 
+using API.Services.EnvioServices.Commands.UpdateCostoEnvioCommand;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -98,6 +100,9 @@ builder.Services.AddScoped<IValidator<UpdateProductoCommand>, UpdateProductoComm
 builder.Services.AddScoped<IValidator<UpdateStockProductoCommand>, UpdateStockProductoCommandValidator>();
 builder.Services.AddScoped<IValidator<DeleteProductoCommand>, DeleteProductoCommandValidator>();
 builder.Services.AddScoped<IValidator<GetProductosByCategoryQuery>, GetProductosByCategoryQueryValidator>();
+
+// Validacion para el servicio de Envio
+builder.Services.AddScoped<IValidator<UpdateCostoEnvioCommand>, UpdateCostoEnvioCommandValidator>();
 
 builder.Services.AddControllers();
 

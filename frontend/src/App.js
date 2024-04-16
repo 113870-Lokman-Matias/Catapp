@@ -21,6 +21,7 @@ import UserManager from "./pages/backOffice/managers/UserManager/UserManager";
 import CategoryManager from "./pages/backOffice/managers/CategoryManager/CategoryManager";
 import DollarManager from "./pages/backOffice/managers/DollarManager/DollarManager";
 import ProductManager from "./pages/backOffice/managers/ProductManager/ProductManager";
+import ShipmentManager from "./pages/backOffice/managers/ShipmentManager/ShipmentManager";
 
 import { ProtectedRoute } from "./components/ProtectedRoute/ProtectedRoute";
 
@@ -48,6 +49,7 @@ function App() {
           <Route path="administrar-categorias" element={<CategoryManager />} />
           <Route path="administrar-cotizacion" element={<DollarManager />} />
           <Route path="administrar-productos" element={<ProductManager />} />
+          <Route path="administrar-envio" element={<ShipmentManager />} />
         </Route>
 
         <Route path="*" element={<NotFound />} />
