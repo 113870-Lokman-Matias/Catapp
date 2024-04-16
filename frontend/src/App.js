@@ -55,7 +55,9 @@ function App() {
         <Route path="*" element={<NotFound />} />
       </Routes>
       <Footer />
-      <WhatsApp />
+      {(window.location.pathname === "/" ||
+        window.location.pathname === "/catalogo-minorista" ||
+        window.location.pathname === "/catalogo-mayorista") && <WhatsApp />}
       <ScrollToTopBtn />
     </BrowserRouter>
   );
