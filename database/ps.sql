@@ -170,6 +170,45 @@ ALTER SEQUENCE public.detalle_pedidos_id_detalle_pedidos_seq OWNED BY public.det
 
 
 --
+-- Name: detalles_stock; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.detalles_stock (
+    id_detalles_stock integer NOT NULL,
+    accion text NOT NULL,
+    cantidad integer NOT NULL,
+    motivo text NOT NULL,
+    fecha timestamp with time zone NOT NULL,
+    modificador text NOT NULL,
+    id_producto integer NOT NULL
+);
+
+
+ALTER TABLE public.detalles_stock OWNER TO postgres;
+
+--
+-- Name: detalles_stock_id_detalles_stock_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.detalles_stock_id_detalles_stock_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.detalles_stock_id_detalles_stock_seq OWNER TO postgres;
+
+--
+-- Name: detalles_stock_id_detalles_stock_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.detalles_stock_id_detalles_stock_seq OWNED BY public.detalles_stock.id_detalles_stock;
+
+
+--
 -- Name: divisas; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -510,6 +549,13 @@ ALTER TABLE ONLY public.detalle_pedidos ALTER COLUMN id_detalle_pedidos SET DEFA
 
 
 --
+-- Name: detalles_stock id_detalles_stock; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.detalles_stock ALTER COLUMN id_detalles_stock SET DEFAULT nextval('public.detalles_stock_id_detalles_stock_seq'::regclass);
+
+
+--
 -- Name: divisas id_divisa; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -595,6 +641,14 @@ COPY public.cotizaciones (id_cotizacion, precio, fecha_modificacion, ultimo_modi
 --
 
 COPY public.detalle_pedidos (id_detalle_pedidos, id_producto, cantidad, aclaracion, precio_unitario, id_pedido) FROM stdin;
+\.
+
+
+--
+-- Data for Name: detalles_stock; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.detalles_stock (id_detalles_stock, accion, cantidad, motivo, fecha, modificador, id_producto) FROM stdin;
 \.
 
 
@@ -719,6 +773,13 @@ SELECT pg_catalog.setval('public.detalle_pedidos_id_detalle_pedidos_seq', 1, fal
 
 
 --
+-- Name: detalles_stock_id_detalles_stock_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.detalles_stock_id_detalles_stock_seq', 1, false);
+
+
+--
 -- Name: divisas_id_divisa_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
@@ -804,6 +865,14 @@ ALTER TABLE ONLY public.cotizaciones
 
 ALTER TABLE ONLY public.detalle_pedidos
     ADD CONSTRAINT detalle_pedidos_pkey PRIMARY KEY (id_detalle_pedidos);
+
+
+--
+-- Name: detalles_stock detalles_stock_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.detalles_stock
+    ADD CONSTRAINT detalles_stock_pkey PRIMARY KEY (id_detalles_stock);
 
 
 --
@@ -1001,6 +1070,14 @@ ALTER TABLE ONLY public.detalle_pedidos
 --
 
 ALTER TABLE ONLY public.detalle_pedidos
+    ADD CONSTRAINT fk_producto FOREIGN KEY (id_producto) REFERENCES public.productos(id_producto) NOT VALID;
+
+
+--
+-- Name: detalles_stock fk_producto; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.detalles_stock
     ADD CONSTRAINT fk_producto FOREIGN KEY (id_producto) REFERENCES public.productos(id_producto) NOT VALID;
 
 
