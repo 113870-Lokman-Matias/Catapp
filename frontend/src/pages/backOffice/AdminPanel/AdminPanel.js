@@ -395,7 +395,9 @@ function AdminPanel() {
 
           <div className="secciones">
             <div className="seccion-dividida2">
-              {(rolUsuario === "Vendedor" || rolUsuario === "SuperAdmin") && (
+              {(rolUsuario === "Vendedor" ||
+                rolUsuario === "Supervisor" ||
+                rolUsuario === "SuperAdmin") && (
                 <Link
                   to="/administrar-productos"
                   className="btn btn-dark category-btn"
@@ -405,7 +407,9 @@ function AdminPanel() {
                 </Link>
               )}
 
-              {(rolUsuario === "Vendedor" || rolUsuario === "SuperAdmin") && (
+              {(rolUsuario === "Vendedor" ||
+                rolUsuario === "Supervisor" ||
+                rolUsuario === "SuperAdmin") && (
                 <Link
                   to="/administrar-categorias"
                   className="btn btn-dark category-btn"
@@ -415,7 +419,7 @@ function AdminPanel() {
                 </Link>
               )}
 
-              {(rolUsuario === "Vendedor" || rolUsuario === "SuperAdmin") && (
+              {(rolUsuario === "Supervisor" || rolUsuario === "SuperAdmin") && (
                 <Link
                   to="/administrar-pedidos"
                   className="btn btn-dark category-btn"

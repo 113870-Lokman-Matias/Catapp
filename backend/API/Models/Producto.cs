@@ -29,5 +29,6 @@ namespace API.Models
         public virtual Categoria IdCategoriaNavigation { get; set; } = null!;
         public virtual Divisa IdDivisaNavigation { get; set; } = null!;
         public virtual ICollection<DetallePedido> DetallePedidos { get; set; }
+        public virtual ICollection<DetallesStock> DetallesStocks { get; set; }
     }
 }

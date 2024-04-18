@@ -25,6 +25,7 @@ using API.Services.CategoriaServices.Commands.DeleteCategoriaCommand;
 using API.Services.CotizacionServices.Commands.UpdateCotizacionDolarCommand;
 
 using API.Services.ProductoServices.Queries.GetProductosByCategoryQuery;
+using API.Services.ProductoServices.Queries.GetProductoByIdQuery;
 using API.Services.ProductoServices.Commands.CreateProductoCommand;
 using API.Services.ProductoServices.Commands.UpdateProductoCommand;
 using API.Services.ProductoServices.Commands.UpdateStockProductoCommand;
@@ -32,6 +33,8 @@ using API.Services.ProductoServices.Commands.DeleteProductoCommand;
 
 using API.Services.EnvioServices.Commands.UpdateCostoEnvioCommand;
 
+using API.Services.StockServices.Queries.GetDetallesStockByIdQuery;
+using API.Services.StockServices.Commands.CreateDetalleStockCommand;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -100,9 +103,14 @@ builder.Services.AddScoped<IValidator<UpdateProductoCommand>, UpdateProductoComm
 builder.Services.AddScoped<IValidator<UpdateStockProductoCommand>, UpdateStockProductoCommandValidator>();
 builder.Services.AddScoped<IValidator<DeleteProductoCommand>, DeleteProductoCommandValidator>();
 builder.Services.AddScoped<IValidator<GetProductosByCategoryQuery>, GetProductosByCategoryQueryValidator>();
+builder.Services.AddScoped<IValidator<GetProductoByIdQuery>, GetProductoByIdQueryValidator>();
 
 // Validacion para el servicio de Envio
 builder.Services.AddScoped<IValidator<UpdateCostoEnvioCommand>, UpdateCostoEnvioCommandValidator>();
+
+// Validacion para el servicio de Detalles de stock
+builder.Services.AddScoped<IValidator<CreateDetalleStockCommand>, CreateDetalleStockCommandValidator>();
+builder.Services.AddScoped<IValidator<GetDetallesStockByIdQuery>, GetDetallesStockByIdQueryValidator>();
 
 builder.Services.AddControllers();
 

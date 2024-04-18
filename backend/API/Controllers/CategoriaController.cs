@@ -24,7 +24,7 @@ public class CategoriaController : ControllerBase
 
   [HttpGet]
   [Route("manage")]
-  [Authorize(Roles = "SuperAdmin, Vendedor")]
+  [Authorize(Roles = "SuperAdmin, Supervisor, Vendedor")]
   public Task<ListaCategoriasDto> GetCategoriasManage()
   {
     var categoriasManage = _mediator.Send(new GetCategoriasManageQuery());
@@ -41,7 +41,7 @@ public class CategoriaController : ControllerBase
 
 
   [HttpPost]
-  [Authorize(Roles = "SuperAdmin, Vendedor")]
+  [Authorize(Roles = "SuperAdmin, Supervisor, Vendedor")]
   public async Task<CategoriaDto> CreateCategoria(CreateCategoriaCommand command)
   {
     var categoriaCreada = await _mediator.Send(command);
@@ -50,7 +50,7 @@ public class CategoriaController : ControllerBase
 
 
   [HttpPut("{id}")]
-  [Authorize(Roles = "SuperAdmin, Vendedor")]
+  [Authorize(Roles = "SuperAdmin, Supervisor, Vendedor")]
   public async Task<CategoriaDto> UpdateCategoria(int id, UpdateCategoriaCommand command)
   {
     command.IdCategoria = id;
@@ -60,7 +60,7 @@ public class CategoriaController : ControllerBase
 
 
   [HttpDelete("{id}")]
-  [Authorize(Roles = "SuperAdmin, Vendedor")]
+  [Authorize(Roles = "SuperAdmin, Supervisor, Vendedor")]
   public async Task<CategoriaDto> DeleteCategoria(int id)
   {
     var categoriaEliminada = await _mediator.Send(new DeleteCategoriaCommand { IdCategoria = id });

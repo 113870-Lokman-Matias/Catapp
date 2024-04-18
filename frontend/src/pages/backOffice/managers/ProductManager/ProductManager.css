@@ -120,6 +120,21 @@
   justify-content: flex-start;
 }
 
+.svg-btn {
+  border-radius: 30px;
+  width: 70px;
+  height: 25px;
+  margin: 5px;
+}
+
+.svg {
+  -webkit-transform: translate(0px, -8px);
+  transform: translate(0px, -8px);
+  width: 20px;
+  height: 20px;
+  fill: #ffffff;
+}
+
 @media (max-width: 800px) {
   .title-header {
     flex-direction: column !important;
@@ -128,5 +143,9 @@
 
   .header-excel {
     width: auto;
+  }
+
+  .stock-div{
+    flex-direction: column;
   }
 }

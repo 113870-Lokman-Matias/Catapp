@@ -70,6 +70,9 @@ namespace API.Services.ProductoServices.Commands.DeleteProductoCommand
             if (deletionResult.StatusCode == System.Net.HttpStatusCode.OK)
             {
 
+              // Eliminar todos los detalles de stock asociados al producto
+              var detallesStockAEliminar = _context.DetallesStocks.Where(ds => ds.IdProducto == request.IdProducto);
+              _context.DetallesStocks.RemoveRange(detallesStockAEliminar);
 
               _context.Productos.Remove(ProductoToDelete);
               await _context.SaveChangesAsync();

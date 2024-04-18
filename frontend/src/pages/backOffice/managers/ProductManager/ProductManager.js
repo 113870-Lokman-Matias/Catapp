@@ -21,6 +21,7 @@ import { ReactComponent as Back } from "../../../../assets/svgs/back.svg";
 import { ReactComponent as Agregar } from "../../../../assets/svgs/agregar.svg";
 import { ReactComponent as Quitar } from "../../../../assets/svgs/quitar.svg";
 import { ReactComponent as Page } from "../../../../assets/svgs/page.svg";
+import { ReactComponent as Stock } from "../../../../assets/svgs/stockdetails.svg";
 
 import { ReactComponent as Excel } from "../../../../assets/svgs/excel.svg";
 
@@ -34,6 +35,9 @@ import { ReactComponent as StockInput } from "../../../../assets/svgs/stockinput
 import { ReactComponent as PercentageInput } from "../../../../assets/svgs/percentageinput.svg";
 import { ReactComponent as ImageInput } from "../../../../assets/svgs/imageinput.svg";
 import { ReactComponent as CategoryInput } from "../../../../assets/svgs/category.svg";
+
+import { ReactComponent as MotivoInput } from "../../../../assets/svgs/motivo.svg";
+import { ReactComponent as OtroInput } from "../../../../assets/svgs/otro.svg";
 //#endregion
 
 import { GetCategoriesManage } from "../../../../services/CategoryService";
@@ -46,6 +50,8 @@ import {
   DeleteProducts,
   UploadImages,
 } from "../../../../services/ProductService";
+
+import { SaveStockDetail } from "../../../../services/DetailService";
 
 function ProductManager() {
   //#region Constantes
@@ -85,6 +91,14 @@ function ProductManager() {
 
   const [unidadesQuitar, setUnidadesQuitar] = useState("");
   const [unidadesAgregar, setUnidadesAgregar] = useState("");
+
+  const [accion, setAccion] = useState("");
+
+  const [cantidad, setCantidad] = useState("");
+
+  const [motivo, setMotivo] = useState("");
+
+  const [otro, setOtro] = useState("");
 
   // Mantener el valor original del stock
   const [originalStock, setOriginalStock] = useState("");
@@ -135,6 +149,11 @@ function ProductManager() {
   const headers = {
     Authorization: `Bearer ${token}`, // Agregar el encabezado Authorization con el valor del token
   };
+
+  const nombreUsuario = JSON.parse(atob(token.split(".")[1])).unique_name[1];
+  const nombreUsuarioDecodificado = decodeURIComponent(
+    escape(nombreUsuario)
+  ).replace(/Ã­/g, "í");
 
   const navigate = useNavigate();
 
@@ -243,21 +262,36 @@ function ProductManager() {
   //#region Función para actualizar el stock según la cantidad de unidades a quitar
   const handleUnidadesQuitarChange = (event) => {
     const unidades = event.target.value;
-    setUnidadesQuitar(unidades);
 
-    if (unidades > originalStock) {
+    // Verificar si el valor ingresado es un número válido y no contiene el carácter "-"
+    if (!isNaN(unidades) && !unidades.includes("-")) {
+      setUnidadesQuitar(unidades);
+      setCantidad(unidades); // Actualizar cantidad también
+      setAccion("Quitar");
+
+      if (unidades > originalStock) {
+        Swal.fire({
+          icon: "error",
+          title: "Stock insuficiente",
+          text: "No puedes quitar más unidades de las que hay en stock.",
+          confirmButtonText: "Aceptar",
+          confirmButtonColor: "#f27474",
+        }).then(setUnidadesQuitar(0), setStock(originalStock));
+      } else if (unidades === "") {
+        setStock(originalStock);
+      } else {
+        const nuevoStock = originalStock - parseInt(unidades);
+        setStock(nuevoStock >= 0 ? nuevoStock : 0); // No permitir stock negativo
+      }
+    } else {
+      // Mostrar SweetAlert indicando que no se puede ingresar el carácter "-"
       Swal.fire({
         icon: "error",
-        title: "Stock insuficiente",
-        text: "No puedes quitar más unidades de las que hay en stock.",
+        title: "Carácter inválido",
+        text: "No puedes ingresar números negativos en este campo.",
         confirmButtonText: "Aceptar",
         confirmButtonColor: "#f27474",
-      }).then(setUnidadesQuitar(0), setStock(originalStock));
-    } else if (unidades === "") {
-      setStock(originalStock);
-    } else {
-      const nuevoStock = originalStock - parseInt(unidades);
-      setStock(nuevoStock >= 0 ? nuevoStock : 0); // No permitir stock negativo
+      });
     }
   };
   //#endregion
@@ -265,13 +299,28 @@ function ProductManager() {
   //#region Función para actualizar el stock según las unidades para agregar
   const handleUnidadesAgregarChange = (event) => {
     const unidades = event.target.value;
-    setUnidadesAgregar(unidades);
 
-    if (unidades === "") {
-      setStock(originalStock);
+    // Verificar si el valor ingresado es un número válido y no negativo
+    if (!isNaN(unidades) && unidades >= 0) {
+      setUnidadesAgregar(unidades);
+      setCantidad(unidades); // Actualizar cantidad también
+      setAccion("Agregar");
+
+      if (unidades === "") {
+        setStock(originalStock);
+      } else {
+        const nuevoStock = originalStock + parseInt(unidades); // Usar el valor actual del estado del stock
+        setStock(nuevoStock >= 0 ? nuevoStock : 0); // No permitir stock negativo
+      }
     } else {
-      const nuevoStock = originalStock + parseInt(unidades); // Usar el valor actual del estado del stock
-      setStock(nuevoStock >= 0 ? nuevoStock : 0); // No permitir stock negativo
+      // Mostrar SweetAlert indicando que no se pueden ingresar números negativos
+      Swal.fire({
+        icon: "error",
+        title: "Número inválido",
+        text: "No puedes ingresar números negativos en este campo.",
+        confirmButtonText: "Aceptar",
+        confirmButtonColor: "#f27474",
+      });
     }
   };
   //#endregion
@@ -431,13 +480,14 @@ function ProductManager() {
     setIdImagen("");
     setUrlImagen("");
 
-    document.getElementById("image-url").value = "";
-  }
-  //#endregion
+    setUnidadesQuitar("");
+    setUnidadesAgregar("");
+    setCantidad("");
+    setMotivo("");
+    setOtro("");
+    setAccion("");
 
-  //#region Función para limpiar todos los valores de los inputs del modal de stock
-  function ClearProductStockInput() {
-    setStock("");
+    document.getElementById("image-url").value = "";
   }
   //#endregion
 
@@ -890,7 +940,7 @@ function ProductManager() {
       try {
         const { imageUrl, imageId } = await uploadImage();
         if (imageUrl != null) {
-          await SaveProducts(
+          const responseProductPromise = SaveProducts(
             {
               nombre: `${nombre.charAt(0).toUpperCase() + nombre.slice(1)}`,
               descripcion: descripcion,
@@ -908,6 +958,20 @@ function ProductManager() {
             },
             headers
           );
+
+          responseProductPromise.then((responseProduct) => {
+            SaveStockDetail(
+              {
+                accion: "Agregar",
+                cantidad: stock,
+                motivo: "Creacion de stock de producto",
+                modificador: nombreUsuarioDecodificado,
+                idProducto: responseProduct.data.idProducto,
+              },
+              headers
+            );
+          });
+
           Swal.fire({
             icon: "success",
             title: "Producto registrado exitosamente!",
@@ -931,6 +995,27 @@ function ProductManager() {
         });
       }
     }
+  }
+  //#endregion
+
+  //#region Función para verificar si el valor ingresado a traves del input Otro es correcto
+  function IsValidOtro() {
+    if (motivo === "Otro" && otro === "") {
+      Swal.fire({
+        icon: "error",
+        title: "Debe especificar el motivo",
+        text: "Complete el campo",
+        confirmButtonText: "Aceptar",
+        confirmButtonColor: "#f27474",
+      }).then(function () {
+        setTimeout(function () {
+          $("#otro1").focus();
+          $("#otro").focus();
+        }, 500);
+      });
+      return false;
+    }
+    return true;
   }
   //#endregion
 
@@ -1078,43 +1163,73 @@ function ProductManager() {
   async function UpdateProductStock(event) {
     event.preventDefault();
 
-    if (prevStock === stock) {
+    if (!IsUpdated()) {
       Swal.fire({
         icon: "error",
         title: "No puede actualizar el stock del producto sin modificarlo",
         text: "Modifique el stock para poder actualizarlo",
         confirmButtonText: "Aceptar",
         confirmButtonColor: "#F27474",
+      }).then(function () {
+        setTimeout(function () {
+          $("#unidadesAgregar").focus();
+          $("#unidadesQuitar").focus();
+        }, 500);
       });
     } else if (
       (unidadesQuitar !== "" || unidadesAgregar !== "") &&
-      prevStock !== stock
+      IsValidOtro()
     ) {
       try {
-        await UpdateProductsStock(
-          products.find((u) => u.idProducto === idProducto).idProducto ||
-            idProducto,
-          {
-            idProducto: idProducto,
-            stock: stock,
-          },
-          headers
-        );
+        await Promise.all([
+          UpdateProductsStock(
+            products.find((u) => u.idProducto === idProducto).idProducto ||
+              idProducto,
+            {
+              idProducto: idProducto,
+              stock: stock,
+            },
+            headers
+          ),
+
+          SaveStockDetail(
+            {
+              accion: accion,
+              cantidad: cantidad,
+              motivo:
+                (otro && otro.trim() !== ""
+                  ? otro.trim()
+                  : motivo && motivo.trim() !== ""
+                  ? motivo.trim()
+                  : "-"
+                )
+                  .charAt(0)
+                  .toUpperCase() +
+                (otro && otro.trim() !== ""
+                  ? otro.trim()
+                  : motivo && motivo.trim() !== ""
+                  ? motivo.trim()
+                  : "-"
+                ).slice(1),
+              modificador: nombreUsuarioDecodificado,
+              idProducto: idProducto,
+            },
+            headers
+          ),
+        ]);
+
         Swal.fire({
           icon: "success",
           title: "Stock del producto actualizado exitosamente!",
           showConfirmButton: false,
           timer: 2000,
         });
+
+        ClearProductInputs();
         CloseModalQuitar();
         CloseModalAgregar();
-        setUnidadesQuitar("");
-        setUnidadesAgregar("");
-
-        // InitialState();
-        ClearProductStockInput();
-        await GetProductsManage(setProducts);
-        GetCategoriesManage(setCategories);
+        GetProductsManage(setProducts);
+        GetProductsManage(setOriginalProductsList);
       } catch (error) {
         Swal.fire({
           title: error,
@@ -1753,7 +1868,7 @@ function ProductManager() {
             <div className="modal-dialog">
               <div className="modal-content">
                 <div className="modal-header">
-                  <h1 className="modal-title" id="exampleModalLabel">
+                  <h1 className="modal-title quitar" id="exampleModalLabel">
                     Quitar unidades de stock
                   </h1>
                 </div>
@@ -1761,17 +1876,6 @@ function ProductManager() {
                   <div className="container mt-4">
                     <form>
                       <div className="form-group">
-                        <input
-                          type="text"
-                          className="input"
-                          id="idProducto"
-                          hidden
-                          value={idProducto}
-                          onChange={(event) => {
-                            setIdProducto(event.target.value);
-                          }}
-                        />
-
                         <label className="label">
                           Cantidad de unidades para quitar:
                         </label>
@@ -1791,7 +1895,7 @@ function ProductManager() {
                         </div>
 
                         <label className="label">Stock modificado:</label>
-                        <div className="form-group-input">
+                        <div className="form-group-input desc-input">
                           <span className="input-group-text">
                             <StockInput className="input-group-svg" />
                           </span>
@@ -1812,6 +1916,56 @@ function ProductManager() {
                             readOnly
                           />
                         </div>
+
+                        <label className="label selects" htmlFor="motivo">
+                          Motivo:
+                        </label>
+                        <div className="form-group-input desc-input">
+                          <span className="input-group-text">
+                            <MotivoInput className="input-group-svg" />
+                          </span>
+                          <select
+                            className="input"
+                            name="motivos"
+                            id="motivo"
+                            value={motivo}
+                            onChange={(e) => {
+                              setMotivo(e.target.value);
+                            }}
+                          >
+                            <option hidden key={0} value="0">
+                              Seleccione un motivo (Opcional)
+                            </option>
+                            <option value="Venta/Pedido">Venta/Pedido</option>
+                            <option value="Devolucion">Devolucion</option>
+                            <option value="Falla">Falla</option>
+                            <option value="Pérdida">Pérdida</option>
+                            <option value="Robo">Robo</option>
+                            <option value="Translado">Translado</option>
+                            <option value="Obsolencia">Obsolencia</option>
+                            <option value="Otro">Otro</option>
+                          </select>
+                        </div>
+
+                        {motivo === "Otro" && (
+                          <>
+                            <label className="label">Otro:</label>
+                            <div className="form-group-input">
+                              <span className="input-group-text">
+                                <OtroInput className="input-group-svg" />
+                              </span>
+                              <input
+                                type="text"
+                                className="input"
+                                id="otro"
+                                value={otro}
+                                onChange={(e) => {
+                                  setOtro(e.target.value);
+                                }}
+                              />
+                            </div>
+                          </>
+                        )}
                       </div>
 
                       <div id="div-btn-update">
@@ -1837,9 +1991,7 @@ function ProductManager() {
                       if (IsUpdated() === false) {
                         CloseModalQuitar();
                         CloseModalAgregar();
-                        setUnidadesQuitar("");
-                        setUnidadesAgregar("");
-                        ClearProductStockInput();
+                        ClearProductInputs();
                       } else {
                         Swal.fire({
                           icon: "warning",
@@ -1855,9 +2007,7 @@ function ProductManager() {
                           if (result.isConfirmed) {
                             CloseModalQuitar();
                             CloseModalAgregar();
-                            setUnidadesQuitar("");
-                            setUnidadesAgregar("");
-                            ClearProductStockInput();
+                            ClearProductInputs();
                           }
                         });
                       }
@@ -1893,7 +2043,7 @@ function ProductManager() {
             <div className="modal-dialog">
               <div className="modal-content">
                 <div className="modal-header">
-                  <h1 className="modal-title" id="exampleModalLabel">
+                  <h1 className="modal-title agregar" id="exampleModalLabel">
                     Agregar unidades de stock
                   </h1>
                 </div>
@@ -1901,17 +2051,6 @@ function ProductManager() {
                   <div className="container mt-4">
                     <form>
                       <div className="form-group">
-                        <input
-                          type="text"
-                          className="input"
-                          id="idProducto"
-                          hidden
-                          value={idProducto}
-                          onChange={(event) => {
-                            setIdProducto(event.target.value);
-                          }}
-                        />
-
                         <label className="label">
                           Cantidad de unidades para agregar:
                         </label>
@@ -1931,7 +2070,7 @@ function ProductManager() {
                         </div>
 
                         <label className="label">Stock modificado:</label>
-                        <div className="form-group-input">
+                        <div className="form-group-input desc-input">
                           <span className="input-group-text">
                             <StockInput className="input-group-svg" />
                           </span>
@@ -1952,6 +2091,54 @@ function ProductManager() {
                             readOnly
                           />
                         </div>
+
+                        <label className="label selects" htmlFor="motivo">
+                          Motivo:
+                        </label>
+                        <div className="form-group-input desc-input">
+                          <span className="input-group-text">
+                            <MotivoInput className="input-group-svg" />
+                          </span>
+                          <select
+                            className="input"
+                            name="motivos"
+                            id="motivo"
+                            value={motivo}
+                            onChange={(e) => {
+                              setMotivo(e.target.value);
+                            }}
+                          >
+                            <option hidden key={0} value="0">
+                              Seleccione un motivo (Opcional)
+                            </option>
+                            <option value="Compra">Compra</option>
+                            <option value="Reabastecimiento">
+                              Reabastecimiento
+                            </option>
+                            <option value="Translado">Translado</option>
+                            <option value="Otro">Otro</option>
+                          </select>
+                        </div>
+
+                        {motivo === "Otro" && (
+                          <>
+                            <label className="label">Otro:</label>
+                            <div className="form-group-input">
+                              <span className="input-group-text">
+                                <OtroInput className="input-group-svg" />
+                              </span>
+                              <input
+                                type="text"
+                                className="input"
+                                id="otro1"
+                                value={otro}
+                                onChange={(e) => {
+                                  setOtro(e.target.value);
+                                }}
+                              />
+                            </div>
+                          </>
+                        )}
                       </div>
 
                       <div id="div-btn-update">
@@ -1977,9 +2164,7 @@ function ProductManager() {
                       if (IsUpdated() === false) {
                         CloseModalQuitar();
                         CloseModalAgregar();
-                        setUnidadesQuitar("");
-                        setUnidadesAgregar("");
-                        ClearProductStockInput();
+                        ClearProductInputs();
                       } else {
                         Swal.fire({
                           icon: "warning",
@@ -1995,9 +2180,7 @@ function ProductManager() {
                           if (result.isConfirmed) {
                             CloseModalQuitar();
                             CloseModalAgregar();
-                            setUnidadesQuitar("");
-                            setUnidadesAgregar("");
-                            ClearProductStockInput();
+                            ClearProductInputs();
                           }
                         });
                       }
@@ -2476,8 +2659,8 @@ function ProductManager() {
                       <td
                         className={
                           product.stockTransitorio === 0
-                            ? "zero-stock"
-                            : "table-name"
+                            ? "zero-stock stock-div"
+                            : "table-name stock-div"
                         }
                       >
                         <div className="stock-btns">
@@ -2507,6 +2690,15 @@ function ProductManager() {
                             <Agregar className="edit2" />
                           </button>
                         </div>
+
+                        <Link
+                          to={`/detalles/${product.idProducto}`}
+                          title="Ver detalles"
+                          type="button"
+                          className="btn btn-secondary svg-btn"
+                        >
+                          <Stock className="svg" />
+                        </Link>
                       </td>
                       <td
                         className={

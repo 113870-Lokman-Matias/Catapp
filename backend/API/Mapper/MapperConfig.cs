@@ -29,6 +29,9 @@ using API.Services.ProductoServices.Commands.UpdateStockProductoCommand;
 using API.Dtos.EnvioDto;
 using API.Services.EnvioServices.Commands.UpdateCostoEnvioCommand;
 
+using API.Dtos.StockDtos;
+using API.Services.StockServices.Commands.CreateDetalleStockCommand;
+
 namespace API.Mapper
 {
   public class MapperConfig : Profile
@@ -69,6 +72,11 @@ namespace API.Mapper
       // Mapper para envios
       CreateMap<EnvioDto, Envio>().ReverseMap();
       CreateMap<Envio, UpdateCostoEnvioCommand>().ReverseMap();
+
+      // Mapper para Detalles de stock
+      CreateMap<DetallesStock, StockDto>()
+          .ForMember(dest => dest.NombreProducto, opt => opt.MapFrom(src => src.IdProductoNavigation.Nombre));
+      CreateMap<DetallesStock, CreateDetalleStockCommand>().ReverseMap();
     }
   }
 }
