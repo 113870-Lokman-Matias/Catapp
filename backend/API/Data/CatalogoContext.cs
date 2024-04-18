@@ -21,6 +21,7 @@ namespace API.Data
         public virtual DbSet<Cliente> Clientes { get; set; } = null!;
         public virtual DbSet<Cotizacion> Cotizaciones { get; set; } = null!;
         public virtual DbSet<DetallePedido> DetallePedidos { get; set; } = null!;
+        public virtual DbSet<DetallesStock> DetallesStocks { get; set; } = null!;
         public virtual DbSet<Divisa> Divisas { get; set; } = null!;
         public virtual DbSet<Envio> Envios { get; set; } = null!;
         public virtual DbSet<MetodosEntrega> MetodosEntregas { get; set; } = null!;
@@ -121,6 +122,34 @@ namespace API.Data
 
                 entity.HasOne(d => d.IdProductoNavigation)
                     .WithMany(p => p.DetallePedidos)
+                    .HasForeignKey(d => d.IdProducto)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("fk_producto");
+            });
+
+            modelBuilder.Entity<DetallesStock>(entity =>
+            {
+                entity.HasKey(e => e.IdDetallesStock)
+                    .HasName("detalles_stock_pkey");
+
+                entity.ToTable("detalles_stock");
+
+                entity.Property(e => e.IdDetallesStock).HasColumnName("id_detalles_stock");
+
+                entity.Property(e => e.Accion).HasColumnName("accion");
+
+                entity.Property(e => e.Cantidad).HasColumnName("cantidad");
+
+                entity.Property(e => e.Fecha).HasColumnName("fecha");
+
+                entity.Property(e => e.IdProducto).HasColumnName("id_producto");
+
+                entity.Property(e => e.Modificador).HasColumnName("modificador");
+
+                entity.Property(e => e.Motivo).HasColumnName("motivo");
+
+                entity.HasOne(d => d.IdProductoNavigation)
+                    .WithMany(p => p.DetallesStocks)
                     .HasForeignKey(d => d.IdProducto)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("fk_producto");
