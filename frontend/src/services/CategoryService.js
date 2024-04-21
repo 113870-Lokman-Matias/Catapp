@@ -15,9 +15,23 @@ async function GetCategoriesManage(state) {
 }
 //#endregion
 
-//#region Función para obtener todas los categorías
+//#region Función para obtener todas los categorías para el catalogo
 async function GetCategories(state) {
   const result = await axios.get("https://localhost:7207/categoria");
+  state(result.data.categorias);
+}
+//#endregion
+
+//#region Función para obtener todas los categorías para el catalogo minorista
+async function GetCategoriesMinorista(state) {
+  const result = await axios.get("https://localhost:7207/categoria/minorista");
+  state(result.data.categorias);
+}
+//#endregion
+
+//#region Función para obtener todas los categorías para el catalogo mayorista
+async function GetCategoriesMayorista(state) {
+  const result = await axios.get("https://localhost:7207/categoria/mayorista");
   state(result.data.categorias);
 }
 //#endregion
@@ -68,6 +82,8 @@ const UploadImagesCategory = async (imageSelected) => {
 export {
   GetCategoriesManage,
   GetCategories,
+  GetCategoriesMinorista,
+  GetCategoriesMayorista,
   SaveCategories,
   UpdateCategories,
   DeleteCategories,

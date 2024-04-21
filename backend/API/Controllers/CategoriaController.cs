@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using MediatR;
 using API.Dtos.CategoriaDtos;
 using API.Services.CategoriaServices.Queries.GetCategoriasQuery;
+using API.Services.CategoriaServices.Queries.GetCategoriasMinoristaQuery;
+using API.Services.CategoriaServices.Queries.GetCategoriasMayoristaQuery;
 using API.Services.CategoriaServices.Commands.CreateCategoriaCommand;
 using API.Services.CategoriaServices.Commands.UpdateCategoriaCommand;
 using API.Services.CategoriaServices.Commands.DeleteCategoriaCommand;
@@ -37,6 +39,22 @@ public class CategoriaController : ControllerBase
   {
     var categorias = _mediator.Send(new GetCategoriasQuery());
     return categorias;
+  }
+
+  [HttpGet]
+  [Route("minorista")]
+  public Task<ListaCategoriasDto> GetCategoriasMinoristas()
+  {
+    var categoriasMinoristas = _mediator.Send(new GetCategoriasMinoristaQuery());
+    return categoriasMinoristas;
+  }
+
+  [HttpGet]
+  [Route("mayorista")]
+  public Task<ListaCategoriasDto> GetCategoriasMayoristas()
+  {
+    var categoriasMayoristas = _mediator.Send(new GetCategoriasMayoristaQuery());
+    return categoriasMayoristas;
   }
 
 

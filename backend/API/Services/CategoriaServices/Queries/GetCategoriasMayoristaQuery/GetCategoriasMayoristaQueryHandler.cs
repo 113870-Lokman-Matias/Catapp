@@ -4,25 +4,25 @@ using AutoMapper;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace API.Services.CategoriaServices.Queries.GetCategoriasQuery
+namespace API.Services.CategoriaServices.Queries.GetCategoriasMayoristaQuery
 {
-  public class GetCategoriasQueryHandler : IRequestHandler<GetCategoriasQuery, ListaCategoriasDto>
+  public class GetCategoriasMayoristaQueryHandler : IRequestHandler<GetCategoriasMayoristaQuery, ListaCategoriasDto>
   {
     private readonly CatalogoContext _context;
     private readonly IMapper _mapper;
-    public GetCategoriasQueryHandler(CatalogoContext context, IMapper mapper)
+    public GetCategoriasMayoristaQueryHandler(CatalogoContext context, IMapper mapper)
     {
       _context = context;
       _mapper = mapper;
     }
 
-    public async Task<ListaCategoriasDto> Handle(GetCategoriasQuery request, CancellationToken cancellationToken)
+    public async Task<ListaCategoriasDto> Handle(GetCategoriasMayoristaQuery request, CancellationToken cancellationToken)
     {
       try
       {
         var categorias = await _context.Categorias
             .Include(c => c.Productos) // Incluir productos para contar
-            .Where(c => c.Ocultar == false && c.Productos.Any(p => p.Ocultar == false)) // Filtrar categorías y productos no ocultos
+            .Where(c => c.Ocultar == false && c.Productos.Any(p => p.Ocultar == false && (p.PrecioMayorista > 0 || p.PorcentajeMayorista > 0)))
             .Select(x => new ListaCategoriaDto { 
                 IdCategoria = x.IdCategoria,
                 Nombre = x.Nombre,
