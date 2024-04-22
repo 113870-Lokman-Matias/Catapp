@@ -192,10 +192,6 @@
   .adminpanel-container {
     height: 100%;
   }
-
-  .error {
-    margin-top: 70px;
-  }
 }
 
 @media (max-width: 420px) {
