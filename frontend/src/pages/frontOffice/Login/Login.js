@@ -254,7 +254,7 @@ function Login() {
           <div className="notfound-content">
             <h2 className="title-login">
               Usted se encuentra logueado con el usuario:{" "}
-              <b>{JSON.parse(atob(token.split(".")[1])).unique_name[0]}</b>
+              <b>{JSON.parse(atob(token.split(".")[1])).nameid}</b>
             </h2>
 
             <Link

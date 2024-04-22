@@ -36,12 +36,12 @@ function AdminPanel() {
   const navigate = useNavigate();
 
   const token = localStorage.getItem("token");
-  const nombreUsuario = JSON.parse(atob(token.split(".")[1])).unique_name[1];
+  const nombreUsuario = JSON.parse(atob(token.split(".")[1])).unique_name;
   const nombreUsuarioDecodificado = decodeURIComponent(
     escape(nombreUsuario)
   ).replace(/Ã­/g, "í");
   const rolUsuario = JSON.parse(atob(token.split(".")[1])).role;
-  const username = JSON.parse(atob(token.split(".")[1])).unique_name[0];
+  const username = JSON.parse(atob(token.split(".")[1])).nameid;
 
   const headers = {
     Authorization: `Bearer ${token}`, // Agregar el encabezado Authorization con el valor del token
@@ -242,8 +242,8 @@ function AdminPanel() {
       <Helmet>
         <title>Catapp | Panel de administrador</title>
       </Helmet>
-      <section id="notfound" className="adminpanel-container">
-        <div className="adminpanel-content">
+      <section className="general-container">
+        <div className="general-content">
           <div className="wel-out">
             <h2 className="error welc-title">
               ¡Bienvenido {nombreUsuarioDecodificado}!
@@ -319,7 +319,7 @@ function AdminPanel() {
                         </div>
 
                         <label className="label">Repetir contraseña:</label>
-                        <div className="form-group-input password-input">
+                        <div className="form-group-input password-input2">
                           <span className="input-group-text">
                             <PasswordInput className="input-group-svg" />
                           </span>
@@ -419,7 +419,9 @@ function AdminPanel() {
                 </Link>
               )}
 
-              {(rolUsuario === "Supervisor" || rolUsuario === "SuperAdmin") && (
+              {(rolUsuario === "Vendedor" ||
+                rolUsuario === "Supervisor" ||
+                rolUsuario === "SuperAdmin") && (
                 <Link
                   to="/administrar-pedidos"
                   className="btn btn-dark category-btn"
