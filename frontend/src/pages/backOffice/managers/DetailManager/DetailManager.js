@@ -8,33 +8,33 @@ import { useParams } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet";
 
-import "./Detalle.css";
+import "./DetailManager.css";
 
 //#region SVG'S Imports
-import { ReactComponent as Update } from "../../../assets/svgs/update.svg";
-import { ReactComponent as Close } from "../../../assets/svgs/closebtn.svg";
-import { ReactComponent as Back } from "../../../assets/svgs/back.svg";
-import { ReactComponent as Agregar } from "../../../assets/svgs/agregar.svg";
-import { ReactComponent as Quitar } from "../../../assets/svgs/quitar.svg";
+import { ReactComponent as Update } from "../../../../assets/svgs/update.svg";
+import { ReactComponent as Close } from "../../../../assets/svgs/closebtn.svg";
+import { ReactComponent as Back } from "../../../../assets/svgs/back.svg";
+import { ReactComponent as Agregar } from "../../../../assets/svgs/agregar.svg";
+import { ReactComponent as Quitar } from "../../../../assets/svgs/quitar.svg";
 
-import { ReactComponent as StockInput } from "../../../assets/svgs/stockinput.svg";
-import { ReactComponent as MotivoInput } from "../../../assets/svgs/motivo.svg";
-import { ReactComponent as OtroInput } from "../../../assets/svgs/otro.svg";
+import { ReactComponent as StockInput } from "../../../../assets/svgs/stockinput.svg";
+import { ReactComponent as MotivoInput } from "../../../../assets/svgs/motivo.svg";
+import { ReactComponent as OtroInput } from "../../../../assets/svgs/otro.svg";
 //#endregion
 
 import {
   GetDetailsById,
   SaveStockDetail,
-} from "../../../services/DetailService";
+} from "../../../../services/DetailService";
 
 import {
   GetProductById,
   UpdateProductsStock,
-} from "../../../services/ProductService";
+} from "../../../../services/ProductService";
 
-import { formatDate } from "../../../utils/DateFormat";
+import { formatDate } from "../../../../utils/DateFormat";
 
-function Detalle() {
+function DetailManager() {
   //#region Constantes
   const { id } = useParams();
 
@@ -62,10 +62,7 @@ function Detalle() {
     Authorization: `Bearer ${token}`, // Agregar el encabezado Authorization con el valor del token
   };
 
-  const nombreUsuario = JSON.parse(atob(token.split(".")[1])).unique_name[1];
-  const nombreUsuarioDecodificado = decodeURIComponent(
-    escape(nombreUsuario)
-  ).replace(/Ã­/g, "í");
+  const rolUsuario = JSON.parse(atob(token.split(".")[1])).role;
 
   const navigate = useNavigate();
 
@@ -377,8 +374,7 @@ function Detalle() {
                   ? motivo.trim()
                   : "-"
                 ).slice(1),
-              modificador: nombreUsuarioDecodificado,
-              idProducto: id,
+              idProducto: id
             },
             headers
           ),
@@ -846,18 +842,20 @@ function Detalle() {
             </div>
 
             <div className="pagination-count-filter">
-              <button
-                type="button"
-                className="btn btn-danger btn-delete5"
-                data-bs-toggle="modal"
-                data-bs-target="#modalQuitar"
-                onClick={() => {
-                  RetrieveProductInputs(product);
-                  setOriginalStock(product.stockTransitorio);
-                }}
-              >
-                <Quitar className="edit5" />
-              </button>
+              {(rolUsuario === "Supervisor" || rolUsuario === "SuperAdmin") && (
+                <button
+                  type="button"
+                  className="btn btn-danger btn-delete5"
+                  data-bs-toggle="modal"
+                  data-bs-target="#modalQuitar"
+                  onClick={() => {
+                    RetrieveProductInputs(product);
+                    setOriginalStock(product.stockTransitorio);
+                  }}
+                >
+                  <Quitar className="edit5" />
+                </button>
+              )}
               <div
                 className={
                   product.stockTransitorio === 0
@@ -877,18 +875,20 @@ function Detalle() {
                   </p>
                 </div>
               </div>
-              <button
-                type="button"
-                className="btn btn-success btn-add5"
-                data-bs-toggle="modal"
-                data-bs-target="#modalAgregar"
-                onClick={() => {
-                  RetrieveProductInputs(product);
-                  setOriginalStock(product.stockTransitorio);
-                }}
-              >
-                <Agregar className="edit5" />
-              </button>
+              {(rolUsuario === "Supervisor" || rolUsuario === "SuperAdmin") && (
+                <button
+                  type="button"
+                  className="btn btn-success btn-add5"
+                  data-bs-toggle="modal"
+                  data-bs-target="#modalAgregar"
+                  onClick={() => {
+                    RetrieveProductInputs(product);
+                    setOriginalStock(product.stockTransitorio);
+                  }}
+                >
+                  <Agregar className="edit5" />
+                </button>
+              )}
             </div>
           </div>
 
@@ -1049,4 +1049,4 @@ function Detalle() {
   //#endregion
 }
 
-export default Detalle;
+export default DetailManager;
