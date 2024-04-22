@@ -36,6 +36,11 @@ using API.Services.EnvioServices.Commands.UpdateCostoEnvioCommand;
 using API.Services.StockServices.Queries.GetDetallesStockByIdQuery;
 using API.Services.StockServices.Commands.CreateDetalleStockCommand;
 
+using API.Services.PedidoServices.Commands.CreatePedidoCommand;
+using API.Services.PedidoServices.Commands.UpdatePedidoCommand;
+using API.Services.PedidoServices.Commands.UpdateVerificadoPedidoCommand;
+using API.Services.PedidoServices.Commands.DeletePedidoCommand;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -111,6 +116,12 @@ builder.Services.AddScoped<IValidator<UpdateCostoEnvioCommand>, UpdateCostoEnvio
 // Validacion para el servicio de Detalles de stock
 builder.Services.AddScoped<IValidator<CreateDetalleStockCommand>, CreateDetalleStockCommandValidator>();
 builder.Services.AddScoped<IValidator<GetDetallesStockByIdQuery>, GetDetallesStockByIdQueryValidator>();
+
+// Validaciones para el servicio de Pedidos
+builder.Services.AddScoped<IValidator<CreatePedidoCommand>, CreatePedidoCommandValidator>();
+builder.Services.AddScoped<IValidator<UpdatePedidoCommand>, UpdatePedidoCommandValidator>();
+builder.Services.AddScoped<IValidator<UpdateVerificadoPedidoCommand>, UpdateVerificadoPedidoCommandValidator>();
+builder.Services.AddScoped<IValidator<DeletePedidoCommand>, DeletePedidoCommandValidator>();
 
 builder.Services.AddControllers();
 

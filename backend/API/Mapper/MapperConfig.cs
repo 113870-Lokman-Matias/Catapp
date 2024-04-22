@@ -32,6 +32,12 @@ using API.Services.EnvioServices.Commands.UpdateCostoEnvioCommand;
 using API.Dtos.StockDtos;
 using API.Services.StockServices.Commands.CreateDetalleStockCommand;
 
+using API.Dtos.PedidoDtos;
+using API.Services.PedidoServices.Commands.CreatePedidoCommand;
+using API.Services.PedidoServices.Commands.UpdatePedidoCommand;
+using API.Services.PedidoServices.Commands.DeletePedidoCommand;
+using API.Services.PedidoServices.Commands.UpdateVerificadoPedidoCommand;
+
 namespace API.Mapper
 {
   public class MapperConfig : Profile
@@ -77,6 +83,13 @@ namespace API.Mapper
       CreateMap<DetallesStock, StockDto>()
           .ForMember(dest => dest.NombreProducto, opt => opt.MapFrom(src => src.IdProductoNavigation.Nombre));
       CreateMap<DetallesStock, CreateDetalleStockCommand>().ReverseMap();
+
+      // Mapper para Pedidos
+      CreateMap<PedidoDto, Pedido>().ReverseMap();
+      CreateMap<Pedido, CreatePedidoCommand>().ReverseMap();
+      CreateMap<Pedido, UpdatePedidoCommand>().ReverseMap();
+      CreateMap<Pedido, UpdateVerificadoPedidoCommand>().ReverseMap();
+      CreateMap<Pedido, DeletePedidoCommand>().ReverseMap();
     }
   }
 }
