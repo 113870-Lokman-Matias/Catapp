@@ -157,18 +157,10 @@ function ShipmentManager() {
       });
     } else if (IsValid() === true && IsUpdated() === true) {
       try {
-        if (token) {
-          const nombreUsuario = JSON.parse(atob(token.split(".")[1]))
-            .unique_name[1];
-          const nombreUsuarioDecodificado = decodeURIComponent(
-            escape(nombreUsuario)
-          ).replace(/Ã­/g, "í");
-
           await UpdateCostoEnvio(
             {
               idEnvio: idEnvio,
-              precio: precio,
-              ultimoModificador: nombreUsuarioDecodificado,
+              precio: precio
             },
             headers
           );
@@ -183,7 +175,7 @@ function ShipmentManager() {
 
           // InitialState();
           ClearCostoEnvioInputs();
-        }
+        
       } catch (err) {
         Swal.fire({
           icon: "error",

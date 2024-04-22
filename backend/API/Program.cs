@@ -114,6 +114,8 @@ builder.Services.AddScoped<IValidator<GetDetallesStockByIdQuery>, GetDetallesSto
 
 builder.Services.AddControllers();
 
+builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+
 // JWT
 var _jwtsettings = builder.Configuration.GetSection("JwtSettings");
 builder.Services.Configure<JwtSetings>(_jwtsettings);

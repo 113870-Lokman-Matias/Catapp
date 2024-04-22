@@ -10,7 +10,5 @@ namespace API.Services.EnvioServices.Commands.UpdateCostoEnvioCommand
         public int IdEnvio { get; set; }
 
         public float Precio { get; set; }
-
-        public string UltimoModificador { get; set; } = null!;
     }
 }

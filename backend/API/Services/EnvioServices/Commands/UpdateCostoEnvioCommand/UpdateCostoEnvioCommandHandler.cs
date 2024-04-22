@@ -5,6 +5,7 @@ using AutoMapper;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Http;
 
 namespace API.Services.EnvioServices.Commands.UpdateCostoEnvioCommand
 {
@@ -13,11 +14,14 @@ namespace API.Services.EnvioServices.Commands.UpdateCostoEnvioCommand
         private readonly CatalogoContext _context;
         private readonly IMapper _mapper;
         private readonly IValidator<UpdateCostoEnvioCommand> _validator;
-        public UpdateCostoEnvioCommandHandler(CatalogoContext context, IMapper mapper, IValidator<UpdateCostoEnvioCommand> validator)
+        private readonly IHttpContextAccessor _httpContextAccessor;
+
+        public UpdateCostoEnvioCommandHandler(CatalogoContext context, IMapper mapper, IValidator<UpdateCostoEnvioCommand> validator, IHttpContextAccessor httpContextAccessor)
         {
             _context = context;
             _mapper = mapper;
             _validator = validator;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<EnvioDto> Handle(UpdateCostoEnvioCommand request, CancellationToken cancellationToken)
@@ -54,7 +58,7 @@ namespace API.Services.EnvioServices.Commands.UpdateCostoEnvioCommand
                     else
                     {
                         CostoEnvioToUpdate.Precio = request.Precio;
-                        CostoEnvioToUpdate.UltimoModificador = request.UltimoModificador;
+                        CostoEnvioToUpdate.UltimoModificador = _httpContextAccessor.HttpContext?.User?.Identity?.Name;
                         CostoEnvioToUpdate.FechaModificacion = DateTimeOffset.Now.ToUniversalTime();
 
                         await _context.SaveChangesAsync();

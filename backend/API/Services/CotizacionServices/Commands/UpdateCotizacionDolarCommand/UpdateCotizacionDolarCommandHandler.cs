@@ -12,11 +12,14 @@ namespace API.Services.CotizacionServices.Commands.UpdateCotizacionDolarCommand
         private readonly CatalogoContext _context;
         private readonly IMapper _mapper;
         private readonly IValidator<UpdateCotizacionDolarCommand> _validator;
-        public UpdateCotizacionDolarCommandHandler(CatalogoContext context, IMapper mapper, IValidator<UpdateCotizacionDolarCommand> validator)
+        private readonly IHttpContextAccessor _httpContextAccessor;
+
+        public UpdateCotizacionDolarCommandHandler(CatalogoContext context, IMapper mapper, IValidator<UpdateCotizacionDolarCommand> validator, IHttpContextAccessor httpContextAccessor)
         {
             _context = context;
             _mapper = mapper;
             _validator = validator;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<CotizacionDto> Handle(UpdateCotizacionDolarCommand request, CancellationToken cancellationToken)
@@ -53,7 +56,7 @@ namespace API.Services.CotizacionServices.Commands.UpdateCotizacionDolarCommand
                     else
                     {
                         CotizacionDolarToUpdate.Precio = request.Precio;
-                        CotizacionDolarToUpdate.UltimoModificador = request.UltimoModificador;
+                        CotizacionDolarToUpdate.UltimoModificador = _httpContextAccessor.HttpContext?.User?.Identity?.Name;
                         CotizacionDolarToUpdate.FechaModificacion = DateTimeOffset.Now.ToUniversalTime();
 
                         await _context.SaveChangesAsync();

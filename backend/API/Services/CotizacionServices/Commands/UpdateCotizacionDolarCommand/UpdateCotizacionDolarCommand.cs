@@ -10,7 +10,5 @@ namespace API.Services.CotizacionServices.Commands.UpdateCotizacionDolarCommand
         public int IdDolar { get; set; }
 
         public float Precio { get; set; }
-
-        public string UltimoModificador { get; set; } = null!;
     }
 }

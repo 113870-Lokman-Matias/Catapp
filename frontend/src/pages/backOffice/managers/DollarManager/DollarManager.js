@@ -186,32 +186,23 @@ function DollarManager() {
       });
     } else if (IsValid() === true && IsUpdated() === true) {
       try {
-        if (token) {
-          const nombreUsuario = JSON.parse(atob(token.split(".")[1]))
-            .unique_name[1];
-          const nombreUsuarioDecodificado = decodeURIComponent(
-            escape(nombreUsuario)
-          ).replace(/Ã­/g, "í");
+        await UpdateCotizacionDolar(
+          {
+            idDolar: idDolar,
+            precio: precio,
+          },
+          headers
+        );
+        Swal.fire({
+          icon: "success",
+          title: "Cotización de dolar actualizada exitosamente!",
+          showConfirmButton: false,
+          timer: 2000,
+        });
+        CloseModal();
+        await GetCotizacionDolar(setCotizacionDolar);
 
-          await UpdateCotizacionDolar(
-            {
-              idDolar: idDolar,
-              precio: precio,
-              ultimoModificador: nombreUsuarioDecodificado,
-            },
-            headers
-          );
-          Swal.fire({
-            icon: "success",
-            title: "Cotización de dolar actualizada exitosamente!",
-            showConfirmButton: false,
-            timer: 2000,
-          });
-          CloseModal();
-          await GetCotizacionDolar(setCotizacionDolar);
-
-          ClearCotizacionDolarInputs();
-        }
+        ClearCotizacionDolarInputs();
       } catch (err) {
         Swal.fire({
           icon: "error",
