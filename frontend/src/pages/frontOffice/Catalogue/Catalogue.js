@@ -15,9 +15,9 @@ import { ReactComponent as Lupa } from "../../../assets/svgs/lupa.svg";
 import Loader from "../../../components/Loaders/LoaderCircle";
 //#endregion
 
-import "./Catalogo.css";
+import "./Catalogue.css";
 
-const Catalogo = () => {
+const Catalogue = () => {
   //#region Constantes
   const [click, setClick] = useState(false);
   const handleClick = () => setClick(!click);
@@ -136,7 +136,13 @@ const Catalogo = () => {
             <div className="title-search">
               <h1 className="title categories-title title-nomarg">Catálogo</h1>
 
-              <div className="pagination-count3">
+              <div
+                className={
+                  color
+                    ? "pagination-count3 pagination-count3-fixed"
+                    : "pagination-count3"
+                }
+              >
                 <div className="search-container">
                   <div className="form-group-input-search2">
                     <span className="input-group-text2">
@@ -358,4 +364,4 @@ const Catalogo = () => {
   //#endregion
 };
 
-export default Catalogo;
+export default Catalogue;
