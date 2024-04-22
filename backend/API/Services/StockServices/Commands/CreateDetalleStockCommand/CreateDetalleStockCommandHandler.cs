@@ -12,12 +12,14 @@ namespace API.Services.StockServices.Commands.CreateDetalleStockCommand
     private readonly CatalogoContext _context;
     private readonly IMapper _mapper;
     private readonly IValidator<CreateDetalleStockCommand> _validator;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public CreateDetalleStockCommandHandler(CatalogoContext context, IMapper mapper, IValidator<CreateDetalleStockCommand> validator)
+    public CreateDetalleStockCommandHandler(CatalogoContext context, IMapper mapper, IValidator<CreateDetalleStockCommand> validator, IHttpContextAccessor httpContextAccessor)
     {
       _context = context;
       _mapper = mapper;
       _validator = validator;
+      _httpContextAccessor = httpContextAccessor;
     }
 
     public async Task<StockDto> Handle(CreateDetalleStockCommand request, CancellationToken cancellationToken)
@@ -40,6 +42,7 @@ namespace API.Services.StockServices.Commands.CreateDetalleStockCommand
         {
           var detalleStockToCreate = _mapper.Map<DetallesStock>(request);
 
+          detalleStockToCreate.Modificador = _httpContextAccessor.HttpContext?.User?.Identity?.Name;
           detalleStockToCreate.Fecha = DateTimeOffset.Now.ToUniversalTime();
 
           await _context.AddAsync(detalleStockToCreate);

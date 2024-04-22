@@ -76,7 +76,7 @@ public class ProductoController : ControllerBase
 
 
   [HttpPatch("{id}")]
-  [Authorize(Roles = "SuperAdmin, Supervisor, Vendedor")]
+  [Authorize(Roles = "SuperAdmin, Supervisor")]
   public async Task<ProductoDto> UpdateStockProducto(int id, UpdateStockProductoCommand command)
   {
     command.IdProducto = id;
@@ -85,7 +85,7 @@ public class ProductoController : ControllerBase
   }
 
   [HttpDelete("{id}")]
-  [Authorize(Roles = "SuperAdmin, Supervisor, Vendedor")]
+  [Authorize(Roles = "SuperAdmin, Supervisor")]
   public async Task<ProductoDto> DeleteProducto(int id)
   {
     var productoEliminado = await _mediator.Send(new DeleteProductoCommand { IdProducto = id });

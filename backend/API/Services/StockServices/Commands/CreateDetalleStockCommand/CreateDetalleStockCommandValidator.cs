@@ -24,10 +24,6 @@ namespace API.Services.StockServices.Commands.CreateDetalleStockCommand
       // .NotEmpty().WithMessage("El motivo no puede estar vacío")
       // .NotNull().WithMessage("El motivo no puede ser nulo");
 
-      RuleFor(p => p.Modificador)
-      .NotEmpty().WithMessage("El modificador no puede estar vacío")
-      .NotNull().WithMessage("El modificador no puede ser nulo");
-
       RuleFor(p => p.IdProducto)
       .NotEmpty().WithMessage("El id del producto no puede estar vacío")
       .NotNull().WithMessage("El id del producto no puede ser nulo")

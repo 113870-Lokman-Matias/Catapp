@@ -150,10 +150,7 @@ function ProductManager() {
     Authorization: `Bearer ${token}`, // Agregar el encabezado Authorization con el valor del token
   };
 
-  const nombreUsuario = JSON.parse(atob(token.split(".")[1])).unique_name[1];
-  const nombreUsuarioDecodificado = decodeURIComponent(
-    escape(nombreUsuario)
-  ).replace(/Ã­/g, "í");
+  const rolUsuario = JSON.parse(atob(token.split(".")[1])).role;
 
   const navigate = useNavigate();
 
@@ -479,6 +476,9 @@ function ProductManager() {
     setIdCategoria("");
     setIdImagen("");
     setUrlImagen("");
+
+    setTipoPrecioMayorista("");
+    setTipoPrecioMinorista("");
 
     setUnidadesQuitar("");
     setUnidadesAgregar("");
@@ -840,6 +840,73 @@ function ProductManager() {
   }
   //#endregion
 
+  //#region Función para verificar si los valores ingresados a traves de los inputs son correctos (Cuando el rol es vendedor)
+  function IsValidVendedor() {
+    if (nombre === "") {
+      Swal.fire({
+        icon: "error",
+        title: "El nombre no puede estar vacío",
+        text: "Complete el campo",
+        confirmButtonText: "Aceptar",
+        confirmButtonColor: "#f27474",
+      }).then(function () {
+        setTimeout(function () {
+          $("#nombre").focus();
+        }, 500);
+      });
+      if (modalTitle === "Registrar Producto") {
+        ShowSaveButton();
+      }
+      return false;
+    } else if (descripcion === "") {
+      Swal.fire({
+        icon: "error",
+        title: "La descripción no puede estar vacía",
+        text: "Complete el campo",
+        confirmButtonText: "Aceptar",
+        confirmButtonColor: "#f27474",
+      }).then(function () {
+        setTimeout(function () {
+          $("#descripcion").focus();
+        }, 500);
+      });
+      if (modalTitle === "Registrar Producto") {
+        ShowSaveButton();
+      }
+      return false;
+    } else if (idCategoria === "") {
+      Swal.fire({
+        icon: "error",
+        title: "La categoría no puede estar vacía",
+        text: "Seleccione una categoría",
+        confirmButtonText: "Aceptar",
+        confirmButtonColor: "#f27474",
+      });
+      if (modalTitle === "Registrar Producto") {
+        ShowSaveButton();
+      }
+      return false;
+    } else if (urlImagen === "") {
+      Swal.fire({
+        icon: "error",
+        title: "El campo imagen no puede estar vacío",
+        text: "Suba una imagen",
+        confirmButtonText: "Aceptar",
+        confirmButtonColor: "#f27474",
+      }).then(function () {
+        setTimeout(function () {
+          $("#imagen").focus();
+        }, 500);
+      });
+      if (modalTitle === "Registrar Producto") {
+        ShowSaveButton();
+      }
+      return false;
+    }
+    return true;
+  }
+  //#endregion
+
   //#region Función para verificar si el valor "nombre" ingresado a traves del input no esta repetido
   function IsRepeated() {
     for (let i = 0; i < products.length; i++) {
@@ -933,7 +1000,7 @@ function ProductManager() {
     btnSave.style.opacity = "0.5";
     divBtnSave.style.cursor = "wait";
 
-    const isValid = IsValid();
+    const isValid = rolUsuario === "Vendedor" ? IsValidVendedor() : IsValid();
     const isRepeated = IsRepeated();
 
     if (isValid && !isRepeated) {
@@ -944,32 +1011,35 @@ function ProductManager() {
             {
               nombre: `${nombre.charAt(0).toUpperCase() + nombre.slice(1)}`,
               descripcion: descripcion,
-              idDivisa: divisa,
-              precio: precio,
-              porcentajeMinorista: porcentajeMinorista,
-              porcentajeMayorista: porcentajeMayorista,
-              precioMinorista: precioMinorista,
-              precioMayorista: precioMayorista,
-              stock: stock,
+              idDivisa: rolUsuario === "Vendedor" ? 2 : divisa,
+              precio: rolUsuario === "Vendedor" ? 0 : precio,
+              porcentajeMinorista:
+                rolUsuario === "Vendedor" ? 0 : porcentajeMinorista,
+              porcentajeMayorista:
+                rolUsuario === "Vendedor" ? 0 : porcentajeMayorista,
+              precioMinorista: rolUsuario === "Vendedor" ? 0 : precioMinorista,
+              precioMayorista: rolUsuario === "Vendedor" ? 0 : precioMayorista,
+              stock: rolUsuario === "Vendedor" ? 0 : stock,
               idCategoria: idCategoria,
               idImagen: imageId,
               urlImagen: imageUrl,
-              ocultar: ocultar,
+              ocultar: rolUsuario === "Vendedor" ? true : ocultar,
             },
             headers
           );
 
           responseProductPromise.then((responseProduct) => {
-            SaveStockDetail(
-              {
-                accion: "Agregar",
-                cantidad: stock,
-                motivo: "Creacion de stock de producto",
-                modificador: nombreUsuarioDecodificado,
-                idProducto: responseProduct.data.idProducto,
-              },
-              headers
-            );
+            if (rolUsuario !== "Vendedor") {
+              SaveStockDetail(
+                {
+                  accion: "Agregar",
+                  cantidad: stock,
+                  motivo: "Creacion de stock de producto",
+                  idProducto: responseProduct.data.idProducto,
+                },
+                headers
+              );
+            }
           });
 
           Swal.fire({
@@ -981,6 +1051,8 @@ function ProductManager() {
           CloseModal();
           ShowSaveButton();
           InitialState();
+          await GetProductsManage(setProducts);
+          await GetProductsManage(setOriginalProductsList);
           setTitle("Detalles de Productos");
           setQuery("");
           document.getElementById("clear-filter").style.display = "none";
@@ -1211,7 +1283,6 @@ function ProductManager() {
                   ? motivo.trim()
                   : "-"
                 ).slice(1),
-              modificador: nombreUsuarioDecodificado,
               idProducto: idProducto,
             },
             headers
@@ -1313,6 +1384,7 @@ function ProductManager() {
                   }, 500);
                   setOcultar(false);
                   setTipoPrecioMinorista("");
+                  setTipoPrecioMayorista("");
                 }}
               >
                 <div className="btn-add-content">
@@ -1401,61 +1473,65 @@ function ProductManager() {
                           />
                         </div>
 
-                        {(tipoPrecioMinorista !== "Manual" ||
-                          tipoPrecioMayorista !== "Manual") && (
-                          <>
-                            <label className="label selects" htmlFor="divisa">
-                              Divisa:
-                            </label>
-                            <div
-                              className={`form-group-input divisa-input ${
-                                valorDolar > 0 ? "" : " divisa-div"
-                              }`}
-                            >
-                              <span className="input-group-text">
-                                <PriceInput className="input-group-svg" />
-                              </span>
-                              <select
-                                className="input"
-                                name="divisa"
-                                id="divisa"
-                                value={divisa}
-                                onChange={(e) => setDivisa(e.target.value)}
+                        {(rolUsuario === "Supervisor" ||
+                          rolUsuario === "SuperAdmin") &&
+                          (tipoPrecioMinorista !== "Manual" ||
+                            tipoPrecioMayorista !== "Manual") && (
+                            <>
+                              <label className="label selects" htmlFor="divisa">
+                                Divisa:
+                              </label>
+                              <div
+                                className={`form-group-input divisa-input ${
+                                  valorDolar > 0 ? "" : " divisa-div"
+                                }`}
                               >
-                                <option hidden key={0} value="0">
-                                  Seleccione una divisa
-                                </option>
-                                <option
-                                  className="btn-option"
-                                  value="1"
-                                  disabled={valorDolar === 0}
+                                <span className="input-group-text">
+                                  <PriceInput className="input-group-svg" />
+                                </span>
+                                <select
+                                  className="input"
+                                  name="divisa"
+                                  id="divisa"
+                                  value={divisa}
+                                  onChange={(e) => setDivisa(e.target.value)}
                                 >
-                                  Dólar
-                                </option>
-                                <option className="btn-option" value="2">
-                                  Peso
-                                </option>
-                              </select>
-                            </div>
-                            <div
-                              className="form-group-input divisa-input establecer-cotizacion-div"
-                              hidden={valorDolar > 0}
-                            >
-                              <Link
-                                to="/administrar-cotizacion"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="forgot-password"
+                                  <option hidden key={0} value="0">
+                                    Seleccione una divisa
+                                  </option>
+                                  <option
+                                    className="btn-option"
+                                    value="1"
+                                    disabled={valorDolar === 0}
+                                  >
+                                    Dólar
+                                  </option>
+                                  <option className="btn-option" value="2">
+                                    Peso
+                                  </option>
+                                </select>
+                              </div>
+                              <div
+                                className="form-group-input divisa-input establecer-cotizacion-div"
+                                hidden={valorDolar > 0}
                               >
-                                Establecer Cotización Dólar
-                              </Link>
-                            </div>
-                          </>
-                        )}
+                                <Link
+                                  to="/administrar-cotizacion"
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="forgot-password"
+                                >
+                                  Establecer Cotización Dólar
+                                </Link>
+                              </div>
+                            </>
+                          )}
 
                         {divisa !== "" &&
                           (tipoPrecioMinorista !== "Manual" ||
-                            tipoPrecioMayorista !== "Manual") && (
+                            tipoPrecioMayorista !== "Manual") &&
+                          (rolUsuario === "Supervisor" ||
+                            rolUsuario === "SuperAdmin") && (
                             <>
                               <label className="label">Costo:</label>
                               <div className="form-group-input desc-input">
@@ -1483,139 +1559,165 @@ function ProductManager() {
                             </>
                           )}
 
-                        <label className="label selects" htmlFor="tiposPrecio">
-                          Tipo precio minorista:
-                        </label>
-                        <div className="form-group-input tipoPrecioMinorista-input divisa-input">
-                          <span className="input-group-text">
-                            <TypePriceInput className="input-group-svg" />
-                          </span>
-                          <select
-                            className="input"
-                            name="tiposPrecio"
-                            id="tiposPrecio"
-                            value={tipoPrecioMinorista}
-                            onChange={(e) => {
-                              const selectedValue = e.target.value;
-                              setTipoPrecioMinorista(selectedValue);
-
-                              if (selectedValue === "Manual") {
-                                setPorcentajeMinorista(0);
-                              } else if (selectedValue === "Porcentual") {
-                                setPrecioMinorista(0);
-                              }
-
-                              if (
-                                selectedValue === "Manual" &&
-                                tipoPrecioMayorista === "Manual" &&
-                                precio === ""
-                              ) {
-                                setPrecio(0);
-                              }
-                            }}
-                          >
-                            <option hidden key={0} value="0">
-                              Seleccione una tipo de precio minorista
-                            </option>
-                            <option className="btn-option" value="Manual">
-                              Manual (Pesos)
-                            </option>
-                            <option className="btn-option" value="Porcentual">
-                              Porcentual
-                            </option>
-                          </select>
-                        </div>
-
-                        {tipoPrecioMinorista === "Manual" && (
+                        {(rolUsuario === "Supervisor" ||
+                          rolUsuario === "SuperAdmin") && (
                           <>
-                            <label className="label">
-                              Precio Minorista (manual):
+                            <label
+                              className="label selects"
+                              htmlFor="tiposPrecio"
+                            >
+                              Tipo precio minorista:
                             </label>
-                            <div className="form-group-input desc-input">
+                            <div className="form-group-input tipoPrecioMinorista-input divisa-input">
                               <span className="input-group-text">
-                                <PesoInput className="input-group-svg-divisa" />
+                                <TypePriceInput className="input-group-svg" />
                               </span>
-                              <input
-                                type="number"
-                                step="1"
-                                min={0}
+                              <select
                                 className="input"
-                                id="precioMinorista"
-                                value={precioMinorista}
-                                onChange={(event) => {
-                                  setPrecioMinorista(event.target.value);
+                                name="tiposPrecio"
+                                id="tiposPrecio"
+                                value={tipoPrecioMinorista}
+                                onChange={(e) => {
+                                  const selectedValue = e.target.value;
+                                  setTipoPrecioMinorista(selectedValue);
+
+                                  if (selectedValue === "Manual") {
+                                    setPorcentajeMinorista(0);
+                                  } else if (selectedValue === "Porcentual") {
+                                    setPrecioMinorista(0);
+                                  }
+
+                                  if (
+                                    selectedValue === "Manual" &&
+                                    tipoPrecioMayorista === "Manual" &&
+                                    precio === ""
+                                  ) {
+                                    setPrecio(0);
+                                  }
                                 }}
-                              />
+                              >
+                                <option hidden key={0} value="0">
+                                  Seleccione una tipo de precio minorista
+                                </option>
+                                <option className="btn-option" value="Manual">
+                                  Manual (Pesos)
+                                </option>
+                                <option
+                                  className="btn-option"
+                                  value="Porcentual"
+                                >
+                                  Porcentual
+                                </option>
+                              </select>
                             </div>
                           </>
                         )}
 
-                        {tipoPrecioMinorista === "Porcentual" && (
+                        {tipoPrecioMinorista === "Manual" &&
+                          (rolUsuario === "Supervisor" ||
+                            rolUsuario === "SuperAdmin") && (
+                            <>
+                              <label className="label">
+                                Precio Minorista (manual):
+                              </label>
+                              <div className="form-group-input desc-input">
+                                <span className="input-group-text">
+                                  <PesoInput className="input-group-svg-divisa" />
+                                </span>
+                                <input
+                                  type="number"
+                                  step="1"
+                                  min={0}
+                                  className="input"
+                                  id="precioMinorista"
+                                  value={precioMinorista}
+                                  onChange={(event) => {
+                                    setPrecioMinorista(event.target.value);
+                                  }}
+                                />
+                              </div>
+                            </>
+                          )}
+
+                        {tipoPrecioMinorista === "Porcentual" &&
+                          (rolUsuario === "Supervisor" ||
+                            rolUsuario === "SuperAdmin") && (
+                            <>
+                              <label className="label">
+                                Porcentaje de ganancia minorista:
+                              </label>
+                              <div className="form-group-input desc-input">
+                                <span className="input-group-text">
+                                  <PercentageInput className="input-group-svg" />
+                                </span>
+                                <input
+                                  type="number"
+                                  step="1"
+                                  min={0}
+                                  className="input"
+                                  id="porcentajeMinorista"
+                                  value={porcentajeMinorista}
+                                  onChange={(event) => {
+                                    setPorcentajeMinorista(event.target.value);
+                                  }}
+                                />
+                              </div>
+                            </>
+                          )}
+
+                        {(rolUsuario === "Supervisor" ||
+                          rolUsuario === "SuperAdmin") && (
                           <>
-                            <label className="label">
-                              Porcentaje de ganancia minorista:
+                            <label
+                              className="label selects"
+                              htmlFor="tiposPrecio2"
+                            >
+                              Tipo precio mayorista:
                             </label>
-                            <div className="form-group-input desc-input">
+                            <div className="form-group-input tipoPrecioMinorista-input divisa-input">
                               <span className="input-group-text">
-                                <PercentageInput className="input-group-svg" />
+                                <TypePriceInput className="input-group-svg" />
                               </span>
-                              <input
-                                type="number"
-                                step="1"
-                                min={0}
+                              <select
                                 className="input"
-                                id="porcentajeMinorista"
-                                value={porcentajeMinorista}
-                                onChange={(event) => {
-                                  setPorcentajeMinorista(event.target.value);
+                                name="tiposPrecio2"
+                                id="tiposPrecio2"
+                                value={tipoPrecioMayorista}
+                                onChange={(e) => {
+                                  const selectedValue = e.target.value;
+                                  setTipoPrecioMayorista(selectedValue);
+
+                                  if (selectedValue === "Manual") {
+                                    setPorcentajeMayorista(0);
+                                  } else if (selectedValue === "Porcentual") {
+                                    setPrecioMayorista(0);
+                                  }
+
+                                  if (
+                                    selectedValue === "Manual" &&
+                                    tipoPrecioMinorista === "Manual" &&
+                                    precio === ""
+                                  ) {
+                                    setPrecio(0);
+                                  }
                                 }}
-                              />
+                              >
+                                <option hidden key={0} value="0">
+                                  Seleccione una tipo de precio mayorista
+                                </option>
+                                <option className="btn-option" value="Manual">
+                                  Manual (Pesos)
+                                </option>
+                                <option
+                                  className="btn-option"
+                                  value="Porcentual"
+                                >
+                                  Porcentual
+                                </option>
+                              </select>
                             </div>
                           </>
                         )}
-
-                        <label className="label selects" htmlFor="tiposPrecio2">
-                          Tipo precio mayorista:
-                        </label>
-                        <div className="form-group-input tipoPrecioMinorista-input divisa-input">
-                          <span className="input-group-text">
-                            <TypePriceInput className="input-group-svg" />
-                          </span>
-                          <select
-                            className="input"
-                            name="tiposPrecio2"
-                            id="tiposPrecio2"
-                            value={tipoPrecioMayorista}
-                            onChange={(e) => {
-                              const selectedValue = e.target.value;
-                              setTipoPrecioMayorista(selectedValue);
-
-                              if (selectedValue === "Manual") {
-                                setPorcentajeMayorista(0);
-                              } else if (selectedValue === "Porcentual") {
-                                setPrecioMayorista(0);
-                              }
-
-                              if (
-                                selectedValue === "Manual" &&
-                                tipoPrecioMinorista === "Manual" &&
-                                precio === ""
-                              ) {
-                                setPrecio(0);
-                              }
-                            }}
-                          >
-                            <option hidden key={0} value="0">
-                              Seleccione una tipo de precio mayorista
-                            </option>
-                            <option className="btn-option" value="Manual">
-                              Manual (Pesos)
-                            </option>
-                            <option className="btn-option" value="Porcentual">
-                              Porcentual
-                            </option>
-                          </select>
-                        </div>
 
                         {tipoPrecioMayorista === "Manual" && (
                           <>
@@ -1641,51 +1743,55 @@ function ProductManager() {
                           </>
                         )}
 
-                        {tipoPrecioMayorista === "Porcentual" && (
-                          <>
-                            <label className="label">
-                              Porcentaje de ganancia mayorista:
-                            </label>
-                            <div className="form-group-input desc-input">
-                              <span className="input-group-text">
-                                <PercentageInput className="input-group-svg" />
-                              </span>
-                              <input
-                                type="number"
-                                step="1"
-                                min={0}
-                                className="input"
-                                id="porcentajeMayorista"
-                                value={porcentajeMayorista}
-                                onChange={(event) => {
-                                  setPorcentajeMayorista(event.target.value);
-                                }}
-                              />
-                            </div>
-                          </>
-                        )}
+                        {tipoPrecioMayorista === "Porcentual" &&
+                          (rolUsuario === "Supervisor" ||
+                            rolUsuario === "SuperAdmin") && (
+                            <>
+                              <label className="label">
+                                Porcentaje de ganancia mayorista:
+                              </label>
+                              <div className="form-group-input desc-input">
+                                <span className="input-group-text">
+                                  <PercentageInput className="input-group-svg" />
+                                </span>
+                                <input
+                                  type="number"
+                                  step="1"
+                                  min={0}
+                                  className="input"
+                                  id="porcentajeMayorista"
+                                  value={porcentajeMayorista}
+                                  onChange={(event) => {
+                                    setPorcentajeMayorista(event.target.value);
+                                  }}
+                                />
+                              </div>
+                            </>
+                          )}
 
-                        {modalTitle === "Registrar Producto" && (
-                          <>
-                            <label className="label">Stock:</label>
-                            <div className="form-group-input desc-input">
-                              <span className="input-group-text">
-                                <StockInput className="input-group-svg" />
-                              </span>
-                              <input
-                                type="number"
-                                step="1"
-                                min={0}
-                                className="input"
-                                id="stock"
-                                value={stock}
-                                onChange={(event) => {
-                                  setStock(event.target.value);
-                                }}
-                              />
-                            </div>
-                          </>
-                        )}
+                        {modalTitle === "Registrar Producto" &&
+                          (rolUsuario === "Supervisor" ||
+                            rolUsuario === "SuperAdmin") && (
+                            <>
+                              <label className="label">Stock:</label>
+                              <div className="form-group-input desc-input">
+                                <span className="input-group-text">
+                                  <StockInput className="input-group-svg" />
+                                </span>
+                                <input
+                                  type="number"
+                                  step="1"
+                                  min={0}
+                                  className="input"
+                                  id="stock"
+                                  value={stock}
+                                  onChange={(event) => {
+                                    setStock(event.target.value);
+                                  }}
+                                />
+                              </div>
+                            </>
+                          )}
 
                         <label className="label selects" htmlFor="categorias">
                           Categoria:
@@ -1717,19 +1823,27 @@ function ProductManager() {
                         </div>
                       </div>
 
-                      <div className="form-group oculto">
-                        <label className="label">Ocultar</label>
-                        <input
-                          type="checkbox"
-                          className="form-check-input tick"
-                          id="ocultar"
-                          checked={ocultar}
-                          onChange={() => {
-                            setOcultar(checkbox.checked);
-                          }}
-                        />
-                        <label htmlFor="ocultar" className="lbl-switch"></label>
-                      </div>
+                      {(rolUsuario === "Supervisor" ||
+                        rolUsuario === "SuperAdmin") && (
+                        <>
+                          <div className="form-group oculto">
+                            <label className="label">Ocultar</label>
+                            <input
+                              type="checkbox"
+                              className="form-check-input tick"
+                              id="ocultar"
+                              checked={ocultar}
+                              onChange={() => {
+                                setOcultar(checkbox.checked);
+                              }}
+                            />
+                            <label
+                              htmlFor="ocultar"
+                              className="lbl-switch"
+                            ></label>
+                          </div>
+                        </>
+                      )}
 
                       <div className="form-group">
                         <label className="label">Imagen:</label>
@@ -2397,12 +2511,18 @@ function ProductManager() {
                 <th className="table-title" scope="col">
                   Descripción
                 </th>
-                <th className="table-title" scope="col">
-                  Divisa
-                </th>
-                <th className="table-title" scope="col">
-                  Costo
-                </th>
+                {(rolUsuario === "Supervisor" ||
+                  rolUsuario === "SuperAdmin") && (
+                  <th className="table-title" scope="col">
+                    Divisa
+                  </th>
+                )}
+                {(rolUsuario === "Supervisor" ||
+                  rolUsuario === "SuperAdmin") && (
+                  <th className="table-title" scope="col">
+                    Costo
+                  </th>
+                )}
 
                 <th className="table-title porc-text" scope="col">
                   <div className="porc-btn-container">
@@ -2414,7 +2534,7 @@ function ProductManager() {
                     >
                       <Page className="edit2" />
                     </Link>
-                    % Minorista
+                    {rolUsuario === "Vendedor" ? "$ Minorista" : "% Minorista"}
                   </div>
                 </th>
 
@@ -2428,7 +2548,7 @@ function ProductManager() {
                     >
                       <Page className="edit2" />
                     </Link>
-                    % Mayorista
+                    {rolUsuario === "Vendedor" ? "$ Mayorista" : "% Mayorista"}
                   </div>
                 </th>
 
@@ -2457,8 +2577,12 @@ function ProductManager() {
                     <tr>
                       <th
                         className={
-                          product.stockTransitorio === 0
-                            ? "zero-stock"
+                          product.ocultar && product.stockTransitorio === 0
+                            ? "zero-stock-hidden table-name"
+                            : product.ocultar
+                            ? "hidden-product table-name"
+                            : product.stockTransitorio === 0
+                            ? "zero-stock table-name"
                             : "table-name"
                         }
                         scope="row"
@@ -2467,8 +2591,12 @@ function ProductManager() {
                       </th>
                       <td
                         className={
-                          product.stockTransitorio === 0
-                            ? "zero-stock"
+                          product.ocultar && product.stockTransitorio === 0
+                            ? "zero-stock-hidden table-name"
+                            : product.ocultar
+                            ? "hidden-product table-name"
+                            : product.stockTransitorio === 0
+                            ? "zero-stock table-name"
                             : "table-name"
                         }
                       >
@@ -2476,8 +2604,12 @@ function ProductManager() {
                       </td>
                       <td
                         className={
-                          product.stockTransitorio === 0
-                            ? "zero-stock"
+                          product.ocultar && product.stockTransitorio === 0
+                            ? "zero-stock-hidden table-name"
+                            : product.ocultar
+                            ? "hidden-product table-name"
+                            : product.stockTransitorio === 0
+                            ? "zero-stock table-name"
                             : "table-name"
                         }
                       >
@@ -2485,65 +2617,122 @@ function ProductManager() {
                       </td>
                       <td
                         className={
-                          product.stockTransitorio === 0
-                            ? "zero-stock"
+                          product.ocultar && product.stockTransitorio === 0
+                            ? "zero-stock-hidden table-overflow table-name"
+                            : product.ocultar
+                            ? "hidden-product table-overflow table-name"
+                            : product.stockTransitorio === 0
+                            ? "zero-stock table-overflow table-name"
                             : "table-name table-overflow"
                         }
                       >
                         {product.descripcion}
                       </td>
                       {/* <td className={product.stockTransitorio === 0 ? "zero-stock" : "table-name"}>{product.divisa}</td> */}
-                      <td
-                        className={
-                          product.stockTransitorio === 0
-                            ? "zero-stock"
-                            : "table-name"
-                        }
-                      >
-                        {/* {(tipoPrecioMinorista !== "Manual" || tipoPrecioMayorista !== "Manual") && product.divisa === "Peso" ? ( */}
-                        {product.divisa === "Peso" ||
-                        (product.precioMinorista !== 0 &&
-                          product.precioMayorista !== 0) ? (
-                          <PesoInput className="input-group-svg-divisa-big" />
-                        ) : product.divisa == "Dólar" ? (
-                          <DolarInput className="input-group-svg-divisa-big" />
-                        ) : (
-                          <div>No hay SVG disponible</div>
-                        )}
-                      </td>
 
+                      {(rolUsuario === "Supervisor" ||
+                        rolUsuario === "SuperAdmin") && (
+                        <td
+                          className={
+                            product.ocultar && product.stockTransitorio === 0
+                              ? "zero-stock-hidden table-name"
+                              : product.ocultar
+                              ? "hidden-product table-name"
+                              : product.stockTransitorio === 0
+                              ? "zero-stock table-name"
+                              : "table-name"
+                          }
+                        >
+                          {/* {(tipoPrecioMinorista !== "Manual" || tipoPrecioMayorista !== "Manual") && product.divisa === "Peso" ? ( */}
+                          {product.divisa === "Peso" ||
+                          (product.precioMinorista !== 0 &&
+                            product.precioMayorista !== 0) ? (
+                            <PesoInput className="input-group-svg-divisa-big" />
+                          ) : product.divisa == "Dólar" ? (
+                            <DolarInput className="input-group-svg-divisa-big" />
+                          ) : (
+                            <div>No hay SVG disponible</div>
+                          )}
+                        </td>
+                      )}
+
+                      {(rolUsuario === "Supervisor" ||
+                        rolUsuario === "SuperAdmin") && (
+                        <td
+                          className={
+                            product.ocultar && product.stockTransitorio === 0
+                              ? "zero-stock-hidden table-name"
+                              : product.ocultar
+                              ? "hidden-product table-name"
+                              : product.stockTransitorio === 0
+                              ? "zero-stock table-name"
+                              : "table-name"
+                          }
+                        >
+                          {/* Condición para verificar si tipoPrecioMinorista o tipoPrecioMayorista no son "Manual" */}
+                          {product.precioMinorista !== 0 &&
+                          product.precioMayorista !== 0
+                            ? "-"
+                            : `$${product.precio.toLocaleString("es-ES", {
+                              minimumFractionDigits: 0,
+                              maximumFractionDigits: 2,
+                            })
+                            .replace(",", ".").replace(/\B(?=(\d{3})+(?!\d))/g, ".")}`}
+                        </td>
+                      )}
                       <td
                         className={
-                          product.stockTransitorio === 0
-                            ? "zero-stock"
-                            : "table-name"
-                        }
-                      >
-                        {/* Condición para verificar si tipoPrecioMinorista o tipoPrecioMayorista no son "Manual" */}
-                        {product.precioMinorista !== 0 &&
-                        product.precioMayorista !== 0
-                          ? "-"
-                          : `$${product.precio.toLocaleString()}`}
-                      </td>
-                      <td
-                        className={
-                          product.stockTransitorio === 0
-                            ? "zero-stock"
+                          product.ocultar && product.stockTransitorio === 0
+                            ? "zero-stock-hidden table-name"
+                            : product.ocultar
+                            ? "hidden-product table-name"
+                            : product.stockTransitorio === 0
+                            ? "zero-stock table-name"
                             : "table-name"
                         }
                       >
                         {product.precioMinorista > 0 ? (
                           <div>
-                            <PesoInput className="input-group-svg-divisa-big2" />
-                            ${product.precioMinorista.toLocaleString()} (manual)
+                            {rolUsuario === "Supervisor" ||
+                            rolUsuario === "SuperAdmin" ? (
+                              <>
+                                <PesoInput className="input-group-svg-divisa-big2" />
+                                ${product.precioMinorista.toLocaleString("es-ES", {
+                                      minimumFractionDigits: 0,
+                                      maximumFractionDigits: 2,
+                                    })
+                                    .replace(",", ".").replace(/\B(?=(\d{3})+(?!\d))/g, ".")}{" "}
+                                (manual)
+                              </>
+                            ) : (
+                              <>${product.precioMinorista.toLocaleString("es-ES", {
+                                minimumFractionDigits: 0,
+                                maximumFractionDigits: 2,
+                              })
+                              .replace(",", ".").replace(/\B(?=(\d{3})+(?!\d))/g, ".")}</>
+                            )}
                           </div>
                         ) : product.porcentajeMinorista > 0 ? (
                           <div>
                             {product.divisa === "Peso" ? (
                               <div>
-                                {product.porcentajeMinorista.toLocaleString()}%
-                                <br />
-                                <p className="precio-pesos">
+                                {(rolUsuario === "Supervisor" ||
+                                  rolUsuario === "SuperAdmin") && (
+                                  <>
+                                    {product.porcentajeMinorista.toLocaleString()}
+                                    %
+                                    <br />
+                                  </>
+                                )}
+
+                                <p
+                                  className={
+                                    rolUsuario === "Supervisor" ||
+                                    rolUsuario === "SuperAdmin"
+                                      ? "precio-pesos"
+                                      : ""
+                                  }
+                                >
                                   $
                                   {(
                                     Math.round(
@@ -2553,18 +2742,31 @@ function ProductManager() {
                                         50
                                     ) * 50
                                   )
-                                    .toLocaleString("en-US", {
+                                    .toLocaleString("es-ES", {
                                       minimumFractionDigits: 0,
                                       maximumFractionDigits: 2,
                                     })
-                                    .replace(",", ".")}
+                                    .replace(",", ".").replace(/\B(?=(\d{3})+(?!\d))/g, ".")}
                                 </p>
                               </div>
                             ) : product.divisa == "Dólar" ? (
                               <div>
-                                {product.porcentajeMinorista.toLocaleString()}%
-                                <br />
-                                <p className="precio-pesos">
+                                {(rolUsuario === "Supervisor" ||
+                                  rolUsuario === "SuperAdmin") && (
+                                  <>
+                                    {product.porcentajeMinorista.toLocaleString()}
+                                    %
+                                    <br />
+                                  </>
+                                )}
+                                <p
+                                  className={
+                                    rolUsuario === "Supervisor" ||
+                                    rolUsuario === "SuperAdmin"
+                                      ? "precio-pesos"
+                                      : ""
+                                  }
+                                >
                                   $
                                   {(
                                     Math.round(
@@ -2575,11 +2777,11 @@ function ProductManager() {
                                         50
                                     ) * 50
                                   )
-                                    .toLocaleString("en-US", {
+                                    .toLocaleString("es-ES", {
                                       minimumFractionDigits: 0,
                                       maximumFractionDigits: 2,
                                     })
-                                    .replace(",", ".")}
+                                    .replace(",", ".").replace(/\B(?=(\d{3})+(?!\d))/g, ".")}
                                 </p>
                               </div>
                             ) : (
@@ -2593,23 +2795,56 @@ function ProductManager() {
 
                       <td
                         className={
-                          product.stockTransitorio === 0
-                            ? "zero-stock"
+                          product.ocultar && product.stockTransitorio === 0
+                            ? "zero-stock-hidden table-name"
+                            : product.ocultar
+                            ? "hidden-product table-name"
+                            : product.stockTransitorio === 0
+                            ? "zero-stock table-name"
                             : "table-name"
                         }
                       >
                         {product.precioMayorista > 0 ? (
                           <div>
-                            <PesoInput className="input-group-svg-divisa-big2" />
-                            ${product.precioMayorista.toLocaleString()} (manual)
+                            {rolUsuario === "Supervisor" ||
+                            rolUsuario === "SuperAdmin" ? (
+                              <>
+                                <PesoInput className="input-group-svg-divisa-big2" />
+                                ${product.precioMinorista.toLocaleString("es-ES", {
+                                      minimumFractionDigits: 0,
+                                      maximumFractionDigits: 2,
+                                    })
+                                    .replace(",", ".").replace(/\B(?=(\d{3})+(?!\d))/g, ".")}{" "}
+                                (manual)
+                              </>
+                            ) : (
+                              <>${product.precioMinorista.toLocaleString("es-ES", {
+                                minimumFractionDigits: 0,
+                                maximumFractionDigits: 2,
+                              })
+                              .replace(",", ".").replace(/\B(?=(\d{3})+(?!\d))/g, ".")}</>
+                            )}
                           </div>
                         ) : product.porcentajeMayorista > 0 ? (
                           <div>
                             {product.divisa === "Peso" ? (
                               <div>
-                                {product.porcentajeMayorista.toLocaleString()}%
-                                <br />
-                                <p className="precio-pesos">
+                                {(rolUsuario === "Supervisor" ||
+                                  rolUsuario === "SuperAdmin") && (
+                                  <>
+                                    {product.porcentajeMayorista.toLocaleString()}
+                                    %
+                                    <br />
+                                  </>
+                                )}
+                                <p
+                                  className={
+                                    rolUsuario === "Supervisor" ||
+                                    rolUsuario === "SuperAdmin"
+                                      ? "precio-pesos"
+                                      : ""
+                                  }
+                                >
                                   $
                                   {(
                                     Math.round(
@@ -2619,18 +2854,31 @@ function ProductManager() {
                                         50
                                     ) * 50
                                   )
-                                    .toLocaleString("en-US", {
+                                    .toLocaleString("es-ES", {
                                       minimumFractionDigits: 0,
                                       maximumFractionDigits: 2,
                                     })
-                                    .replace(",", ".")}
+                                    .replace(",", ".").replace(/\B(?=(\d{3})+(?!\d))/g, ".")}
                                 </p>
                               </div>
                             ) : product.divisa == "Dólar" ? (
                               <div>
-                                {product.porcentajeMayorista.toLocaleString()}%
-                                <br />
-                                <p className="precio-pesos">
+                                {(rolUsuario === "Supervisor" ||
+                                  rolUsuario === "SuperAdmin") && (
+                                  <>
+                                    {product.porcentajeMayorista.toLocaleString()}
+                                    %
+                                    <br />
+                                  </>
+                                )}
+                                <p
+                                  className={
+                                    rolUsuario === "Supervisor" ||
+                                    rolUsuario === "SuperAdmin"
+                                      ? "precio-pesos"
+                                      : ""
+                                  }
+                                >
                                   $
                                   {(
                                     Math.round(
@@ -2641,11 +2889,11 @@ function ProductManager() {
                                         50
                                     ) * 50
                                   )
-                                    .toLocaleString("en-US", {
+                                    .toLocaleString("es-ES", {
                                       minimumFractionDigits: 0,
                                       maximumFractionDigits: 2,
                                     })
-                                    .replace(",", ".")}
+                                    .replace(",", ".").replace(/\B(?=(\d{3})+(?!\d))/g, ".")}
                                 </p>
                               </div>
                             ) : (
@@ -2658,39 +2906,48 @@ function ProductManager() {
                       </td>
                       <td
                         className={
-                          product.stockTransitorio === 0
-                            ? "zero-stock stock-div"
+                          product.ocultar && product.stockTransitorio === 0
+                            ? "zero-stock-hidden stock-div table-name"
+                            : product.ocultar
+                            ? "hidden-product stock-div table-name"
+                            : product.stockTransitorio === 0
+                            ? "zero-stock stock-div table-name"
                             : "table-name stock-div"
                         }
                       >
                         <div className="stock-btns">
-                          <button
-                            type="button"
-                            className="btn btn-danger btn-delete3"
-                            data-bs-toggle="modal"
-                            data-bs-target="#modalQuitar"
-                            onClick={() => {
-                              RetrieveProductInputs(product);
-                              setOriginalStock(product.stockTransitorio);
-                            }}
-                          >
-                            <Quitar className="edit2" />
-                          </button>
+                          {(rolUsuario === "Supervisor" ||
+                            rolUsuario === "SuperAdmin") && (
+                            <button
+                              type="button"
+                              className="btn btn-danger btn-delete3"
+                              data-bs-toggle="modal"
+                              data-bs-target="#modalQuitar"
+                              onClick={() => {
+                                RetrieveProductInputs(product);
+                                setOriginalStock(product.stockTransitorio);
+                              }}
+                            >
+                              <Quitar className="edit2" />
+                            </button>
+                          )}
                           {product.stockTransitorio}
-                          <button
-                            type="button"
-                            className="btn btn-success btn-add2"
-                            data-bs-toggle="modal"
-                            data-bs-target="#modalAgregar"
-                            onClick={() => {
-                              RetrieveProductInputs(product);
-                              setOriginalStock(product.stockTransitorio);
-                            }}
-                          >
-                            <Agregar className="edit2" />
-                          </button>
+                          {(rolUsuario === "Supervisor" ||
+                            rolUsuario === "SuperAdmin") && (
+                            <button
+                              type="button"
+                              className="btn btn-success btn-add2"
+                              data-bs-toggle="modal"
+                              data-bs-target="#modalAgregar"
+                              onClick={() => {
+                                RetrieveProductInputs(product);
+                                setOriginalStock(product.stockTransitorio);
+                              }}
+                            >
+                              <Agregar className="edit2" />
+                            </button>
+                          )}
                         </div>
-
                         <Link
                           to={`/detalles/${product.idProducto}`}
                           title="Ver detalles"
@@ -2699,11 +2956,23 @@ function ProductManager() {
                         >
                           <Stock className="svg" />
                         </Link>
+                        {product.stock - product.stockTransitorio !== 0 && (
+                          <p className="stock-pendiente">
+                            {product.stock - product.stockTransitorio}{" "}
+                            {product.stock - product.stockTransitorio === 1
+                              ? "Pendiente"
+                              : "Pendientes"}
+                          </p>
+                        )}
                       </td>
                       <td
                         className={
-                          product.stockTransitorio === 0
-                            ? "zero-stock"
+                          product.ocultar && product.stockTransitorio === 0
+                            ? "zero-stock-hidden table-name"
+                            : product.ocultar
+                            ? "hidden-product table-name"
+                            : product.stockTransitorio === 0
+                            ? "zero-stock table-name"
                             : "table-name"
                         }
                       >
@@ -2712,8 +2981,12 @@ function ProductManager() {
                       {product.ocultar ? (
                         <td
                           className={
-                            product.stockTransitorio === 0
-                              ? "zero-stock"
+                            product.ocultar && product.stockTransitorio === 0
+                              ? "zero-stock-hidden table-name"
+                              : product.ocultar
+                              ? "hidden-product table-name"
+                              : product.stockTransitorio === 0
+                              ? "zero-stock table-name"
                               : "table-name"
                           }
                         >
@@ -2722,8 +2995,12 @@ function ProductManager() {
                       ) : (
                         <td
                           className={
-                            product.stockTransitorio === 0
-                              ? "zero-stock"
+                            product.ocultar && product.stockTransitorio === 0
+                              ? "zero-stock-hidden table-name"
+                              : product.ocultar
+                              ? "hidden-product table-name"
+                              : product.stockTransitorio === 0
+                              ? "zero-stock table-name"
                               : "table-name"
                           }
                         >
@@ -2732,8 +3009,12 @@ function ProductManager() {
                       )}
                       <td
                         className={
-                          product.stockTransitorio === 0
-                            ? "zero-stock"
+                          product.ocultar && product.stockTransitorio === 0
+                            ? "zero-stock-hidden table-name"
+                            : product.ocultar
+                            ? "hidden-product table-name"
+                            : product.stockTransitorio === 0
+                            ? "zero-stock table-name"
                             : "table-name"
                         }
                       >
@@ -2758,8 +3039,12 @@ function ProductManager() {
 
                       <td
                         className={
-                          product.stockTransitorio === 0
-                            ? "zero-stock"
+                          product.ocultar && product.stockTransitorio === 0
+                            ? "zero-stock-hidden table-name"
+                            : product.ocultar
+                            ? "hidden-product table-name"
+                            : product.stockTransitorio === 0
+                            ? "zero-stock table-name"
                             : "table-name"
                         }
                       >
@@ -2776,36 +3061,39 @@ function ProductManager() {
                           <Edit className="edit" />
                         </button>
 
-                        <button
-                          type="button"
-                          className="btn btn-danger btn-delete"
-                          onClick={() =>
-                            Swal.fire({
-                              title:
-                                "Esta seguro de que desea eliminar el siguiente producto: " +
-                                product.nombre +
-                                "?",
-                              imageUrl: `${product.urlImagen}`,
-                              imageWidth: 200,
-                              imageHeight: 200,
-                              imageAlt: "Producto a eliminar",
-                              text: "Una vez eliminado, no se podra recuperar",
-                              icon: "warning",
-                              showCancelButton: true,
-                              confirmButtonColor: "#F8BB86",
-                              cancelButtonColor: "#6c757d",
-                              confirmButtonText: "Aceptar",
-                              cancelButtonText: "Cancelar",
-                              focusCancel: true,
-                            }).then((result) => {
-                              if (result.isConfirmed) {
-                                DeleteProduct(product.idProducto);
-                              }
-                            })
-                          }
-                        >
-                          <Delete className="delete" />
-                        </button>
+                        {(rolUsuario === "Supervisor" ||
+                          rolUsuario === "SuperAdmin") && (
+                          <button
+                            type="button"
+                            className="btn btn-danger btn-delete"
+                            onClick={() =>
+                              Swal.fire({
+                                title:
+                                  "Esta seguro de que desea eliminar el siguiente producto: " +
+                                  product.nombre +
+                                  "?",
+                                imageUrl: `${product.urlImagen}`,
+                                imageWidth: 200,
+                                imageHeight: 200,
+                                imageAlt: "Producto a eliminar",
+                                text: "Una vez eliminado, no se podra recuperar",
+                                icon: "warning",
+                                showCancelButton: true,
+                                confirmButtonColor: "#F8BB86",
+                                cancelButtonColor: "#6c757d",
+                                confirmButtonText: "Aceptar",
+                                cancelButtonText: "Cancelar",
+                                focusCancel: true,
+                              }).then((result) => {
+                                if (result.isConfirmed) {
+                                  DeleteProduct(product.idProducto);
+                                }
+                              })
+                            }
+                          >
+                            <Delete className="delete" />
+                          </button>
+                        )}
                       </td>
                     </tr>
                   </tbody>
@@ -2839,24 +3127,36 @@ function ProductManager() {
                 <th className="table-title" scope="col">
                   Descripción
                 </th>
+                {(rolUsuario === "Supervisor" ||
+                  rolUsuario === "SuperAdmin") && (
+                  <th className="table-title" scope="col">
+                    Divisa
+                  </th>
+                )}
+                {(rolUsuario === "Supervisor" ||
+                  rolUsuario === "SuperAdmin") && (
+                  <th className="table-title" scope="col">
+                    Costo
+                  </th>
+                )}
                 <th className="table-title" scope="col">
-                  Divisa
+                  {rolUsuario === "Vendedor" ? "$ Minorista" : "% Minorista"}
                 </th>
+                {(rolUsuario === "Supervisor" ||
+                  rolUsuario === "SuperAdmin") && (
+                  <th className="table-title" scope="col">
+                    Precio Minorista (Manual)
+                  </th>
+                )}
                 <th className="table-title" scope="col">
-                  Costo
+                  {rolUsuario === "Vendedor" ? "$ Mayorista" : "% Mayorista"}
                 </th>
-                <th className="table-title" scope="col">
-                  % Minorista
-                </th>
-                <th className="table-title" scope="col">
-                  Precio Minorista (Manual)
-                </th>
-                <th className="table-title" scope="col">
-                  % Mayorista
-                </th>
-                <th className="table-title" scope="col">
-                  Precio Mayorista (Manual)
-                </th>
+                {(rolUsuario === "Supervisor" ||
+                  rolUsuario === "SuperAdmin") && (
+                  <th className="table-title" scope="col">
+                    Precio Mayorista (Manual)
+                  </th>
+                )}
                 <th className="table-title" scope="col">
                   Stock
                 </th>
@@ -2874,32 +3174,149 @@ function ProductManager() {
                 return (
                   <tbody key={1 + product.idProducto}>
                     <tr>
-                      <td className="table-name">{product.idProducto} </td>
-                      <td className="table-name">{product.nombre}</td>
-                      <td className="table-name">{product.descripcion}</td>
-                      <td className="table-name">{product.divisa}</td>
-                      <td className="table-name">
-                        {product.precio.toLocaleString()}
-                      </td>
-                      <td className="table-name">
-                        {product.porcentajeMinorista.toLocaleString()}
-                      </td>
-                      <td className="table-name">
-                        {product.precioMinorista.toLocaleString()}
-                      </td>
-                      <td className="table-name">
-                        {product.porcentajeMayorista.toLocaleString()}
-                      </td>
-                      <td className="table-name">
-                        {product.precioMayorista.toLocaleString()}
-                      </td>
-                      <td className="table-name">{product.stockTransitorio}</td>
-                      <td className="table-name">{product.nombreCategoria}</td>
-                      {product.ocultar ? (
-                        <td className="table-name">Si</td>
-                      ) : (
-                        <td className="table-name">No</td>
+                      <td>{product.idProducto} </td>
+                      <td>{product.nombre}</td>
+                      <td>{product.descripcion}</td>
+                      {(rolUsuario === "Supervisor" ||
+                        rolUsuario === "SuperAdmin") && (
+                        <td>{product.divisa}</td>
                       )}
+
+                      {rolUsuario === "Vendedor" && (
+                        <td>
+                          {product.precioMinorista > 0 ? (
+                            <div>
+                              <>{product.precioMinorista.toLocaleString()}</>
+                            </div>
+                          ) : product.porcentajeMinorista > 0 ? (
+                            <div>
+                              {product.divisa === "Peso" ? (
+                                <div>
+                                  <p>
+                                    {(
+                                      Math.round(
+                                        (product.precio *
+                                          (1 +
+                                            product.porcentajeMinorista /
+                                              100)) /
+                                          50
+                                      ) * 50
+                                    )
+                                      .toLocaleString("es-ES", {
+                                        minimumFractionDigits: 0,
+                                        maximumFractionDigits: 2,
+                                      })
+                                      .replace(",", ".").replace(/\B(?=(\d{3})+(?!\d))/g, ".")}
+                                  </p>
+                                </div>
+                              ) : product.divisa == "Dólar" ? (
+                                <div>
+                                  <p>
+                                    {(
+                                      Math.round(
+                                        (product.precio *
+                                          (1 +
+                                            product.porcentajeMinorista / 100) *
+                                          valorDolar) /
+                                          50
+                                      ) * 50
+                                    )
+                                      .toLocaleString("es-ES", {
+                                        minimumFractionDigits: 0,
+                                        maximumFractionDigits: 2,
+                                      })
+                                      .replace(",", ".").replace(/\B(?=(\d{3})+(?!\d))/g, ".")}
+                                  </p>
+                                </div>
+                              ) : (
+                                <div>-</div>
+                              )}
+                            </div>
+                          ) : (
+                            <div>-</div>
+                          )}
+                        </td>
+                      )}
+
+                      {rolUsuario === "Vendedor" && (
+                        <td>
+                          {product.precioMayorista > 0 ? (
+                            <div>
+                              <>{product.precioMinorista.toLocaleString()}</>
+                            </div>
+                          ) : product.porcentajeMayorista > 0 ? (
+                            <div>
+                              {product.divisa === "Peso" ? (
+                                <div>
+                                  <p>
+                                    {(
+                                      Math.round(
+                                        (product.precio *
+                                          (1 +
+                                            product.porcentajeMayorista /
+                                              100)) /
+                                          50
+                                      ) * 50
+                                    )
+                                      .toLocaleString("es-ES", {
+                                        minimumFractionDigits: 0,
+                                        maximumFractionDigits: 2,
+                                      })
+                                      .replace(",", ".").replace(/\B(?=(\d{3})+(?!\d))/g, ".")}
+                                  </p>
+                                </div>
+                              ) : product.divisa == "Dólar" ? (
+                                <div>
+                                  <p>
+                                    {(
+                                      Math.round(
+                                        (product.precio *
+                                          (1 +
+                                            product.porcentajeMayorista / 100) *
+                                          valorDolar) /
+                                          50
+                                      ) * 50
+                                    )
+                                      .toLocaleString("es-ES", {
+                                        minimumFractionDigits: 0,
+                                        maximumFractionDigits: 2,
+                                      })
+                                      .replace(",", ".").replace(/\B(?=(\d{3})+(?!\d))/g, ".")}
+                                  </p>
+                                </div>
+                              ) : (
+                                <div>-</div>
+                              )}
+                            </div>
+                          ) : (
+                            <div>-</div>
+                          )}
+                        </td>
+                      )}
+
+                      {(rolUsuario === "Supervisor" ||
+                        rolUsuario === "SuperAdmin") && (
+                        <td>{product.precio.toLocaleString()}</td>
+                      )}
+                      {(rolUsuario === "Supervisor" ||
+                        rolUsuario === "SuperAdmin") && (
+                        <td>{product.porcentajeMinorista.toLocaleString()}</td>
+                      )}
+                      {(rolUsuario === "Supervisor" ||
+                        rolUsuario === "SuperAdmin") && (
+                        <td>{product.precioMinorista.toLocaleString()}</td>
+                      )}
+                      {(rolUsuario === "Supervisor" ||
+                        rolUsuario === "SuperAdmin") && (
+                        <td>{product.porcentajeMayorista.toLocaleString()}</td>
+                      )}
+                      {(rolUsuario === "Supervisor" ||
+                        rolUsuario === "SuperAdmin") && (
+                        <td>{product.precioMayorista.toLocaleString()}</td>
+                      )}
+                      <td>{product.stockTransitorio}</td>
+                      <td>{product.nombreCategoria}</td>
+                      {product.ocultar ? <td>Si</td> : <td>No</td>}
                     </tr>
                   </tbody>
                 );
@@ -2907,9 +3324,7 @@ function ProductManager() {
             ) : (
               <tbody>
                 <tr>
-                  <td className="table-name" colSpan={11}>
-                    Sin registros
-                  </td>
+                  <td colSpan={11}>Sin registros</td>
                 </tr>
               </tbody>
             )}

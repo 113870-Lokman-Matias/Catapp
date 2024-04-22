@@ -8,7 +8,6 @@ namespace API.Services.StockServices.Commands.CreateDetalleStockCommand
     public string Accion { get; set; } = null!;
     public int Cantidad { get; set; }
     public string? Motivo { get; set; }
-    public string Modificador { get; set; } = null!;
     public int IdProducto { get; set; }
   }
 }
