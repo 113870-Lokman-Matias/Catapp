@@ -10,7 +10,7 @@ import WhatsApp from "./components/Whatsapp/Whatsapp";
 import ScrollToTopBtn from "./components/ScrollToTopBtn/ScrollToTopBtn";
 import Footer from "./components/Footer/Footer";
 
-import Catalogo from "./pages/frontOffice/Catalogo/Catalogo";
+import Catalogue from "./pages/frontOffice/Catalogue/Catalogue";
 
 import Login from "./pages/frontOffice/Login/Login";
 import CreateUser from "./pages/frontOffice/CreateUser/CreateUser";
@@ -21,8 +21,9 @@ import UserManager from "./pages/backOffice/managers/UserManager/UserManager";
 import CategoryManager from "./pages/backOffice/managers/CategoryManager/CategoryManager";
 import DollarManager from "./pages/backOffice/managers/DollarManager/DollarManager";
 import ProductManager from "./pages/backOffice/managers/ProductManager/ProductManager";
-import Detalle from './pages/backOffice/Detalle/Detalle';
+import DetailManager from "./pages/backOffice/managers/DetailManager/DetailManager";
 import ShipmentManager from "./pages/backOffice/managers/ShipmentManager/ShipmentManager";
+import OrderManager from "./pages/backOffice/managers/OrderManager/OrderManager";
 
 import { ProtectedRoute } from "./components/ProtectedRoute/ProtectedRoute";
 
@@ -30,12 +31,12 @@ function App() {
   return (
     <BrowserRouter>
       <ScrollToTop />
-      <Header />
+      {(window.location.pathname === "/" ||
+        window.location.pathname === "/catalogo-minorista" ||
+        window.location.pathname === "/catalogo-mayorista") && <Header />}
       <Routes>
-        <Route index element={<Catalogo />} />
-        <Route path="/" element={<Catalogo />} />
-        <Route path="catalogo-minorista" element={<Catalogo />} />
-        <Route path="catalogo-mayorista" element={<Catalogo />} />
+        <Route index element={<Catalogue />} />
+        <Route path="/" element={<Catalogue />} />
 
         <Route path="login" element={<Login />} />
         <Route path="create-user" element={<CreateUser />} />
@@ -50,13 +51,16 @@ function App() {
           <Route path="administrar-categorias" element={<CategoryManager />} />
           <Route path="administrar-cotizacion" element={<DollarManager />} />
           <Route path="administrar-productos" element={<ProductManager />} />
-          <Route path='detalles/:id' element={<Detalle />} />
+          <Route path="detalles/:id" element={<DetailManager />} />
           <Route path="administrar-envio" element={<ShipmentManager />} />
+          <Route path="administrar-pedidos" element={<OrderManager />} />
         </Route>
 
         <Route path="*" element={<NotFound />} />
       </Routes>
-      <Footer />
+      {(window.location.pathname === "/" ||
+        window.location.pathname === "/catalogo-minorista" ||
+        window.location.pathname === "/catalogo-mayorista") && <Footer />}
       {(window.location.pathname === "/" ||
         window.location.pathname === "/catalogo-minorista" ||
         window.location.pathname === "/catalogo-mayorista") && <WhatsApp />}
