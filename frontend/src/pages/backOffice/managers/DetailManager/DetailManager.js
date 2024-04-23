@@ -459,7 +459,7 @@ function DetailManager() {
                 </div>
               </Link>
 
-              <h2 className="title title-product">Detalles de stock</h2>
+              <h2 className="title title-general">Detalles de stock</h2>
             </div>
 
             {details.length > 1 || details.length === 0 ? (

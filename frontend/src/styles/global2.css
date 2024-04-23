@@ -573,22 +573,12 @@ input[type="number"] {
   display: flex;
   align-items: center;
   border: 1px solid #d3d3d3;
+  /* border: 1px solid lightgrey; */
   border-radius: 50px;
   border-top-right-radius: 0;
   border-bottom-right-radius: 0;
   outline: 0;
-  padding: 0 6px;
-  border-right: 0;
-}
-
-.input-group-text3 {
-  display: flex;
-  align-items: center;
-  border: 1px solid #d3d3d3;
-  border-radius: 50px;
-  border-top-right-radius: 0;
-  border-bottom-right-radius: 0;
-  outline: 0;
+  /* outline: none; */
   padding: 0 6px;
   border-right: 0;
 }

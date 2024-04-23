@@ -41,17 +41,6 @@
   margin-bottom: 25px;
 }
 
-.title-header {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
-
-.title-product {
-  margin: 0;
-  text-align: center;
-}
-
 .header-excel {
   width: 33.33%;
   display: flex;
@@ -153,11 +142,6 @@
 }
 
 @media (max-width: 800px) {
-  .title-header {
-    flex-direction: column !important;
-    margin-bottom: 10px;
-  }
-
   .header-excel {
     width: auto;
   }

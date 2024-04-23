@@ -835,7 +835,7 @@ function OrderManager() {
                 </div>
               </Link>
 
-              <h2 className="title title-product">{title}</h2>
+              <h2 className="title title-general">{title}</h2>
 
               {cantidadPedidosPendientes > 0 && !pending && tipo === "" && (
                 <button

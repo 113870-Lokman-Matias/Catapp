@@ -11,6 +11,7 @@ import ScrollToTopBtn from "./components/ScrollToTopBtn/ScrollToTopBtn";
 import Footer from "./components/Footer/Footer";
 
 import Catalogue from "./pages/frontOffice/Catalogue/Catalogue";
+import CatalogueCart from "./pages/frontOffice/CatalogueCart/CatalogueCart";
 
 import Login from "./pages/frontOffice/Login/Login";
 import CreateUser from "./pages/frontOffice/CreateUser/CreateUser";
@@ -37,6 +38,8 @@ function App() {
       <Routes>
         <Route index element={<Catalogue />} />
         <Route path="/" element={<Catalogue />} />
+        <Route path="catalogo-minorista" element={<CatalogueCart />} />
+        <Route path="catalogo-mayorista" element={<CatalogueCart />} />
 
         <Route path="login" element={<Login />} />
         <Route path="create-user" element={<CreateUser />} />

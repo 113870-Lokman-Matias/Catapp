@@ -210,7 +210,7 @@ function ShipmentManager() {
                 </div>
               </Link>
 
-              <h2 className="title title-product">Detalle de Envío</h2>
+              <h2 className="title title-general">Detalle de Envío</h2>
             </div>
           </div>
 
