@@ -711,6 +711,11 @@
   font-weight: 500;
 }
 
+.mercado-pago{
+  color: #009ee3;
+  font-weight: 500;
+}
+
 /* Estilos para la opción 'envio a domicilio' */
 .domicilio {
   color: rgb(255, 169, 169);

@@ -1369,7 +1369,13 @@ function OrderManager() {
                       <td className="table-name">
                         ${order.total.toLocaleString()}
                       </td>
-                      <td className="table-name">{order.abono}</td>
+                      <td
+                        className={`table-name ${
+                          order.abono === "Mercado Pago" ? "mercado-pago" : "table-name"
+                        }`}
+                      >
+                        {order.abono}
+                      </td>
                       <td className="table-name table-overflow">
                         <pre>{order.detalle.split("|").join("\n")}</pre>
                       </td>
