@@ -7,9 +7,9 @@ const LoaderContent = lazy(() => import("./App"));
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
-  <React.StrictMode>
+  // <React.StrictMode>
     <Suspense fallback={<Loader />}>
       <LoaderContent />
     </Suspense>
-  </React.StrictMode>
+  // </React.StrictMode>
 );
