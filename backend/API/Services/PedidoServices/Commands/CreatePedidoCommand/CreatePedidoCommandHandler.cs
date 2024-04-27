@@ -121,8 +121,19 @@ namespace API.Services.PedidoServices.Commands.CreatePedidoCommand
             {
                 pedidoToCreate.IdVendedor = request.IdVendedor; // Asignar el valor normal
             }
+
             pedidoToCreate.Fecha = DateTimeOffset.Now.ToUniversalTime();
-            pedidoToCreate.Verificado = false;
+            // Verificar si el abono es igual a 5 y establecer como verificado
+
+            if (request.IdMetodoPago == 5)
+            {
+                pedidoToCreate.Verificado = true;
+            }
+            else
+            {
+                pedidoToCreate.Verificado = false;
+            }
+
             pedidoToCreate.IdCliente = cliente.IdCliente;
 
             await _context.AddAsync(pedidoToCreate);
@@ -157,14 +168,27 @@ namespace API.Services.PedidoServices.Commands.CreatePedidoCommand
                     IdProducto = detalleDto.IdProducto
                 };
 
-                 _context.DetallesStocks.Add(detalleStock);
+                _context.DetallesStocks.Add(detalleStock);
 
-                // Actualizar el stock transitorio del producto restando la cantidad del detalle
-                var producto = await _context.Productos.FindAsync(detalleDto.IdProducto);
-                if (producto != null)
-                {
-                    producto.StockTransitorio -= detalleDto.Cantidad;
-                    _context.Productos.Update(producto);
+
+                if (request.IdMetodoPago == 5){
+                    // Actualizar el stock transitorio y normal del producto restando la cantidad del detalle
+                    var producto = await _context.Productos.FindAsync(detalleDto.IdProducto);
+                    if (producto != null)
+                    {
+                        producto.StockTransitorio -= detalleDto.Cantidad;
+                        producto.Stock -= detalleDto.Cantidad;
+                        _context.Productos.Update(producto);
+                    }
+                }
+                else {
+                    // Actualizar el stock transitorio del producto restando la cantidad del detalle
+                    var producto = await _context.Productos.FindAsync(detalleDto.IdProducto);
+                    if (producto != null)
+                    {
+                        producto.StockTransitorio -= detalleDto.Cantidad;
+                        _context.Productos.Update(producto);
+                    }
                 }
             }
 
