@@ -3,6 +3,8 @@ import { Helmet } from "react-helmet";
 import $ from "jquery";
 import Swal from "sweetalert2";
 
+import * as signalR from "@microsoft/signalr";
+
 import {
   GetCategoriesMinorista,
   GetCategoriesMayorista,
@@ -93,6 +95,73 @@ const CatalogueCart = () => {
   //#endregion
 
   //#region UseEffect
+  useEffect(() => {
+    const connection = new signalR.HubConnectionBuilder()
+      .withUrl("https://localhost:7207/generalHub")
+      .configureLogging(signalR.LogLevel.Information)
+      .build();
+
+    connection
+      .start()
+      .then(() => {
+        // console.log("Conexión establecida con el servidor SignalR");
+      })
+      .catch((err) => console.error(err.toString()));
+
+    connection.on("MensajeCrudCategoria", async () => {
+      try {
+        if (pathname.includes("mayorista")) {
+          GetCategoriesMayorista(setCategories);
+        } else if (pathname.includes("minorista")) {
+          GetCategoriesMinorista(setCategories);
+        }
+      } catch (error) {
+        console.error("Error al obtener las categorias: " + error);
+      }
+    });
+
+    // connection.on("MensajeCrudProducto", async () => {
+    //   try {
+    //       GetProducts(setOriginalProductsList);
+    //     if (pathname.includes("mayorista")) {
+    //       GetCategoriesMayorista(setCategories);
+    //     } else if (pathname.includes("minorista")) {
+    //       GetCategoriesMinorista(setCategories);
+    //     }
+    //   } catch (error) {
+    //     console.error("Error al obtener los productos: " + error);
+    //   }
+    // });
+
+    connection.on("MensajeUpdateCotizacion", async () => {
+      try {
+        await GetCotizacionDolarUnicamente(setvalorDolar);
+      } catch (error) {
+        console.error("Error al obtener la cotización: " + error);
+      }
+    });
+
+    connection.on("MensajeUpdateCostoEnvio", async () => {
+      try {
+        await GetCostoEnvioUnicamente(setCostoEnvioDomicilio);
+      } catch (error) {
+        console.error("Error al obtener el costo de envío: " + error);
+      }
+    });
+
+    connection.on("MensajeCrudVendedor", async () => {
+      try {
+        await GetUsersSellers(setListaNombresVendedores);
+      } catch (error) {
+        console.error("Error al obtener los vendedores: " + error);
+      }
+    });
+
+    return () => {
+      connection.stop();
+    };
+  }, []);
+
   useEffect(() => {
     if (pathname.includes("mayorista")) {
       setClientType("Mayorista");
@@ -2018,9 +2087,9 @@ const CatalogueCart = () => {
                         >
                           Tarjeta de crédito
                         </option>
-                        <option className="btn-option" value="5">
+                        {/* <option className="btn-option" value="5">
                           Mercado Pago
-                        </option>
+                        </option> */}
                       </select>
                     </div>
 

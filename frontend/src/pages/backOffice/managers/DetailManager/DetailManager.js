@@ -8,6 +8,8 @@ import { useParams } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet";
 
+import * as signalR from "@microsoft/signalr";
+
 import "./DetailManager.css";
 
 //#region SVG'S Imports
@@ -178,6 +180,50 @@ function DetailManager() {
       };
     }
   }, [id, navigate]);
+
+  useEffect(() => {
+    const connection = new signalR.HubConnectionBuilder()
+      .withUrl("https://localhost:7207/GeneralHub")
+      .configureLogging(signalR.LogLevel.Information)
+      .build();
+
+    connection
+      .start()
+      .then(() => {
+        // console.log("Conexión establecida con el servidor SignalR");
+      })
+      .catch((err) => console.error(err.toString()));
+
+    connection.on("MensajeCreateDetalleStock", async () => {
+      try {
+        fetchDetails();
+        fetchProduct();
+      } catch (error) {
+        console.error("Error al obtener la cotización: " + error);
+      }
+    });
+
+    //  connection.on("MensajeActualizacionProducto", async () => {
+    //   try {
+    //     fetchProduct();
+    //   } catch (error) {
+    //     console.error("Error al obtener los productos: " + error);
+    //   }
+    // });
+
+    connection.on("MensajeCrudPedido", async () => {
+      try {
+        fetchDetails();
+        fetchProduct();
+      } catch (error) {
+        console.error("Error al obtener la cotización: " + error);
+      }
+    });
+
+    return () => {
+      connection.stop();
+    };
+  }, []);
   //#endregion
 
   //#region Función para actualizar el stock según la cantidad de unidades a quitar
@@ -374,7 +420,7 @@ function DetailManager() {
                   ? motivo.trim()
                   : "-"
                 ).slice(1),
-              idProducto: id
+              idProducto: id,
             },
             headers
           ),

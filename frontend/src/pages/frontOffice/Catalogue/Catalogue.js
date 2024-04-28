@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Helmet } from "react-helmet";
 import Swal from "sweetalert2";
 
+import * as signalR from "@microsoft/signalr";
+
 import { GetCategories } from "../../../services/CategoryService";
 import {
   GetProductsByCategory,
@@ -66,6 +68,41 @@ const Catalogue = () => {
       }
     })();
   }, [query]);
+
+  useEffect(() => {
+    const connection = new signalR.HubConnectionBuilder()
+      .withUrl("https://localhost:7207/generalHub")
+      .configureLogging(signalR.LogLevel.Information)
+      .build();
+
+    connection
+      .start()
+      .then(() => {
+        // console.log("Conexión establecida con el servidor SignalR");
+      })
+      .catch((err) => console.error(err.toString()));
+
+    connection.on("MensajeCrudCategoria", async () => {
+      try {
+        GetCategories(setCategories);
+      } catch (error) {
+        console.error("Error al obtener las categorias: " + error);
+      }
+    });
+
+    // connection.on("MensajeCrudProducto", async () => {
+    //   try {
+    //      GetProducts(setOriginalProductsList);
+    //      GetCategories(setCategories);
+    //   } catch (error) {
+    //     console.error("Error al obtener los productos: " + error);
+    //   }
+    // });
+
+    return () => {
+      connection.stop();
+    };
+  }, []);
   //#endregion
 
   //#region Funcion para filtrar los productos por query

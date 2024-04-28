@@ -3,6 +3,9 @@ import { ReactComponent as Filter } from "../../../../assets/svgs/filter.svg";
 import { ReactComponent as Lupa } from "../../../../assets/svgs/lupa.svg";
 import { useDownloadExcel } from "react-export-table-to-excel";
 import $ from "jquery";
+
+import * as signalR from "@microsoft/signalr";
+
 import { useNavigate } from "react-router-dom";
 import React, { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
@@ -248,6 +251,60 @@ function ProductManager() {
       };
     }
   }, [navigate]);
+
+  useEffect(() => {
+    const connection = new signalR.HubConnectionBuilder()
+      .withUrl("https://localhost:7207/GeneralHub")
+      .configureLogging(signalR.LogLevel.Information)
+      .build();
+
+    connection
+      .start()
+      .then(() => {
+        // console.log("Conexión establecida con el servidor SignalR");
+      })
+      .catch((err) => console.error(err.toString()));
+
+    connection.on("MensajeCrudCategoria", async () => {
+      try {
+        GetCategoriesManage(setCategories);
+        GetProductsManage(setProducts);
+        GetProductsManage(setOriginalProductsList);
+      } catch (error) {
+        console.error("Error al obtener las categorias: " + error);
+      }
+    });
+
+    connection.on("MensajeUpdateCotizacion", async () => {
+      try {
+        GetCotizacionDolarUnicamente(setvalorDolar);
+      } catch (error) {
+        console.error("Error al obtener la cotización: " + error);
+      }
+    });
+
+    connection.on("MensajeCreateDetalleStock", async () => {
+      try {
+        GetProductsManage(setProducts);
+        GetProductsManage(setOriginalProductsList);
+      } catch (error) {
+        console.error("Error al obtener la cotización: " + error);
+      }
+    });
+
+    connection.on("MensajeCrudPedido", async () => {
+      try {
+        GetProductsManage(setProducts);
+        GetProductsManage(setOriginalProductsList);
+      } catch (error) {
+        console.error("Error al obtener la cotización: " + error);
+      }
+    });
+
+    return () => {
+      connection.stop();
+    };
+  }, []);
   //#endregion
 
   //#region Función para mostrar '+' o '-' cuando se toca en el 'collapse' del filtro de categoría
@@ -2673,11 +2730,13 @@ function ProductManager() {
                           {product.precioMinorista !== 0 &&
                           product.precioMayorista !== 0
                             ? "-"
-                            : `$${product.precio.toLocaleString("es-ES", {
-                              minimumFractionDigits: 0,
-                              maximumFractionDigits: 2,
-                            })
-                            .replace(",", ".").replace(/\B(?=(\d{3})+(?!\d))/g, ".")}`}
+                            : `$${product.precio
+                                .toLocaleString("es-ES", {
+                                  minimumFractionDigits: 0,
+                                  maximumFractionDigits: 2,
+                                })
+                                .replace(",", ".")
+                                .replace(/\B(?=(\d{3})+(?!\d))/g, ".")}`}
                         </td>
                       )}
                       <td
@@ -2697,19 +2756,27 @@ function ProductManager() {
                             rolUsuario === "SuperAdmin" ? (
                               <>
                                 <PesoInput className="input-group-svg-divisa-big2" />
-                                ${product.precioMinorista.toLocaleString("es-ES", {
-                                      minimumFractionDigits: 0,
-                                      maximumFractionDigits: 2,
-                                    })
-                                    .replace(",", ".").replace(/\B(?=(\d{3})+(?!\d))/g, ".")}{" "}
+                                $
+                                {product.precioMinorista
+                                  .toLocaleString("es-ES", {
+                                    minimumFractionDigits: 0,
+                                    maximumFractionDigits: 2,
+                                  })
+                                  .replace(",", ".")
+                                  .replace(/\B(?=(\d{3})+(?!\d))/g, ".")}{" "}
                                 (manual)
                               </>
                             ) : (
-                              <>${product.precioMinorista.toLocaleString("es-ES", {
-                                minimumFractionDigits: 0,
-                                maximumFractionDigits: 2,
-                              })
-                              .replace(",", ".").replace(/\B(?=(\d{3})+(?!\d))/g, ".")}</>
+                              <>
+                                $
+                                {product.precioMinorista
+                                  .toLocaleString("es-ES", {
+                                    minimumFractionDigits: 0,
+                                    maximumFractionDigits: 2,
+                                  })
+                                  .replace(",", ".")
+                                  .replace(/\B(?=(\d{3})+(?!\d))/g, ".")}
+                              </>
                             )}
                           </div>
                         ) : product.porcentajeMinorista > 0 ? (
@@ -2746,7 +2813,8 @@ function ProductManager() {
                                       minimumFractionDigits: 0,
                                       maximumFractionDigits: 2,
                                     })
-                                    .replace(",", ".").replace(/\B(?=(\d{3})+(?!\d))/g, ".")}
+                                    .replace(",", ".")
+                                    .replace(/\B(?=(\d{3})+(?!\d))/g, ".")}
                                 </p>
                               </div>
                             ) : product.divisa == "Dólar" ? (
@@ -2781,7 +2849,8 @@ function ProductManager() {
                                       minimumFractionDigits: 0,
                                       maximumFractionDigits: 2,
                                     })
-                                    .replace(",", ".").replace(/\B(?=(\d{3})+(?!\d))/g, ".")}
+                                    .replace(",", ".")
+                                    .replace(/\B(?=(\d{3})+(?!\d))/g, ".")}
                                 </p>
                               </div>
                             ) : (
@@ -2810,19 +2879,27 @@ function ProductManager() {
                             rolUsuario === "SuperAdmin" ? (
                               <>
                                 <PesoInput className="input-group-svg-divisa-big2" />
-                                ${product.precioMinorista.toLocaleString("es-ES", {
-                                      minimumFractionDigits: 0,
-                                      maximumFractionDigits: 2,
-                                    })
-                                    .replace(",", ".").replace(/\B(?=(\d{3})+(?!\d))/g, ".")}{" "}
+                                $
+                                {product.precioMinorista
+                                  .toLocaleString("es-ES", {
+                                    minimumFractionDigits: 0,
+                                    maximumFractionDigits: 2,
+                                  })
+                                  .replace(",", ".")
+                                  .replace(/\B(?=(\d{3})+(?!\d))/g, ".")}{" "}
                                 (manual)
                               </>
                             ) : (
-                              <>${product.precioMinorista.toLocaleString("es-ES", {
-                                minimumFractionDigits: 0,
-                                maximumFractionDigits: 2,
-                              })
-                              .replace(",", ".").replace(/\B(?=(\d{3})+(?!\d))/g, ".")}</>
+                              <>
+                                $
+                                {product.precioMinorista
+                                  .toLocaleString("es-ES", {
+                                    minimumFractionDigits: 0,
+                                    maximumFractionDigits: 2,
+                                  })
+                                  .replace(",", ".")
+                                  .replace(/\B(?=(\d{3})+(?!\d))/g, ".")}
+                              </>
                             )}
                           </div>
                         ) : product.porcentajeMayorista > 0 ? (
@@ -2858,7 +2935,8 @@ function ProductManager() {
                                       minimumFractionDigits: 0,
                                       maximumFractionDigits: 2,
                                     })
-                                    .replace(",", ".").replace(/\B(?=(\d{3})+(?!\d))/g, ".")}
+                                    .replace(",", ".")
+                                    .replace(/\B(?=(\d{3})+(?!\d))/g, ".")}
                                 </p>
                               </div>
                             ) : product.divisa == "Dólar" ? (
@@ -2893,7 +2971,8 @@ function ProductManager() {
                                       minimumFractionDigits: 0,
                                       maximumFractionDigits: 2,
                                     })
-                                    .replace(",", ".").replace(/\B(?=(\d{3})+(?!\d))/g, ".")}
+                                    .replace(",", ".")
+                                    .replace(/\B(?=(\d{3})+(?!\d))/g, ".")}
                                 </p>
                               </div>
                             ) : (
@@ -3206,7 +3285,8 @@ function ProductManager() {
                                         minimumFractionDigits: 0,
                                         maximumFractionDigits: 2,
                                       })
-                                      .replace(",", ".").replace(/\B(?=(\d{3})+(?!\d))/g, ".")}
+                                      .replace(",", ".")
+                                      .replace(/\B(?=(\d{3})+(?!\d))/g, ".")}
                                   </p>
                                 </div>
                               ) : product.divisa == "Dólar" ? (
@@ -3225,7 +3305,8 @@ function ProductManager() {
                                         minimumFractionDigits: 0,
                                         maximumFractionDigits: 2,
                                       })
-                                      .replace(",", ".").replace(/\B(?=(\d{3})+(?!\d))/g, ".")}
+                                      .replace(",", ".")
+                                      .replace(/\B(?=(\d{3})+(?!\d))/g, ".")}
                                   </p>
                                 </div>
                               ) : (
@@ -3262,7 +3343,8 @@ function ProductManager() {
                                         minimumFractionDigits: 0,
                                         maximumFractionDigits: 2,
                                       })
-                                      .replace(",", ".").replace(/\B(?=(\d{3})+(?!\d))/g, ".")}
+                                      .replace(",", ".")
+                                      .replace(/\B(?=(\d{3})+(?!\d))/g, ".")}
                                   </p>
                                 </div>
                               ) : product.divisa == "Dólar" ? (
@@ -3281,7 +3363,8 @@ function ProductManager() {
                                         minimumFractionDigits: 0,
                                         maximumFractionDigits: 2,
                                       })
-                                      .replace(",", ".").replace(/\B(?=(\d{3})+(?!\d))/g, ".")}
+                                      .replace(",", ".")
+                                      .replace(/\B(?=(\d{3})+(?!\d))/g, ".")}
                                   </p>
                                 </div>
                               ) : (

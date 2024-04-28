@@ -5,6 +5,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 
 namespace API.Controllers
 {
@@ -13,10 +14,12 @@ namespace API.Controllers
     public class StockController : ControllerBase
     {
         private readonly IMediator _mediator;
+        private readonly IHubContext<GeneralHub> _hubContext;
 
-        public StockController(IMediator mediator)
+        public StockController(IMediator mediator, IHubContext<GeneralHub> hubContext)
         {
             _mediator = mediator;
+            _hubContext = hubContext;
         }
 
 
@@ -34,6 +37,9 @@ namespace API.Controllers
         public async Task<StockDto> CreateDetalleStock(CreateDetalleStockCommand command)
         {
             var detalleStockCreado = await _mediator.Send(command);
+
+            await _hubContext.Clients.All.SendAsync("MensajeCreateDetalleStock", "Se ha creado un nuevo detalle de stock");
+
             return detalleStockCreado;
         }
     }

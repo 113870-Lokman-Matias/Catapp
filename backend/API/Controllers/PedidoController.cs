@@ -8,6 +8,7 @@ using API.Services.PedidoServices.Commands.CreatePedidoCommand;
 using API.Services.PedidoServices.Commands.UpdatePedidoCommand;
 using API.Services.PedidoServices.Commands.DeletePedidoCommand;
 using API.Services.PedidoServices.Commands.UpdateVerificadoPedidoCommand;
+using Microsoft.AspNetCore.SignalR;
 
 namespace API.Controllers;
 
@@ -16,10 +17,12 @@ namespace API.Controllers;
 public class PedidoController : ControllerBase
 {
   private readonly IMediator _mediator;
+  private readonly IHubContext<GeneralHub> _hubContext;
 
-  public PedidoController(IMediator mediator)
+  public PedidoController(IMediator mediator, IHubContext<GeneralHub> hubContext)
   {
     _mediator = mediator;
+    _hubContext = hubContext;
   }
 
 
@@ -45,6 +48,9 @@ public class PedidoController : ControllerBase
   public async Task<PedidoDto> CreatePedido(CreatePedidoCommand command)
   {
     var pedidoCreado = await _mediator.Send(command);
+
+    await _hubContext.Clients.All.SendAsync("MensajeCrudPedido", "Se ha creado un nuevo pedido");
+
     return pedidoCreado;
   }
 
@@ -65,6 +71,9 @@ public class PedidoController : ControllerBase
   {
     command.IdPedido = id;
     var peridoVerificadoActualizado = await _mediator.Send(command);
+
+    await _hubContext.Clients.All.SendAsync("MensajeCrudPedido", "Se ha actualizado el estado de un pedido existente");
+
     return peridoVerificadoActualizado;
   }
 
@@ -74,6 +83,9 @@ public class PedidoController : ControllerBase
   public async Task<PedidoDto> DeletePedido(Guid id)
   {
     var pedidoEliminado = await _mediator.Send(new DeletePedidoCommand { IdPedido = id });
+
+    await _hubContext.Clients.All.SendAsync("MensajeCrudPedido", "Se ha eliminado un pedido existente");
+
     return pedidoEliminado;
   }
 

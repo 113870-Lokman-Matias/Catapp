@@ -9,6 +9,7 @@ using API.Services.CategoriaServices.Commands.CreateCategoriaCommand;
 using API.Services.CategoriaServices.Commands.UpdateCategoriaCommand;
 using API.Services.CategoriaServices.Commands.DeleteCategoriaCommand;
 using API.Services.CategoriaServices.Queries.GetCategoriasManageQuery;
+using Microsoft.AspNetCore.SignalR;
 
 namespace API.Controllers;
 
@@ -17,10 +18,12 @@ namespace API.Controllers;
 public class CategoriaController : ControllerBase
 {
   private readonly IMediator _mediator;
+  private readonly IHubContext<GeneralHub> _hubContext;
 
-  public CategoriaController(IMediator mediator)
+  public CategoriaController(IMediator mediator, IHubContext<GeneralHub> hubContext)
   {
     _mediator = mediator;
+    _hubContext = hubContext;
   }
 
 
@@ -63,6 +66,9 @@ public class CategoriaController : ControllerBase
   public async Task<CategoriaDto> CreateCategoria(CreateCategoriaCommand command)
   {
     var categoriaCreada = await _mediator.Send(command);
+
+    await _hubContext.Clients.All.SendAsync("MensajeCrudCategoria", "Se ha creado una nueva categoria");
+
     return categoriaCreada;
   }
 
@@ -73,6 +79,9 @@ public class CategoriaController : ControllerBase
   {
     command.IdCategoria = id;
     var categoriaActualizada = await _mediator.Send(command);
+
+    await _hubContext.Clients.All.SendAsync("MensajeCrudCategoria", "Se ha actualizado una categoria existente");
+
     return categoriaActualizada;
   }
 
@@ -82,6 +91,9 @@ public class CategoriaController : ControllerBase
   public async Task<CategoriaDto> DeleteCategoria(int id)
   {
     var categoriaEliminada = await _mediator.Send(new DeleteCategoriaCommand { IdCategoria = id });
+
+    await _hubContext.Clients.All.SendAsync("MensajeCrudCategoria", "Se ha eliminado una categoria existente");
+
     return categoriaEliminada;
   }
 

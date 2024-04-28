@@ -6,6 +6,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 
 namespace API.Controllers
 {
@@ -14,10 +15,12 @@ namespace API.Controllers
     public class EnvioController : ControllerBase
     {
         private readonly IMediator _mediator;
+        private readonly IHubContext<GeneralHub> _hubContext;
 
-        public EnvioController(IMediator mediator)
+        public EnvioController(IMediator mediator, IHubContext<GeneralHub> hubContext)
         {
             _mediator = mediator;
+            _hubContext = hubContext;
         }
 
         [HttpGet]
@@ -33,6 +36,9 @@ namespace API.Controllers
         public async Task<EnvioDto> UpdateCostoEnvio(UpdateCostoEnvioCommand command)
         {
             var costoEnvioActualizado = await _mediator.Send(command);
+
+            await _hubContext.Clients.All.SendAsync("MensajeUpdateCostoEnvio", "Se ha actualizado el costo de envio");
+
             return costoEnvioActualizado;
         }
     }

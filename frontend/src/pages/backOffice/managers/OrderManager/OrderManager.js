@@ -7,6 +7,8 @@ import React, { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet";
 
+import * as signalR from "@microsoft/signalr";
+
 //#region SVG'S Imports
 import { ReactComponent as Edit } from "../../../../assets/svgs/edit.svg";
 import { ReactComponent as Delete } from "../../../../assets/svgs/delete.svg";
@@ -189,6 +191,49 @@ function OrderManager() {
       orders.filter((order) => !order.verificado).length
     );
   }, [orders]);
+
+  useEffect(() => {
+    const connection = new signalR.HubConnectionBuilder()
+      .withUrl("https://localhost:7207/GeneralHub")
+      .configureLogging(signalR.LogLevel.Information)
+      .build();
+
+    connection
+      .start()
+      .then(() => {
+        // console.log("Conexión establecida con el servidor SignalR");
+      })
+      .catch((err) => console.error(err.toString()));
+
+    connection.on("MensajeCrudPedido", async () => {
+      try {
+        GetOrders(setOrders);
+        GetOrders(setOriginalOrdersList);
+      } catch (error) {
+        console.error("Error al obtener la cotización: " + error);
+      }
+    });
+
+    connection.on("MensajeUpdateCostoEnvio", async () => {
+      try {
+        await GetCostoEnvioUnicamente(setCostoEnvioDomicilio);
+      } catch (error) {
+        console.error("Error al obtener el costo de envío: " + error);
+      }
+    });
+
+    connection.on("MensajeCrudVendedor", async () => {
+      try {
+        await GetUsersSellers(setListaNombresVendedores);
+      } catch (error) {
+        console.error("Error al obtener los vendedores: " + error);
+      }
+    });
+
+    return () => {
+      connection.stop();
+    };
+  }, []);
   //#endregion
 
   //#region Función para ajustar el costo de envío y el total según la forma de entrega seleccionada
@@ -1371,7 +1416,9 @@ function OrderManager() {
                       </td>
                       <td
                         className={`table-name ${
-                          order.abono === "Mercado Pago" ? "mercado-pago" : "table-name"
+                          order.abono === "Mercado Pago"
+                            ? "mercado-pago"
+                            : "table-name"
                         }`}
                       >
                         {order.abono}

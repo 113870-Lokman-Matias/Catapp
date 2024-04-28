@@ -43,6 +43,9 @@ using API.Services.PedidoServices.Commands.DeletePedidoCommand;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// SignalR
+builder.Services.AddSignalR();
+
 // Add services to the container.
 
 // CORS
@@ -152,7 +155,11 @@ app.UseCors(c =>
 {
   c.AllowAnyHeader();
   c.AllowAnyMethod();
-  c.AllowAnyOrigin();
+  // c.AllowAnyOrigin();
+
+  // SignalR
+  c.WithOrigins("http://localhost:3000");
+  c.AllowCredentials();
 });
 
 app.UseHttpsRedirection();
@@ -162,5 +169,8 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+// SignalR Hub
+app.MapHub<GeneralHub>("/generalHub");
 
 app.Run();
