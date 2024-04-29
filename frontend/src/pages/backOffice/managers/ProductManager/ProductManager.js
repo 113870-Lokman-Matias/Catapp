@@ -2880,7 +2880,7 @@ function ProductManager() {
                               <>
                                 <PesoInput className="input-group-svg-divisa-big2" />
                                 $
-                                {product.precioMinorista
+                                {product.precioMayorista
                                   .toLocaleString("es-ES", {
                                     minimumFractionDigits: 0,
                                     maximumFractionDigits: 2,
@@ -2892,7 +2892,7 @@ function ProductManager() {
                             ) : (
                               <>
                                 $
-                                {product.precioMinorista
+                                {product.precioMayorista
                                   .toLocaleString("es-ES", {
                                     minimumFractionDigits: 0,
                                     maximumFractionDigits: 2,
