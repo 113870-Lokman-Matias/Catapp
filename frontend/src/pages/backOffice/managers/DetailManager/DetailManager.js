@@ -603,8 +603,8 @@ function DetailManager() {
                             <option value="Falla">Falla</option>
                             <option value="Pérdida">Pérdida</option>
                             <option value="Robo">Robo</option>
-                            <option value="Translado">Translado</option>
-                            <option value="Obsolencia">Obsolencia</option>
+                            <option value="Traslado">Traslado</option>
+                            <option value="Obsolescencia">Obsolescencia</option>
                             <option value="Otro">Otro</option>
                           </select>
                         </div>
@@ -777,7 +777,7 @@ function DetailManager() {
                             <option value="Reabastecimiento">
                               Reabastecimiento
                             </option>
-                            <option value="Translado">Translado</option>
+                            <option value="Traslado">Traslado</option>
                             <option value="Otro">Otro</option>
                           </select>
                         </div>
