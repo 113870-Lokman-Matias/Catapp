@@ -13,18 +13,32 @@ async function GetOrders(state) {
 }
 //#endregion
 
-//#region Función para obtener los pedidos verificados
-async function GetVerifiedOrders(state) {
-  const token = localStorage.getItem("token"); // Obtener el token almacenado en el localStorage
+//#region Función para obtener los pedidos verificados por fecha con filtros opcionales
+async function GetVerifiedOrdersByDate(fechaDesde, fechaHasta, IdVendedor = null, IdTipoPedido = null, IdMetodoEntrega = null, IdMetodoPago = null) {
+  const token = localStorage.getItem("token");
   const headers = {
-    Authorization: `Bearer ${token}`, // Agregar el encabezado Authorization con el valor del token
+    Authorization: `Bearer ${token}`,
   };
 
-  const result = await axios.get("https://localhost:7207/pedido/verificado", {
-    headers,
-  });
-  const pedidos = result.data.pedidos || [];
-  state(pedidos);
+  let url = `https://localhost:7207/pedido/${fechaDesde}/${fechaHasta}`;
+
+  // Agregar los parámetros de los filtros opcionales a la URL si están presentes
+  if (IdVendedor !== null) {
+    url += `?IdVendedor=${IdVendedor}`;
+  }
+  if (IdTipoPedido !== null) {
+    url += `&IdTipoPedido=${IdTipoPedido}`;
+  }
+  if (IdMetodoEntrega !== null) {
+    url += `&IdMetodoEntrega=${IdMetodoEntrega}`;
+  }
+  if (IdMetodoPago !== null) {
+    url += `&IdMetodoPago=${IdMetodoPago}`;
+  }
+
+  const result = await axios.get(url, { headers });
+
+  return result.data;
 }
 //#endregion
 
@@ -55,7 +69,7 @@ async function DeleteOrders(id, headers) {
 //#region Export
 export {
   GetOrders,
-  GetVerifiedOrders,
+  GetVerifiedOrdersByDate,
   SaveOrders,
   UpdateOrders,
   UpdateOrdersVerified,

@@ -26,6 +26,9 @@ import DetailManager from "./pages/backOffice/managers/DetailManager/DetailManag
 import ShipmentManager from "./pages/backOffice/managers/ShipmentManager/ShipmentManager";
 import OrderManager from "./pages/backOffice/managers/OrderManager/OrderManager";
 
+import OrderStatistics from './pages/backOffice/statistics/StatisticsOptions';
+import OrderReports from './pages/backOffice/statistics/OrderReports/OrderReports';
+
 import { ProtectedRoute } from "./components/ProtectedRoute/ProtectedRoute";
 
 function App() {
@@ -57,6 +60,8 @@ function App() {
           <Route path="detalles/:id" element={<DetailManager />} />
           <Route path="administrar-envio" element={<ShipmentManager />} />
           <Route path="administrar-pedidos" element={<OrderManager />} />
+          <Route path='estadisticas-pedidos' element={<OrderStatistics />} />
+          <Route path='reportes-pedidos' element={<OrderReports />} />
         </Route>
 
         <Route path="*" element={<NotFound />} />
