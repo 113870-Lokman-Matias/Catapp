@@ -27,5 +27,6 @@ namespace API.Dtos.PedidoDtos
     public DateTimeOffset Fecha { get; set; }
 
     public bool Verificado { get; set; }
+    public List<API.Dtos.DetallePedidoDto.DetallePedidoDto> Detalles { get; set; } = new List<API.Dtos.DetallePedidoDto.DetallePedidoDto>();
   }
 }

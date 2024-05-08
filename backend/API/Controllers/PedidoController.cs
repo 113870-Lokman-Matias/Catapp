@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using MediatR;
 using API.Dtos.PedidoDtos;
 using API.Services.PedidoServices.Queries.GetPedidosQuery;
-using API.Services.PedidoServices.Queries.GetPedidosVerificadosQuery;
+using API.Services.PedidoServices.Queries.GetPedidosByDateQuery;
 using API.Services.PedidoServices.Commands.CreatePedidoCommand;
 using API.Services.PedidoServices.Commands.UpdatePedidoCommand;
 using API.Services.PedidoServices.Commands.DeletePedidoCommand;
@@ -34,15 +34,15 @@ public class PedidoController : ControllerBase
     return pedidos;
   }
 
-
-  [HttpGet("verificado")]
+  [HttpGet("{fechaDesde}/{fechaHasta}")]
   [Authorize(Roles = "SuperAdmin, Gerente")]
-  public Task<ListaPedidosDto> GetPedidosVerificados()
+  public async Task<ListaEstadisticasPedidosDto> GetPedidosVerificadosPorFecha(DateTimeOffset fechaDesde, DateTimeOffset fechaHasta, int? IdVendedor = null, int? IdTipoPedido = null, int? IdMetodoEntrega = null, int? IdMetodoPago = null)
   {
-    var pedidosVerificados = _mediator.Send(new GetPedidosVerificadosQuery());
-    return pedidosVerificados;
-  }
+    var query = new GetPedidosByDateQuery(fechaDesde, fechaHasta, IdVendedor, IdTipoPedido, IdMetodoEntrega, IdMetodoPago);
+    var pedidosVerificadosPorFecha = await _mediator.Send(query);
 
+    return pedidosVerificadosPorFecha;
+  }
 
   [HttpPost]
   public async Task<PedidoDto> CreatePedido(CreatePedidoCommand command)

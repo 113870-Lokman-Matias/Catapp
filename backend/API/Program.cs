@@ -36,6 +36,7 @@ using API.Services.EnvioServices.Commands.UpdateCostoEnvioCommand;
 using API.Services.StockServices.Queries.GetDetallesStockByIdQuery;
 using API.Services.StockServices.Commands.CreateDetalleStockCommand;
 
+using API.Services.PedidoServices.Queries.GetPedidosByDateQuery;
 using API.Services.PedidoServices.Commands.CreatePedidoCommand;
 using API.Services.PedidoServices.Commands.UpdatePedidoCommand;
 using API.Services.PedidoServices.Commands.UpdateVerificadoPedidoCommand;
@@ -128,6 +129,7 @@ builder.Services.AddScoped<IValidator<CreateDetalleStockCommand>, CreateDetalleS
 builder.Services.AddScoped<IValidator<GetDetallesStockByIdQuery>, GetDetallesStockByIdQueryValidator>();
 
 // Validaciones para el servicio de Pedidos
+builder.Services.AddScoped<IValidator<GetPedidosByDateQuery>, GetPedidosByDateQueryValidator>();
 builder.Services.AddScoped<IValidator<CreatePedidoCommand>, CreatePedidoCommandValidator>();
 builder.Services.AddScoped<IValidator<UpdatePedidoCommand>, UpdatePedidoCommandValidator>();
 builder.Services.AddScoped<IValidator<UpdateVerificadoPedidoCommand>, UpdateVerificadoPedidoCommandValidator>();
