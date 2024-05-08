@@ -568,6 +568,7 @@
 }
 
 .table-overflow {
+  align-items: flex-start;
   overflow: overlay;
 }
 

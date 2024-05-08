@@ -17,6 +17,12 @@ import {
   GetProductsByCategory,
   GetProducts,
 } from "../../../services/ProductService";
+import {
+  PayWithMercadoPago,
+  GetPaymentInfo,
+} from "../../../services/PaymentService";
+
+import { initMercadoPago, Wallet } from "@mercadopago/sdk-react";
 
 //#region Imports de los SVG'S
 import { ReactComponent as Zoom } from "../../../assets/svgs/zoom.svg";
@@ -27,13 +33,23 @@ import { ReactComponent as Whatsapplogo } from "../../../assets/svgs/whatsapp.sv
 import { ReactComponent as Close } from "../../../assets/svgs/closebtn.svg";
 import { ReactComponent as Lupa } from "../../../assets/svgs/lupa.svg";
 import { ReactComponent as Location } from "../../../assets/svgs/location.svg";
+import { ReactComponent as Mercadopagologo } from "../../../assets/svgs/mercadopago.svg";
 import Loader from "../../../components/Loaders/LoaderCircle";
 //#endregion
 
 import "../CatalogueCart/CatalogueCart.css";
 
 const CatalogueCart = () => {
+  initMercadoPago("TEST-cbecc447-de65-4e40-af97-59564ce2947d", {
+    locale: "es-AR",
+  });
+
   //#region Constantes
+  const [pedidoAprobado, setPedidoAprobado] = useState(false);
+
+  const [showWallet, setShowWallet] = useState(false);
+  const [preferenceId, setPreferenceId] = useState(null);
+
   const pathname = window.location.pathname.toLowerCase();
   const [clientType, setClientType] = useState("");
 
@@ -163,76 +179,6 @@ const CatalogueCart = () => {
   }, []);
 
   useEffect(() => {
-    if (pathname.includes("mayorista")) {
-      setClientType("Mayorista");
-      GetCategoriesMayorista(setCategories);
-    } else if (pathname.includes("minorista")) {
-      setClientType("Minorista");
-      GetCategoriesMinorista(setCategories);
-    }
-
-    const storedCart =
-      clientType === "Mayorista"
-        ? localStorage.getItem("shoppingCartMayorista")
-        : clientType === "Minorista"
-        ? localStorage.getItem("shoppingCartMinorista")
-        : null;
-
-    if (storedCart && storedCart !== "{}") {
-      const parsedCart = JSON.parse(storedCart);
-
-      setCart(parsedCart);
-
-      // Extraer cantidades basadas en 'idProducto'
-      const productQuantities = Object.values(parsedCart).reduce(
-        (quantities, product) => {
-          quantities[product.idProducto] = product.cantidad;
-          return quantities;
-        },
-        {}
-      );
-
-      setProductQuantities(productQuantities);
-
-      // Calcular y establecer la cantidad total
-      const totalQuantitySum = Object.values(productQuantities).reduce(
-        (sum, quantity) => sum + quantity,
-        0
-      );
-      setTotalQuantity(totalQuantitySum);
-      Swal.fire({
-        title: "Carrito encontrado!",
-        text: "¿Quieres continuar comprando o vaciar el carrito?",
-        icon: "question",
-        showCancelButton: true,
-        confirmButtonText: "Continuar Comprando",
-        cancelButtonText: "Vaciar Carrito",
-        allowOutsideClick: false,
-        confirmButtonColor: "#87adbd",
-        cancelButtonColor: "#dc3545",
-      }).then((result) => {
-        if (result.isConfirmed) {
-        } else if (result.isDismissed) {
-          // Mostrar confirmación adicional antes de vaciar el carrito
-          Swal.fire({
-            title: "¿Estás seguro de vaciar el carrito?",
-            text: "Al hacer esto, no podrás recuperar los productos de este carrito.",
-            icon: "warning",
-            showCancelButton: true,
-            confirmButtonText: "Sí, vaciar carrito",
-            cancelButtonText: "Cancelar",
-            confirmButtonColor: "#f8bb86",
-          }).then((confirmationResult) => {
-            if (confirmationResult.isConfirmed) {
-              clearCart();
-            }
-          });
-        }
-      });
-    }
-  }, [pathname, clientType]);
-
-  useEffect(() => {
     // Si el query de la busqueda está vacío se ocultan el contenedor de filtrado de productos, por lo contrario se muestra el contenedor con las categorias y sus respectivos productos
     if (query === "") {
       document.getElementById("productos-filtrados").style.display = "none";
@@ -256,6 +202,194 @@ const CatalogueCart = () => {
       }
     })();
   }, [totalQuantity, query]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (pathname.includes("mayorista")) {
+        setClientType("Mayorista");
+        GetCategoriesMayorista(setCategories);
+      } else if (pathname.includes("minorista")) {
+        setClientType("Minorista");
+        GetCategoriesMinorista(setCategories);
+      }
+
+      const storedCart =
+        clientType === "Mayorista"
+          ? localStorage.getItem("shoppingCartMayorista")
+          : clientType === "Minorista"
+          ? localStorage.getItem("shoppingCartMinorista")
+          : null;
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const paymentId = urlParams.get("payment_id");
+
+      if (!paymentId) {
+        if (storedCart && storedCart !== "{}") {
+          const parsedCart = JSON.parse(storedCart);
+
+          setCart(parsedCart);
+
+          // Extraer cantidades basadas en 'idProducto'
+          const productQuantities = Object.values(parsedCart).reduce(
+            (quantities, product) => {
+              quantities[product.idProducto] = product.cantidad;
+              return quantities;
+            },
+            {}
+          );
+
+          setProductQuantities(productQuantities);
+
+          // Calcular y establecer la cantidad total
+          const totalQuantitySum = Object.values(productQuantities).reduce(
+            (sum, quantity) => sum + quantity,
+            0
+          );
+          setTotalQuantity(totalQuantitySum);
+
+          Swal.fire({
+            title: "Carrito encontrado!",
+            text: "¿Quieres continuar comprando o vaciar el carrito?",
+            icon: "question",
+            showCancelButton: true,
+            confirmButtonText: "Continuar Comprando",
+            cancelButtonText: "Vaciar Carrito",
+            allowOutsideClick: false,
+            confirmButtonColor: "#87adbd",
+            cancelButtonColor: "#dc3545",
+          }).then((result) => {
+            if (result.isConfirmed) {
+            } else if (result.isDismissed) {
+              // Mostrar confirmación adicional antes de vaciar el carrito
+              Swal.fire({
+                title: "¿Estás seguro de vaciar el carrito?",
+                text: "Al hacer esto, no podrás recuperar los productos de este carrito.",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Sí, vaciar carrito",
+                cancelButtonText: "Cancelar",
+                confirmButtonColor: "#f8bb86",
+              }).then((confirmationResult) => {
+                if (confirmationResult.isConfirmed) {
+                  clearCart();
+                }
+              });
+            }
+          });
+        }
+      } else if (paymentId && paymentId === "null") {
+        Swal.fire({
+          title: "Pago rechazado",
+          text: "inténtelo de nuevo o cambie el método de pago.",
+          icon: "error",
+          confirmButtonText: "Aceptar",
+          confirmButtonColor: "#dc3545",
+          allowOutsideClick: false,
+        });
+
+        const storedFormData = localStorage.getItem("userData");
+
+        if (storedFormData) {
+          const parsedFormData = JSON.parse(storedFormData);
+
+          // Populate form fields with retrieved data
+          setNombre(parsedFormData.nombre || "");
+          setDni(parsedFormData.dni || "");
+          setDireccion(parsedFormData.direccion || "");
+          setCalles(parsedFormData.calles || "");
+          setTelefono(parsedFormData.telefono || "");
+          setAbono(parsedFormData.abono || "");
+          setVendedor(parsedFormData.vendedor || "");
+          setEnvio(parsedFormData.envio || "");
+        }
+
+        if (storedCart && storedCart !== "{}") {
+          const parsedCart = JSON.parse(storedCart);
+
+          setCart(parsedCart);
+
+          // Extraer cantidades basadas en 'idProducto'
+          const productQuantities = Object.values(parsedCart).reduce(
+            (quantities, product) => {
+              quantities[product.idProducto] = product.cantidad;
+              return quantities;
+            },
+            {}
+          );
+
+          setProductQuantities(productQuantities);
+
+          // Calcular y establecer la cantidad total
+          const totalQuantitySum = Object.values(productQuantities).reduce(
+            (sum, quantity) => sum + quantity,
+            0
+          );
+          setTotalQuantity(totalQuantitySum);
+        }
+      } else if (paymentId && paymentId !== "null") {
+        await GetUsersSellers(setListaNombresVendedores);
+
+        const storedFormData = localStorage.getItem("userData");
+
+        if (storedFormData) {
+          const parsedFormData = JSON.parse(storedFormData);
+
+          // Populate form fields with retrieved data
+          setNombre(parsedFormData.nombre || "");
+          setDni(parsedFormData.dni || "");
+          setDireccion(parsedFormData.direccion || "");
+          setCalles(parsedFormData.calles || "");
+          setTelefono(parsedFormData.telefono || "");
+          setAbono(parsedFormData.abono || "");
+          setVendedor(parsedFormData.vendedor || "");
+          setEnvio(parsedFormData.envio || "");
+        }
+
+        if (storedCart && storedCart !== "{}") {
+          const parsedCart = JSON.parse(storedCart);
+
+          setCart(parsedCart);
+
+          // Extraer cantidades basadas en 'idProducto'
+          const productQuantities = Object.values(parsedCart).reduce(
+            (quantities, product) => {
+              quantities[product.idProducto] = product.cantidad;
+              return quantities;
+            },
+            {}
+          );
+
+          setProductQuantities(productQuantities);
+        }
+
+        GetPaymentInfo(paymentId)
+          .then((PaymentResponse) => {
+            if (PaymentResponse.status === "approved") {
+              setPedidoAprobado(true);
+            }
+          })
+          .catch((error) => {
+            console.error("Error al obtener la información de pago:", error);
+          });
+      }
+    };
+
+    fetchData();
+  }, [pathname, clientType, pedidoAprobado]);
+
+  useEffect(() => {
+    if (pedidoAprobado) {
+      Swal.fire({
+        title: "Pago aprobado",
+        text: "Su pago ha sido procesado correctamente.",
+        icon: "success",
+        confirmButtonText: "Aceptar",
+        confirmButtonColor: "#a5dc86",
+        allowOutsideClick: false,
+      });
+      ClickBtnHandlePedidoAprobado();
+    }
+  }, [pedidoAprobado]);
   //#endregion
 
   //#region Función para filtrar los productos por query
@@ -598,6 +732,191 @@ const CatalogueCart = () => {
   };
   //#endregion
 
+  //#region Función para crear el pedido y luego enviarlo por Mercado Pago
+  const handleSubmitPedidoMercadoPago = async (e) => {
+    e.preventDefault();
+
+    if (IsValid() === true) {
+      const response = await PayWithMercadoPago({
+        title: "Productos",
+        quantity: 1,
+        unitPrice: calculateTotal(),
+        url: "http://localhost:3000/catalogo-minorista",
+      });
+
+      if (response.preferenceId !== null) {
+        setPreferenceId(response.preferenceId);
+        setShowWallet(true);
+
+        // Create an object with the values you want to store
+        const userData = {
+          nombre,
+          dni,
+          direccion,
+          calles,
+          telefono,
+          abono,
+          vendedor,
+          envio,
+        };
+
+        // Convert the object to a JSON string and store it in localStorage
+        localStorage.setItem("userData", JSON.stringify(userData));
+      }
+    }
+  };
+  //#endregion
+
+  function ClickBtnHandlePedidoAprobado() {
+    $(document).ready(function () {
+      $("#btn-handlepedido").click();
+    });
+  }
+
+  const handleSubmitPedidoAprobado = async () => {
+    const detalles = Object.values(cart).map((producto) => {
+      return {
+        idProducto: producto.idProducto,
+        cantidad: productQuantities[producto.idProducto],
+        aclaracion: producto.aclaraciones,
+        precioUnitario:
+          clientType === "Mayorista" && producto.precioMayorista > 0
+            ? `${Math.ceil(producto.precioMayorista)}`
+            : clientType === "Minorista" && producto.precioMinorista > 0
+            ? `${Math.ceil(producto.precioMinorista)}`
+            : // producto.precioMayorista > 0
+              // ? `${Math.ceil(producto.precioMayorista)}`
+              `${Math.ceil(
+                Math.round(
+                  ((producto.divisa === "Dólar"
+                    ? producto.precio * valorDolar
+                    : producto.precio) *
+                    (1 +
+                      (clientType === "Mayorista"
+                        ? producto.porcentajeMayorista
+                        : producto.porcentajeMinorista) /
+                        100)) /
+                    50
+                ) * 50
+              )}`,
+      };
+    });
+
+    const response = await SaveOrders({
+      nombreCompleto: `${nombre.charAt(0).toUpperCase() + nombre.slice(1)}`,
+      dni: dni,
+      telefono: telefono,
+      direccion: `${direccion.charAt(0).toUpperCase() + direccion.slice(1)}`,
+      entreCalles: `${calles.charAt(0).toUpperCase() + calles.slice(1)}`,
+      costoEnvio:
+        envio == 2 && costoEnvioDomicilio > 0 ? costoEnvioDomicilio : 0,
+      idTipoPedido: clientType === "Minorista" ? 1 : 2,
+      idVendedor: vendedor,
+      idMetodoPago: abono,
+      idMetodoEntrega: envio,
+      detalles: detalles, // Aquí se incluyen los detalles de los productos
+    });
+
+    if (response.data.statusCode == 200) {
+      // Crear el mensaje con la información del pedido para Whatsapp
+      let mensaje = "```Datos del cliente:```\n\n";
+
+      mensaje += `*Nombre completo*:\n_${nombre}_\n\n`;
+
+      mensaje += `*DNI*:\n_${dni}_\n\n`;
+
+      mensaje += `*Entrega*:\n_${getTipoEnvio(envio)}_\n\n`;
+
+      if (envio != 1) {
+        mensaje += `*Dirección*:\n_${direccion}_\n\n`;
+        mensaje += `*Entre calles*:\n_${calles}_\n\n`;
+      }
+
+      mensaje += `*Número de teléfono*:\n_${telefono}_\n\n`;
+
+      mensaje += `*Abona con*:\n_${getTipoAbono(abono)}_\n\n`;
+
+      mensaje += `*----------------------------------*\n\n`;
+      mensaje += "```Datos de la empresa:```\n\n";
+
+      if (envio == 1) {
+        mensaje += `*Dirección*:\n_${direccionAuto}_\n\n`;
+        mensaje += `*Horarios de atención:*\n_${horariosAtencion}_\n\n`;
+      }
+
+      mensaje += `*Número de teléfono*:\n_${telefonoEmpresa}_\n\n`;
+
+      if (abono == 2) {
+        mensaje += `*CBU*:\n_${cbu}_\n\n`;
+      }
+
+      mensaje += `*Vendedor*:\n_${getNombreVendedor(vendedor)}_\n\n`;
+
+      mensaje += `*----------------------------------*\n\n`;
+
+      mensaje +=
+        clientType === "Mayorista"
+          ? "```Pedido Mayorista:```\n\n"
+          : "```Pedido Minorista:```\n\n";
+
+      mensaje += `*Número de pedido*: ${response.data.idPedido}\n\n`;
+      for (const productId in cart) {
+        const product = cart[productId];
+        const quantity = productQuantities[product.idProducto];
+        mensaje += `*${quantity}* x *${product.nombre}*\n`;
+
+        if (productNotes[product.idProducto]) {
+          mensaje += `*Aclaración: ${productNotes[product.idProducto]}*\n`;
+        }
+
+        mensaje += `_Subtotal = $${calculateSubtotal(product)
+          .toLocaleString("es-ES", {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 2,
+          })
+          .replace(",", ".")
+          .replace(/\B(?=(\d{3})+(?!\d))/g, ".")}_\n\n`;
+      }
+
+      if (envio == 2 && costoEnvioDomicilio > 0) {
+        mensaje += `*SUBTOTAL: $${(calculateTotal() - costoEnvioDomicilio)
+          .toLocaleString("es-ES", {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 2,
+          })
+          .replace(",", ".")
+          .replace(/\B(?=(\d{3})+(?!\d))/g, ".")}*\n`;
+        mensaje += `*Costo de envío: $${costoEnvioDomicilio}*\n`;
+      }
+      mensaje += `*TOTAL: $${calculateTotal()
+        .toLocaleString("es-ES", {
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 2,
+        })
+        .replace(",", ".")
+        .replace(/\B(?=(\d{3})+(?!\d))/g, ".")}*`;
+
+      // El POST se realizó exitosamente, ahora redirigir a WhatsApp
+
+      // Crear el enlace para abrir WhatsApp con el mensaje
+      const encodedMensaje = encodeURIComponent(mensaje);
+      const whatsappURL = `https://api.whatsapp.com/send?phone=543517476389&text=${encodedMensaje}`;
+
+      // Redirigir directamente a la URL de WhatsApp
+      window.location.href = whatsappURL;
+
+      // Restablecer el formulario y ocultarlo
+      ClearClientInputs();
+      CloseModal();
+
+      localStorage.removeItem(
+        clientType === "Mayorista"
+          ? "shoppingCartMayorista"
+          : "shoppingCartMinorista"
+      );
+    }
+  };
+
   //#region Función para crear el pedido y luego enviarlo por Whatsapp
   const handleSubmitPedido = async (e) => {
     e.preventDefault();
@@ -737,6 +1056,12 @@ const CatalogueCart = () => {
           // Restablecer el formulario y ocultarlo
           ClearClientInputs();
           CloseModal();
+
+          localStorage.removeItem(
+            clientType === "Mayorista"
+              ? "shoppingCartMayorista"
+              : "shoppingCartMinorista"
+          );
         })
         .catch((error) => {
           // Manejar el error si algo sale mal en el POST
@@ -1001,11 +1326,18 @@ const CatalogueCart = () => {
               )}
             </div>
 
+            <button
+              type="button"
+              className="btn-close-modal"
+              id="btn-handlepedido"
+              onClick={handleSubmitPedidoAprobado}
+            ></button>
+
             {/* Renderizar los productos agregados al carrito */}
             {Object.values(cart).map((product) => {
               if (product.cantidad > 0) {
                 return (
-                  <div className="home-5">
+                  <div className="home-5" key={product.idProducto}>
                     <div
                       className="contenedor-producto"
                       key={product.idProducto}
@@ -1226,7 +1558,7 @@ const CatalogueCart = () => {
                         }
 
                         // Lógica adicional después de la verificación (si es necesario)
-                        ClearClientInputs();
+                        // ClearClientInputs();
                         setTimeout(function () {
                           $("#nombre").focus();
                         }, 500);
@@ -1855,7 +2187,7 @@ const CatalogueCart = () => {
                     }
 
                     // Lógica adicional después de la verificación (si es necesario)
-                    ClearClientInputs();
+                    // ClearClientInputs();
                     setTimeout(function () {
                       $("#nombre").focus();
                     }, 500);
@@ -2087,9 +2419,9 @@ const CatalogueCart = () => {
                         >
                           Tarjeta de crédito
                         </option>
-                        {/* <option className="btn-option" value="5">
+                        <option className="btn-option" value="5">
                           Mercado Pago
-                        </option> */}
+                        </option>
                       </select>
                     </div>
 
@@ -2177,18 +2509,47 @@ const CatalogueCart = () => {
                     </b>
                   </div>
 
-                  <div id="div-btn-save">
-                    <button
-                      className="btnadd2"
-                      id="btn-save"
-                      onClick={handleSubmitPedido}
-                    >
-                      <div className="btn-save-update-close">
-                        <Whatsapplogo className="save-btn" />
-                        <p className="p-save-update-close">Enviar Pedido</p>
-                      </div>
-                    </button>
-                  </div>
+                  {abono == 5 ? (
+                    <div>
+                      {showWallet ? (
+                        <Wallet
+                          initialization={{
+                            preferenceId: preferenceId,
+                            // redirectMode: "modal",
+                          }}
+                        />
+                      ) : (
+                        // Display "Pagar y enviar pedido" button
+                        <div id="div-btn-save">
+                          <button
+                            className="btnmeli"
+                            id="btn-save"
+                            onClick={handleSubmitPedidoMercadoPago}
+                          >
+                            <div className="btn-save-update-close">
+                              <Mercadopagologo className="meli-btn" />
+                              <p className="p-save-update-close">
+                                Pagar y enviar pedido
+                              </p>
+                            </div>
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div id="div-btn-save">
+                      <button
+                        className="btnadd2"
+                        id="btn-save"
+                        onClick={handleSubmitPedido}
+                      >
+                        <div className="btn-save-update-close">
+                          <Whatsapplogo className="save-btn" />
+                          <p className="p-save-update-close">Enviar Pedido</p>
+                        </div>
+                      </button>
+                    </div>
+                  )}
                 </form>
               </div>
             </div>
