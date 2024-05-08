@@ -20,7 +20,7 @@
           "Npgsql.EntityFrameworkCore.PostgreSQL": "6.0.4",
           "Swashbuckle.AspNetCore": "6.2.3",
           "System.IdentityModel.Tokens.Jwt": "6.27.0",
-          "mercadopago-sdk": "2.3.5"
+          "mercadopago-sdk": "2.3.8"
         },
         "runtime": {
           "API.dll": {}
@@ -130,15 +130,15 @@
           }
         }
       },
-      "mercadopago-sdk/2.3.5": {
+      "mercadopago-sdk/2.3.8": {
         "dependencies": {
           "Newtonsoft.Json": "13.0.1",
           "System.Configuration.ConfigurationManager": "5.0.0"
         },
         "runtime": {
           "lib/net5.0/MercadoPago.dll": {
-            "assemblyVersion": "2.3.5.0",
-            "fileVersion": "2.3.5.0"
+            "assemblyVersion": "2.3.8.0",
+            "fileVersion": "2.3.8.0"
           }
         }
       },
@@ -688,12 +688,12 @@
       "path": "mediatr.contracts/2.0.1",
       "hashPath": "mediatr.contracts.2.0.1.nupkg.sha512"
     },
-    "mercadopago-sdk/2.3.5": {
+    "mercadopago-sdk/2.3.8": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-N9UC5c+F8G2hAFPzcbX0GR/mA5Cfu0iw2gE7k3c8qr63irHtf5EQNxFZMxpz5x/gOCj/TiUSVqXzX74PaDhe3w==",
-      "path": "mercadopago-sdk/2.3.5",
-      "hashPath": "mercadopago-sdk.2.3.5.nupkg.sha512"
+      "sha512": "sha512-W41OcPd5ha0H0dwfYQHWTDM/445Uoac4LMpOzc2i9eZx0BoycTAqSFOvxWk90dYix2ZaVifcAPUCpESGXJDrqQ==",
+      "path": "mercadopago-sdk/2.3.8",
+      "hashPath": "mercadopago-sdk.2.3.8.nupkg.sha512"
     },
     "Microsoft.AspNetCore.Authentication.JwtBearer/6.0.6": {
       "type": "package",

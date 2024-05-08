@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "a/Lqm39PzpuQlvd3iZqzbW0M+S5dI2VlQzsk2C8w64NVho+NWrNHhWoeTfq6qrVj4QyXLJFrSggE77UdvlaUAg==",
+  "dgSpecHash": "B+wrBAx7PQdRvQQMdcUMNFo6MT+iqmmjLWMRJHhSPMe4TdLDZMQSVW9BBSq/grkbu2pNid53cX4Fs42qYH8Obw==",
   "success": true,
   "projectFilePath": "c:\\Users\\mati_\\OneDrive\\Escritorio\\Catapp\\backend\\API\\API.csproj",
   "expectedPackageFiles": [
@@ -14,7 +14,7 @@
     "C:\\Users\\mati_\\.nuget\\packages\\humanizer.core\\2.8.26\\humanizer.core.2.8.26.nupkg.sha512",
     "C:\\Users\\mati_\\.nuget\\packages\\mediatr\\12.0.1\\mediatr.12.0.1.nupkg.sha512",
     "C:\\Users\\mati_\\.nuget\\packages\\mediatr.contracts\\2.0.1\\mediatr.contracts.2.0.1.nupkg.sha512",
-    "C:\\Users\\mati_\\.nuget\\packages\\mercadopago-sdk\\2.3.5\\mercadopago-sdk.2.3.5.nupkg.sha512",
+    "C:\\Users\\mati_\\.nuget\\packages\\mercadopago-sdk\\2.3.8\\mercadopago-sdk.2.3.8.nupkg.sha512",
     "C:\\Users\\mati_\\.nuget\\packages\\microsoft.aspnetcore.authentication.jwtbearer\\6.0.6\\microsoft.aspnetcore.authentication.jwtbearer.6.0.6.nupkg.sha512",
     "C:\\Users\\mati_\\.nuget\\packages\\microsoft.aspnetcore.html.abstractions\\2.2.0\\microsoft.aspnetcore.html.abstractions.2.2.0.nupkg.sha512",
     "C:\\Users\\mati_\\.nuget\\packages\\microsoft.aspnetcore.http.abstractions\\2.2.0\\microsoft.aspnetcore.http.abstractions.2.2.0.nupkg.sha512",

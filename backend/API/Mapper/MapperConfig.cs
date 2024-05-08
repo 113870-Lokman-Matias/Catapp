@@ -38,13 +38,16 @@ using API.Services.PedidoServices.Commands.UpdatePedidoCommand;
 using API.Services.PedidoServices.Commands.DeletePedidoCommand;
 using API.Services.PedidoServices.Commands.UpdateVerificadoPedidoCommand;
 
+using API.Dtos.PagoDto;
+using API.Services.PagoServices.Commands.CreatePagoCommand;
+
 namespace API.Mapper
 {
   public class MapperConfig : Profile
   {
     public MapperConfig()
     {
-      // Mapper para usuarios
+      // Mapper para Usuarios
       CreateMap<Usuario, UsuarioDto>()
           .ForMember(dest => dest.Rol, opt => opt.MapFrom(src => src.IdRolNavigation.Nombre));
       CreateMap<Usuario, CreateUsuarioCommand>().ReverseMap();
@@ -75,7 +78,7 @@ namespace API.Mapper
       CreateMap<Producto, UpdateStockProductoCommand>().ReverseMap();
       CreateMap<Producto, DeleteProductoCommand>().ReverseMap();
 
-      // Mapper para envios
+      // Mapper para Envios
       CreateMap<EnvioDto, Envio>().ReverseMap();
       CreateMap<Envio, UpdateCostoEnvioCommand>().ReverseMap();
 
@@ -90,6 +93,10 @@ namespace API.Mapper
       CreateMap<Pedido, UpdatePedidoCommand>().ReverseMap();
       CreateMap<Pedido, UpdateVerificadoPedidoCommand>().ReverseMap();
       CreateMap<Pedido, DeletePedidoCommand>().ReverseMap();
+
+      // Mapper para Pagos
+      CreateMap<PagoDto, Pago>().ReverseMap();
+      CreateMap<Pago, CreatePagoCommand>().ReverseMap();
     }
   }
 }

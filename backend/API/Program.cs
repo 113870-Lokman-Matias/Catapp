@@ -41,10 +41,17 @@ using API.Services.PedidoServices.Commands.UpdatePedidoCommand;
 using API.Services.PedidoServices.Commands.UpdateVerificadoPedidoCommand;
 using API.Services.PedidoServices.Commands.DeletePedidoCommand;
 
+using API.Services.PagoServices.Commands.CreatePagoCommand;
+
+using MercadoPago.Config;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // SignalR
 builder.Services.AddSignalR();
+
+// Credenciales MercadoPago
+MercadoPagoConfig.AccessToken = "TEST-718354923242289-012400-c44c2ef741fc53df597d76a76ba62dbf-1070291733";
 
 // Add services to the container.
 
@@ -125,6 +132,9 @@ builder.Services.AddScoped<IValidator<CreatePedidoCommand>, CreatePedidoCommandV
 builder.Services.AddScoped<IValidator<UpdatePedidoCommand>, UpdatePedidoCommandValidator>();
 builder.Services.AddScoped<IValidator<UpdateVerificadoPedidoCommand>, UpdateVerificadoPedidoCommandValidator>();
 builder.Services.AddScoped<IValidator<DeletePedidoCommand>, DeletePedidoCommandValidator>();
+
+// Validacion para el servicio de Pago
+builder.Services.AddScoped<IValidator<CreatePagoCommand>, CreatePagoCommandValidator>();
 
 builder.Services.AddControllers();
 
