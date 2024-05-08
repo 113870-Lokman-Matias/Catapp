@@ -101,12 +101,12 @@
   text-align: center;
 }
 
-.hidden-product{
+.hidden-product {
   background-color: #423f23e0 !important;
   text-align: center;
 }
 
-.zero-stock-hidden{
+.zero-stock-hidden {
   background-color: #232942e0 !important;
   text-align: center;
 }
@@ -134,7 +134,7 @@
   fill: #ffffff;
 }
 
-.stock-pendiente{
+.stock-pendiente {
   margin-top: 5px;
   margin-bottom: 0px;
   color: orange;
@@ -146,7 +146,7 @@
     width: auto;
   }
 
-  .stock-div{
+  .stock-div {
     flex-direction: column;
   }
 }
