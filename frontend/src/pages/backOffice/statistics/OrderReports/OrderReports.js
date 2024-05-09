@@ -24,6 +24,8 @@ import { ReactComponent as AbonoInput } from "../../../../assets/svgs/paymentInp
 import { ReactComponent as TipoInput } from "../../../../assets/svgs/typepriceinput.svg";
 //#endregion
 
+import Loader from "../../../../components/Loaders/LoaderCircle";
+
 import { GetVerifiedOrdersByDate } from "../../../../services/OrderService";
 import { GetUsersSellers } from "../../../../services/UserService";
 import { formatDate } from "../../../../utils/DateFormat";
@@ -93,6 +95,8 @@ function OrderReports() {
     setCantidadTerceraCategoriaMasDemandada,
   ] = useState("-");
   //#endregion
+
+  const [isLoading, setIsLoading] = useState(false);
 
   const [cantidadPedidos, setCantidadPedidos] = useState(0);
   const [cantidadProductos, setCantidadProductos] = useState(0);
@@ -276,6 +280,8 @@ function OrderReports() {
 
   //#region Función para buscar pedidos con los filtros
   const search = async () => {
+    setIsLoading(true);
+
     // Formatear las fechas al formato deseado
     const formattedFromDate = desde + " 00:00:00 +00:00";
     const formattedToDate = hasta + " 23:59:59 +00:00";
@@ -315,6 +321,7 @@ function OrderReports() {
 
     const respondeOrders = response.pedidos || [];
     setOrders(respondeOrders);
+    setIsLoading(false);
 
     // console.log(response);
 
@@ -587,6 +594,13 @@ function OrderReports() {
       <Helmet>
         <title>Catapp | Reportes de Pedidos</title>
       </Helmet>
+
+      {isLoading === true && (
+        <div className="loading-reports-div">
+          <Loader />
+          <p className="bold-loading">Cargando reportes...</p>
+        </div>
+      )}
 
       <section className="general-container">
         <div className="general-content">
