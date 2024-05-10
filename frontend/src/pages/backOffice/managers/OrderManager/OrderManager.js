@@ -134,10 +134,10 @@ function OrderManager() {
       setOrdersPerPage(2);
       setMaxPageNumbersToShow(1);
     } else if (window.matchMedia("(max-width: 1140px)").matches) {
-      setOrdersPerPage(7);
+      setOrdersPerPage(4);
       setMaxPageNumbersToShow(1);
     } else {
-      setOrdersPerPage(10);
+      setOrdersPerPage(4);
       setMaxPageNumbersToShow(9);
     }
 
@@ -1311,56 +1311,56 @@ function OrderManager() {
 
           {/* tabla de pedidos */}
           <table
-            className="table table-dark table-bordered table-hover table-list"
+            className="table table-dark table-bordered table-hover table-list table-list-orders table-orders "
             align="center"
           >
             <thead>
-              <tr className="table-header">
-                <th className="table-title" scope="col">
+              <tr className="table-header table-header-orders">
+                <th className="table-title table-title-orders" scope="col">
                   #
                 </th>
-                <th className="table-title" scope="col">
+                <th className="table-title table-title-orders" scope="col">
                   ID
                 </th>
-                <th className="table-title" scope="col">
+                <th className="table-title table-title-orders" scope="col">
                   Tipo
                 </th>
-                <th className="table-title" scope="col">
+                <th className="table-title table-title-orders" scope="col">
                   Cliente
                 </th>
-                <th className="table-title" scope="col">
+                <th className="table-title table-title-orders" scope="col">
                   Entrega
                 </th>
-                <th className="table-title" scope="col">
+                <th className="table-title table-title-orders" scope="col">
                   Vendedor
                 </th>
-                <th className="table-title" scope="col">
+                <th className="table-title table-title-orders" scope="col">
                   Cantidad de productos
                 </th>
-                <th className="table-title" scope="col">
+                <th className="table-title table-title-orders" scope="col">
                   Subtotal
                 </th>
-                <th className="table-title" scope="col">
+                <th className="table-title table-title-orders" scope="col">
                   Costo de envío
                 </th>
-                <th className="table-title" scope="col">
+                <th className="table-title table-title-orders" scope="col">
                   Total
                 </th>
-                <th className="table-title" scope="col">
+                <th className="table-title table-title-orders" scope="col">
                   Abono
                 </th>
-                <th className="table-title" scope="col">
+                <th className="table-title table-title-orders" scope="col">
                   Detalle
                 </th>
-                <th className="table-title" scope="col">
+                <th className="table-title table-title-orders" scope="col">
                   Fecha
                 </th>
-                <th className="table-title" scope="col">
+                <th className="table-title table-title-orders" scope="col">
                   Status
                 </th>
                 {(rolUsuario === "Supervisor" ||
                   rolUsuario === "SuperAdmin") && (
-                  <th className="table-title" scope="col">
+                  <th className="table-title table-title-orders" scope="col">
                     Acciones
                   </th>
                 )}
@@ -1372,14 +1372,14 @@ function OrderManager() {
                 return (
                   <tbody key={1 + order.idPedido}>
                     <tr>
-                      <th scope="row" className="table-name">
+                      <th scope="row" className="table-name table-name-orders">
                         {index + 1}
                       </th>
-                      <td className="table-name">{order.idPedido}</td>
-                      <td className="table-name">{order.tipo}</td>
-                      <td className="table-name">{order.cliente}</td>
+                      <td className="table-name table-name-orders">{order.idPedido}</td>
+                      <td className="table-name table-name-orders">{order.tipo}</td>
+                      <td className="table-name table-name-orders">{order.cliente}</td>
                       <td
-                        className={`table-name ${
+                        className={`table-name table-name-orders ${
                           order.entrega.includes("domicilio")
                             ? "domicilio"
                             : order.entrega.includes("retiro por el local")
@@ -1390,18 +1390,18 @@ function OrderManager() {
                         {order.entrega}
                       </td>
                       <td
-                        className={`table-name ${
+                        className={`table-name table-name-orders ${
                           order.vendedor === null ? "predeterminado" : ""
                         }`}
                       >
                         {order.vendedor === null ? "-" : order.vendedor}
                       </td>
-                      <td className="table-name">{order.cantidadProductos}</td>
-                      <td className="table-name">
+                      <td className="table-name table-name-orders">{order.cantidadProductos}</td>
+                      <td className="table-name table-name-orders">
                         ${order.subtotal.toLocaleString()}
                       </td>
                       <td
-                        className={`table-name ${
+                        className={`table-name table-name-orders ${
                           order.costoEnvio > 0
                             ? "domicilio"
                             : order.entrega.includes("retiro por el local")
@@ -1411,25 +1411,25 @@ function OrderManager() {
                       >
                         ${order.costoEnvio.toLocaleString()}
                       </td>
-                      <td className="table-name">
+                      <td className="table-name table-name-orders">
                         ${order.total.toLocaleString()}
                       </td>
                       <td
-                        className={`table-name ${
+                        className={`table-name table-name-orders ${
                           order.abono === "Mercado Pago"
                             ? "mercado-pago"
-                            : "table-name"
+                            : "table-name table-name-orders"
                         }`}
                       >
                         {order.abono}
                       </td>
-                      <td className="table-name table-overflow">
+                      <td className="table-name table-name-orders table-overflow">
                         <pre>{order.detalle.split("|").join("\n")}</pre>
                       </td>
-                      <td className="table-name">{formatDate(order.fecha)}</td>
+                      <td className="table-name table-name-orders">{formatDate(order.fecha)}</td>
 
                       {order.verificado ? (
-                        <td className="table-name">
+                        <td className="table-name table-name-orders">
                           <div className="status-btns">
                             <div className="circulo-verificado"></div>
                             <p className="status-name">Verificado</p>
@@ -1448,7 +1448,7 @@ function OrderManager() {
                           </div>
                         </td>
                       ) : (
-                        <td className="table-name">
+                        <td className="table-name table-name-orders">
                           <div className="status-btns">
                             <div className="circulo-pendiente"></div>
                             <p className="status-name">Pendiente</p>
@@ -1470,7 +1470,7 @@ function OrderManager() {
 
                       {(rolUsuario === "Supervisor" ||
                         rolUsuario === "SuperAdmin") && (
-                        <td className="table-name">
+                        <td className="table-name table-name-orders">
                           <button
                             type="button"
                             className="btn btn-warning btn-edit"
@@ -1517,8 +1517,8 @@ function OrderManager() {
               })
             ) : (
               <tbody>
-                <tr className="tr-name1">
-                  <td className="table-name table-name1" colSpan={15}>
+                <tr className="tr-name1-orders">
+                  <td className="table-name table-name1-orders" colSpan={15}>
                     Sin registros
                   </td>
                 </tr>
@@ -1526,51 +1526,51 @@ function OrderManager() {
             )}
           </table>
 
-          {/* tabla de pedidos */}
+          {/* tabla de pedidos para Excel */}
           <table
             ref={tableRef}
             className="table table-dark table-list-none"
             align="center"
           >
             <thead>
-              <tr className="table-header">
-                <th className="table-title" scope="col">
+              <tr>
+                <th scope="col">
                   ID
                 </th>
-                <th className="table-title" scope="col">
+                <th scope="col">
                   Tipo
                 </th>
-                <th className="table-title" scope="col">
+                <th scope="col">
                   Cliente
                 </th>
-                <th className="table-title" scope="col">
+                <th scope="col">
                   Entrega
                 </th>
-                <th className="table-title" scope="col">
+                <th scope="col">
                   Vendedor
                 </th>
-                <th className="table-title" scope="col">
+                <th scope="col">
                   Cantidad de productos
                 </th>
-                <th className="table-title" scope="col">
+                <th scope="col">
                   Subtotal
                 </th>
-                <th className="table-title" scope="col">
+                <th scope="col">
                   Costo de envío
                 </th>
-                <th className="table-title" scope="col">
+                <th scope="col">
                   Total
                 </th>
-                <th className="table-title" scope="col">
+                <th scope="col">
                   Abono
                 </th>
-                <th className="table-title" scope="col">
+                <th scope="col">
                   Detalle
                 </th>
-                <th className="table-title" scope="col">
+                <th scope="col">
                   Fecha
                 </th>
-                <th className="table-title" scope="col">
+                <th scope="col">
                   Status
                 </th>
               </tr>
@@ -1581,34 +1581,22 @@ function OrderManager() {
                 return (
                   <tbody key={1 + order.idPedido}>
                     <tr>
-                      <td className="table-name">{order.idPedido}</td>
-                      <td className="table-name">{order.tipo}</td>
-                      <td className="table-name">{order.cliente}</td>
-                      <td className="table-name">{order.entrega}</td>
-                      <td
-                        className={`table-name ${
-                          order.vendedor === null ? "predeterminado" : ""
-                        }`}
-                      >
-                        {order.vendedor === null ? "-" : order.vendedor}
-                      </td>
-                      <td className="table-name">{order.cantidadProductos}</td>
-                      <td className="table-name">
-                        {order.subtotal.toLocaleString()}
-                      </td>
-                      <td className="table-name">
-                        {order.costoEnvio.toLocaleString()}
-                      </td>
-                      <td className="table-name">
-                        {order.total.toLocaleString()}
-                      </td>
-                      <td className="table-name">{order.abono}</td>
-                      <td className="table-name">{order.detalle}</td>
-                      <td className="table-name">{formatDate(order.fecha)}</td>
+                      <td>{order.idPedido}</td>
+                      <td>{order.tipo}</td>
+                      <td>{order.cliente}</td>
+                      <td>{order.entrega}</td>
+                      <td>{order.vendedor === null ? "-" : order.vendedor}</td>
+                      <td>{order.cantidadProductos}</td>
+                      <td>{order.subtotal.toLocaleString()}</td>
+                      <td>{order.costoEnvio.toLocaleString()}</td>
+                      <td>{order.total.toLocaleString()}</td>
+                      <td>{order.abono}</td>
+                      <td>{order.detalle}</td>
+                      <td>{formatDate(order.fecha)}</td>
                       {order.verificado ? (
-                        <td className="table-name">Verificado</td>
+                        <td>Verificado</td>
                       ) : (
-                        <td className="table-name">Pendiente</td>
+                        <td>Pendiente</td>
                       )}
                     </tr>
                   </tbody>
@@ -1617,9 +1605,7 @@ function OrderManager() {
             ) : (
               <tbody>
                 <tr>
-                  <td className="table-name" colSpan={11}>
-                    Sin registros
-                  </td>
+                  <td colSpan={11}>Sin registros</td>
                 </tr>
               </tbody>
             )}
