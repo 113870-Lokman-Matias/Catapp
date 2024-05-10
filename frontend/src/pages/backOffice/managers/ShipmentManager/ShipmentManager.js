@@ -14,6 +14,8 @@ import { ReactComponent as Back } from "../../../../assets/svgs/back.svg";
 import { ReactComponent as PriceInput } from "../../../../assets/svgs/priceinput.svg";
 //#endregion
 
+import Loader from "../../../../components/Loaders/LoaderCircle";
+
 import {
   GetCostoEnvio,
   UpdateCostoEnvio,
@@ -23,6 +25,8 @@ import { formatDate } from "../../../../utils/DateFormat";
 
 function ShipmentManager() {
   //#region Constantes
+  const [isLoading, setIsLoading] = useState(false);
+
   const [idEnvio, setIdEnvio] = useState("");
 
   const [precio, setPrecio] = useState("");
@@ -42,7 +46,18 @@ function ShipmentManager() {
 
   //#region UseEffect
   useEffect(() => {
-    (async () => await [GetCostoEnvio(setCostoEnvio)])();
+    (async () => {
+      setIsLoading(true);
+
+      try {
+        await Promise.all([GetCostoEnvio(setCostoEnvio)]);
+        setIsLoading(false);
+      } catch (error) {
+        // Manejar errores aquí si es necesario
+        setIsLoading(false);
+      }
+    })();
+
     const token = localStorage.getItem("token");
 
     if (token) {
@@ -157,25 +172,24 @@ function ShipmentManager() {
       });
     } else if (IsValid() === true && IsUpdated() === true) {
       try {
-          await UpdateCostoEnvio(
-            {
-              idEnvio: idEnvio,
-              precio: precio
-            },
-            headers
-          );
-          Swal.fire({
-            icon: "success",
-            title: "Costo de envío actualizado exitosamente!",
-            showConfirmButton: false,
-            timer: 2000,
-          });
-          CloseModal();
-          await GetCostoEnvio(setCostoEnvio);
+        await UpdateCostoEnvio(
+          {
+            idEnvio: idEnvio,
+            precio: precio,
+          },
+          headers
+        );
+        Swal.fire({
+          icon: "success",
+          title: "Costo de envío actualizado exitosamente!",
+          showConfirmButton: false,
+          timer: 2000,
+        });
+        CloseModal();
+        await GetCostoEnvio(setCostoEnvio);
 
-          // InitialState();
-          ClearCostoEnvioInputs();
-        
+        // InitialState();
+        ClearCostoEnvioInputs();
       } catch (err) {
         Swal.fire({
           icon: "error",
@@ -329,71 +343,78 @@ function ShipmentManager() {
           <br />
 
           {/* tabla con el costo de envío */}
-          <table
-            className="table table-dark table-bordered table-hover table-list"
-            align="center"
-          >
-            <thead>
-              <tr className="table-header">
-                <th className="table-title" scope="col">
-                  Costo de envío
-                </th>
-                <th className="table-title" scope="col">
-                  Modificado por
-                </th>
-                <th className="table-title" scope="col">
-                  Fecha de modificación
-                </th>
-                <th className="table-title" scope="col">
-                  Acción
-                </th>
-              </tr>
-            </thead>
-
-            {costoEnvio ? (
-              <tbody key={1 + costoEnvio.idEnvio}>
-                <tr>
-                  {/* <td className="table-name table-costoenvio">${costoEnvio.precio}</td> */}
-
-                  <td className="table-name table-costoenvio">
-                    {costoEnvio && costoEnvio.precio !== undefined
-                      ? `$${costoEnvio.precio.toLocaleString()}`
-                      : ""}
-                  </td>
-
-                  <td className="table-name table-costoenvio">
-                    {costoEnvio.ultimoModificador}
-                  </td>
-
-                  <td className="table-name table-costoenvio">
-                    {formatDate(costoEnvio.fechaModificacion)}
-                  </td>
-
-                  <td className="table-name">
-                    <button
-                      type="button"
-                      className="btn btn-warning btn-edit"
-                      data-bs-toggle="modal"
-                      data-bs-target="#modal"
-                      onClick={() => {
-                        RetrieveEnvioInputs(costoEnvio);
-                      }}
-                    >
-                      <Edit className="edit" />
-                    </button>
-                  </td>
+          {isLoading ? (
+            <div className="loading-generaltable-div">
+              <Loader />
+              <p className="bold-loading">Cargando costo de envío...</p>
+            </div>
+          ) : (
+            <table
+              className="table table-dark table-bordered table-hover table-list"
+              align="center"
+            >
+              <thead>
+                <tr className="table-header">
+                  <th className="table-title" scope="col">
+                    Costo de envío
+                  </th>
+                  <th className="table-title" scope="col">
+                    Modificado por
+                  </th>
+                  <th className="table-title" scope="col">
+                    Fecha de modificación
+                  </th>
+                  <th className="table-title" scope="col">
+                    Acción
+                  </th>
                 </tr>
-              </tbody>
-            ) : (
-              <tbody>
-                <tr className="tr-name1">
-                  <td className="table-name table-name1" colSpan={4}>
-                    Sin registros
-                  </td>
-                </tr>
-              </tbody>
-            )}
-          </table>
+              </thead>
+
+              {costoEnvio ? (
+                <tbody key={1 + costoEnvio.idEnvio}>
+                  <tr>
+                    {/* <td className="table-name table-costoenvio">${costoEnvio.precio}</td> */}
+
+                    <td className="table-name table-costoenvio">
+                      {costoEnvio && costoEnvio.precio !== undefined
+                        ? `$${costoEnvio.precio.toLocaleString()}`
+                        : ""}
+                    </td>
+
+                    <td className="table-name table-costoenvio">
+                      {costoEnvio.ultimoModificador}
+                    </td>
+
+                    <td className="table-name table-costoenvio">
+                      {formatDate(costoEnvio.fechaModificacion)}
+                    </td>
+
+                    <td className="table-name">
+                      <button
+                        type="button"
+                        className="btn btn-warning btn-edit"
+                        data-bs-toggle="modal"
+                        data-bs-target="#modal"
+                        onClick={() => {
+                          RetrieveEnvioInputs(costoEnvio);
+                        }}
+                      >
+                        <Edit className="edit" />
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              ) : (
+                <tbody>
+                  <tr className="tr-name1">
+                    <td className="table-name table-name1" colSpan={4}>
+                      Sin registros
+                    </td>
+                  </tr>
+                </tbody>
+              )}
+            </table>
+          )}
         </div>
       </section>
     </div>

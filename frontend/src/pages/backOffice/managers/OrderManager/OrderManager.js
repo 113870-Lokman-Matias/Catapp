@@ -27,6 +27,8 @@ import { ReactComponent as EntregaInput } from "../../../../assets/svgs/entregai
 import { ReactComponent as PaymentInput } from "../../../../assets/svgs/paymentInput.svg";
 //#endregion
 
+import Loader from "../../../../components/Loaders/LoaderCircle";
+
 import {
   GetOrders,
   UpdateOrders,
@@ -39,6 +41,8 @@ import { formatDate } from "../../../../utils/DateFormat";
 
 function OrderManager() {
   //#region Constantes
+  const [isLoading, setIsLoading] = useState(false);
+
   const [idPedido, setIdPedido] = useState("");
 
   const [tipo, setTipo] = useState("");
@@ -107,13 +111,22 @@ function OrderManager() {
 
   //#region UseEffect
   useEffect(() => {
-    (async () =>
-      await [
-        GetOrders(setOrders),
-        GetOrders(setOriginalOrdersList),
-        GetUsersSellers(setListaNombresVendedores),
-        GetCostoEnvioUnicamente(setCostoEnvioDomicilio),
-      ])();
+    (async () => {
+      setIsLoading(true);
+
+      try {
+        await Promise.all([
+          GetOrders(setOrders),
+          GetOrders(setOriginalOrdersList),
+          GetUsersSellers(setListaNombresVendedores),
+          GetCostoEnvioUnicamente(setCostoEnvioDomicilio),
+        ]);
+        setIsLoading(false);
+      } catch (error) {
+        // Manejar errores aquí si es necesario
+        setIsLoading(false);
+      }
+    })();
 
     if (window.matchMedia("(max-width: 500px)").matches) {
       setOrdersPerPage(1);
@@ -913,11 +926,12 @@ function OrderManager() {
               )}
             </div>
 
-            {orders.length > 1 || orders.length === 0 ? (
-              <p className="total">Hay {orders.length} pedidos.</p>
-            ) : (
-              <p className="total">Hay {orders.length} pedido.</p>
-            )}
+            {isLoading === false &&
+              (orders.length > 1 || orders.length === 0 ? (
+                <p className="total">Hay {orders.length} pedidos.</p>
+              ) : (
+                <p className="total">Hay {orders.length} pedido.</p>
+              ))}
           </div>
 
           {/* modal con el formulario para actualizar un pedido */}
@@ -1249,282 +1263,304 @@ function OrderManager() {
             </div>
           </div>
 
-          <div className="filters-left2">
-            <div className="pagination-count3">
-              <div className="search-container">
-                <div className="form-group-input-search2">
-                  <span className="input-group-text3">
-                    <Lupa className="input-group-svg" />
-                  </span>
-                  <input
-                    className="search-input2"
-                    type="text"
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                    onKeyUp={search}
-                    placeholder="Buscar..."
-                  />
+          {orders.length > 0 && (
+            <div className="filters-left2">
+              <div className="pagination-count3">
+                <div className="search-container">
+                  <div className="form-group-input-search2">
+                    <span className="input-group-text3">
+                      <Lupa className="input-group-svg" />
+                    </span>
+                    <input
+                      className="search-input2"
+                      type="text"
+                      value={query}
+                      onChange={(e) => setQuery(e.target.value)}
+                      onKeyUp={search}
+                      placeholder="Buscar..."
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="pagination-count-filter">
-              <button
-                className="btn btn-secondary btn-filters"
-                data-bs-toggle="modal"
-                data-bs-target="#modal-filters"
-              >
-                <div
-                  className="filter-btn-title-container-2"
-                  id="filter-btn-title-container"
+              <div className="pagination-count-filter">
+                <button
+                  className="btn btn-secondary btn-filters"
+                  data-bs-toggle="modal"
+                  data-bs-target="#modal-filters"
                 >
-                  <p className="filter-btn">
-                    <Filter className="filter-svg2" />
-                  </p>
-                  <p className="filter-title2">Filtros</p>
-                </div>
-              </button>
+                  <div
+                    className="filter-btn-title-container-2"
+                    id="filter-btn-title-container"
+                  >
+                    <p className="filter-btn">
+                      <Filter className="filter-svg2" />
+                    </p>
+                    <p className="filter-title2">Filtros</p>
+                  </div>
+                </button>
 
-              <button
-                id="clear-filter"
-                className="clear-filter2"
-                onClick={ClearFilter}
-              >
-                <Close className="close-svg2" />
-                <p className="clear-filter-p">{filterName}</p>
-              </button>
-            </div>
+                <button
+                  id="clear-filter"
+                  className="clear-filter2"
+                  onClick={ClearFilter}
+                >
+                  <Close className="close-svg2" />
+                  <p className="clear-filter-p">{filterName}</p>
+                </button>
+              </div>
 
-            <div className="header-excel">
-              <button
-                onClick={onDownload}
-                type="button"
-                className="btn btn-success btn-excel"
-              >
-                <div className="btn-add-content">
-                  <Excel className="excel" />
-                  <p className="p-add">Descargar</p>
-                </div>
-              </button>
+              <div className="header-excel">
+                <button
+                  onClick={onDownload}
+                  type="button"
+                  className="btn btn-success btn-excel"
+                >
+                  <div className="btn-add-content">
+                    <Excel className="excel" />
+                    <p className="p-add">Descargar</p>
+                  </div>
+                </button>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* tabla de pedidos */}
-          <table
-            className="table table-dark table-bordered table-hover table-list table-list-orders table-orders "
-            align="center"
-          >
-            <thead>
-              <tr className="table-header table-header-orders">
-                <th className="table-title table-title-orders" scope="col">
-                  #
-                </th>
-                <th className="table-title table-title-orders" scope="col">
-                  ID
-                </th>
-                <th className="table-title table-title-orders" scope="col">
-                  Tipo
-                </th>
-                <th className="table-title table-title-orders" scope="col">
-                  Cliente
-                </th>
-                <th className="table-title table-title-orders" scope="col">
-                  Entrega
-                </th>
-                <th className="table-title table-title-orders" scope="col">
-                  Vendedor
-                </th>
-                <th className="table-title table-title-orders" scope="col">
-                  Cantidad de productos
-                </th>
-                <th className="table-title table-title-orders" scope="col">
-                  Subtotal
-                </th>
-                <th className="table-title table-title-orders" scope="col">
-                  Costo de envío
-                </th>
-                <th className="table-title table-title-orders" scope="col">
-                  Total
-                </th>
-                <th className="table-title table-title-orders" scope="col">
-                  Abono
-                </th>
-                <th className="table-title table-title-orders" scope="col">
-                  Detalle
-                </th>
-                <th className="table-title table-title-orders" scope="col">
-                  Fecha
-                </th>
-                <th className="table-title table-title-orders" scope="col">
-                  Status
-                </th>
-                {(rolUsuario === "Supervisor" ||
-                  rolUsuario === "SuperAdmin") && (
+          {isLoading ? (
+            <div className="loading-generaltable-div">
+              <Loader />
+              <p className="bold-loading">Cargando pedidos...</p>
+            </div>
+          ) : (
+            <table
+              className="table table-dark table-bordered table-hover table-list table-list-orders table-orders "
+              align="center"
+            >
+              <thead>
+                <tr className="table-header table-header-orders">
                   <th className="table-title table-title-orders" scope="col">
-                    Acciones
+                    #
                   </th>
-                )}
-              </tr>
-            </thead>
-
-            {orders.length > 0 ? (
-              ordersTable.map(function fn(order, index) {
-                return (
-                  <tbody key={1 + order.idPedido}>
-                    <tr>
-                      <th scope="row" className="table-name table-name-orders">
-                        {index + 1}
-                      </th>
-                      <td className="table-name table-name-orders">{order.idPedido}</td>
-                      <td className="table-name table-name-orders">{order.tipo}</td>
-                      <td className="table-name table-name-orders">{order.cliente}</td>
-                      <td
-                        className={`table-name table-name-orders ${
-                          order.entrega.includes("domicilio")
-                            ? "domicilio"
-                            : order.entrega.includes("retiro por el local")
-                            ? "retiro-local"
-                            : "domicilio"
-                        }`}
-                      >
-                        {order.entrega}
-                      </td>
-                      <td
-                        className={`table-name table-name-orders ${
-                          order.vendedor === null ? "predeterminado" : ""
-                        }`}
-                      >
-                        {order.vendedor === null ? "-" : order.vendedor}
-                      </td>
-                      <td className="table-name table-name-orders">{order.cantidadProductos}</td>
-                      <td className="table-name table-name-orders">
-                        ${order.subtotal.toLocaleString()}
-                      </td>
-                      <td
-                        className={`table-name table-name-orders ${
-                          order.costoEnvio > 0
-                            ? "domicilio"
-                            : order.entrega.includes("retiro por el local")
-                            ? "retiro-local"
-                            : "domicilio"
-                        }`}
-                      >
-                        ${order.costoEnvio.toLocaleString()}
-                      </td>
-                      <td className="table-name table-name-orders">
-                        ${order.total.toLocaleString()}
-                      </td>
-                      <td
-                        className={`table-name table-name-orders ${
-                          order.abono === "Mercado Pago"
-                            ? "mercado-pago"
-                            : "table-name table-name-orders"
-                        }`}
-                      >
-                        {order.abono}
-                      </td>
-                      <td className="table-name table-name-orders table-overflow">
-                        <pre>{order.detalle.split("|").join("\n")}</pre>
-                      </td>
-                      <td className="table-name table-name-orders">{formatDate(order.fecha)}</td>
-
-                      {order.verificado ? (
-                        <td className="table-name table-name-orders">
-                          <div className="status-btns">
-                            <div className="circulo-verificado"></div>
-                            <p className="status-name">Verificado</p>
-                            {(rolUsuario === "Supervisor" ||
-                              rolUsuario === "SuperAdmin") && (
-                              <button
-                                type="button"
-                                className="btn btn-light btn-delete4"
-                                onClick={() => {
-                                  Pending(order);
-                                }}
-                              >
-                                <Pendiente className="edit3" />
-                              </button>
-                            )}
-                          </div>
-                        </td>
-                      ) : (
-                        <td className="table-name table-name-orders">
-                          <div className="status-btns">
-                            <div className="circulo-pendiente"></div>
-                            <p className="status-name">Pendiente</p>
-                            {(rolUsuario === "Supervisor" ||
-                              rolUsuario === "SuperAdmin") && (
-                              <button
-                                type="button"
-                                className="btn btn-light btn-delete4"
-                                onClick={() => {
-                                  Verify(order);
-                                }}
-                              >
-                                <Verificar className="edit3" />
-                              </button>
-                            )}
-                          </div>
-                        </td>
-                      )}
-
-                      {(rolUsuario === "Supervisor" ||
-                        rolUsuario === "SuperAdmin") && (
-                        <td className="table-name table-name-orders">
-                          <button
-                            type="button"
-                            className="btn btn-warning btn-edit"
-                            data-bs-toggle="modal"
-                            data-bs-target="#modal"
-                            onClick={() => {
-                              RetrieveOrderInputs(order);
-                            }}
-                          >
-                            <Edit className="edit" />
-                          </button>
-
-                          <button
-                            type="button"
-                            className="btn btn-danger btn-delete"
-                            onClick={() =>
-                              Swal.fire({
-                                title:
-                                  "Esta seguro de que desea eliminar el siguiente pedido: " +
-                                  order.idPedido +
-                                  "?",
-                                text: "Una vez eliminado, no se podra recuperar",
-                                icon: "warning",
-                                showCancelButton: true,
-                                confirmButtonColor: "#F8BB86",
-                                cancelButtonColor: "#6c757d",
-                                confirmButtonText: "Aceptar",
-                                cancelButtonText: "Cancelar",
-                                focusCancel: true,
-                              }).then((result) => {
-                                if (result.isConfirmed) {
-                                  DeleteOrder(order.idPedido);
-                                }
-                              })
-                            }
-                          >
-                            <Delete className="delete" />
-                          </button>
-                        </td>
-                      )}
-                    </tr>
-                  </tbody>
-                );
-              })
-            ) : (
-              <tbody>
-                <tr className="tr-name1-orders">
-                  <td className="table-name table-name1-orders" colSpan={15}>
-                    Sin registros
-                  </td>
+                  <th className="table-title table-title-orders" scope="col">
+                    ID
+                  </th>
+                  <th className="table-title table-title-orders" scope="col">
+                    Tipo
+                  </th>
+                  <th className="table-title table-title-orders" scope="col">
+                    Cliente
+                  </th>
+                  <th className="table-title table-title-orders" scope="col">
+                    Entrega
+                  </th>
+                  <th className="table-title table-title-orders" scope="col">
+                    Vendedor
+                  </th>
+                  <th className="table-title table-title-orders" scope="col">
+                    Cantidad de productos
+                  </th>
+                  <th className="table-title table-title-orders" scope="col">
+                    Subtotal
+                  </th>
+                  <th className="table-title table-title-orders" scope="col">
+                    Costo de envío
+                  </th>
+                  <th className="table-title table-title-orders" scope="col">
+                    Total
+                  </th>
+                  <th className="table-title table-title-orders" scope="col">
+                    Abono
+                  </th>
+                  <th className="table-title table-title-orders" scope="col">
+                    Detalle
+                  </th>
+                  <th className="table-title table-title-orders" scope="col">
+                    Fecha
+                  </th>
+                  <th className="table-title table-title-orders" scope="col">
+                    Status
+                  </th>
+                  {(rolUsuario === "Supervisor" ||
+                    rolUsuario === "SuperAdmin") && (
+                    <th className="table-title table-title-orders" scope="col">
+                      Acciones
+                    </th>
+                  )}
                 </tr>
-              </tbody>
-            )}
-          </table>
+              </thead>
+
+              {orders.length > 0 ? (
+                ordersTable.map(function fn(order, index) {
+                  return (
+                    <tbody key={1 + order.idPedido}>
+                      <tr>
+                        <th
+                          scope="row"
+                          className="table-name table-name-orders"
+                        >
+                          {index + 1}
+                        </th>
+                        <td className="table-name table-name-orders">
+                          {order.idPedido}
+                        </td>
+                        <td className="table-name table-name-orders">
+                          {order.tipo}
+                        </td>
+                        <td className="table-name table-name-orders">
+                          {order.cliente}
+                        </td>
+                        <td
+                          className={`table-name table-name-orders ${
+                            order.entrega.includes("domicilio")
+                              ? "domicilio"
+                              : order.entrega.includes("retiro por el local")
+                              ? "retiro-local"
+                              : "domicilio"
+                          }`}
+                        >
+                          {order.entrega}
+                        </td>
+                        <td
+                          className={`table-name table-name-orders ${
+                            order.vendedor === null ? "predeterminado" : ""
+                          }`}
+                        >
+                          {order.vendedor === null ? "-" : order.vendedor}
+                        </td>
+                        <td className="table-name table-name-orders">
+                          {order.cantidadProductos}
+                        </td>
+                        <td className="table-name table-name-orders">
+                          ${order.subtotal.toLocaleString()}
+                        </td>
+                        <td
+                          className={`table-name table-name-orders ${
+                            order.costoEnvio > 0
+                              ? "domicilio"
+                              : order.entrega.includes("retiro por el local")
+                              ? "retiro-local"
+                              : "domicilio"
+                          }`}
+                        >
+                          ${order.costoEnvio.toLocaleString()}
+                        </td>
+                        <td className="table-name table-name-orders">
+                          ${order.total.toLocaleString()}
+                        </td>
+                        <td
+                          className={`table-name table-name-orders ${
+                            order.abono === "Mercado Pago"
+                              ? "mercado-pago"
+                              : "table-name table-name-orders"
+                          }`}
+                        >
+                          {order.abono}
+                        </td>
+                        <td className="table-name table-name-orders table-overflow">
+                          <pre>{order.detalle.split("|").join("\n")}</pre>
+                        </td>
+                        <td className="table-name table-name-orders">
+                          {formatDate(order.fecha)}
+                        </td>
+
+                        {order.verificado ? (
+                          <td className="table-name table-name-orders">
+                            <div className="status-btns">
+                              <div className="circulo-verificado"></div>
+                              <p className="status-name">Verificado</p>
+                              {(rolUsuario === "Supervisor" ||
+                                rolUsuario === "SuperAdmin") && (
+                                <button
+                                  type="button"
+                                  className="btn btn-light btn-delete4"
+                                  onClick={() => {
+                                    Pending(order);
+                                  }}
+                                >
+                                  <Pendiente className="edit3" />
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        ) : (
+                          <td className="table-name table-name-orders">
+                            <div className="status-btns">
+                              <div className="circulo-pendiente"></div>
+                              <p className="status-name">Pendiente</p>
+                              {(rolUsuario === "Supervisor" ||
+                                rolUsuario === "SuperAdmin") && (
+                                <button
+                                  type="button"
+                                  className="btn btn-light btn-delete4"
+                                  onClick={() => {
+                                    Verify(order);
+                                  }}
+                                >
+                                  <Verificar className="edit3" />
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        )}
+
+                        {(rolUsuario === "Supervisor" ||
+                          rolUsuario === "SuperAdmin") && (
+                          <td className="table-name table-name-orders">
+                            <button
+                              type="button"
+                              className="btn btn-warning btn-edit"
+                              data-bs-toggle="modal"
+                              data-bs-target="#modal"
+                              onClick={() => {
+                                RetrieveOrderInputs(order);
+                              }}
+                            >
+                              <Edit className="edit" />
+                            </button>
+
+                            <button
+                              type="button"
+                              className="btn btn-danger btn-delete"
+                              onClick={() =>
+                                Swal.fire({
+                                  title:
+                                    "Esta seguro de que desea eliminar el siguiente pedido: " +
+                                    order.idPedido +
+                                    "?",
+                                  text: "Una vez eliminado, no se podra recuperar",
+                                  icon: "warning",
+                                  showCancelButton: true,
+                                  confirmButtonColor: "#F8BB86",
+                                  cancelButtonColor: "#6c757d",
+                                  confirmButtonText: "Aceptar",
+                                  cancelButtonText: "Cancelar",
+                                  focusCancel: true,
+                                }).then((result) => {
+                                  if (result.isConfirmed) {
+                                    DeleteOrder(order.idPedido);
+                                  }
+                                })
+                              }
+                            >
+                              <Delete className="delete" />
+                            </button>
+                          </td>
+                        )}
+                      </tr>
+                    </tbody>
+                  );
+                })
+              ) : (
+                <tbody>
+                  <tr className="tr-name1-orders">
+                    <td className="table-name table-name1-orders" colSpan={15}>
+                      Sin registros
+                    </td>
+                  </tr>
+                </tbody>
+              )}
+            </table>
+          )}
 
           {/* tabla de pedidos para Excel */}
           <table
@@ -1534,45 +1570,19 @@ function OrderManager() {
           >
             <thead>
               <tr>
-                <th scope="col">
-                  ID
-                </th>
-                <th scope="col">
-                  Tipo
-                </th>
-                <th scope="col">
-                  Cliente
-                </th>
-                <th scope="col">
-                  Entrega
-                </th>
-                <th scope="col">
-                  Vendedor
-                </th>
-                <th scope="col">
-                  Cantidad de productos
-                </th>
-                <th scope="col">
-                  Subtotal
-                </th>
-                <th scope="col">
-                  Costo de envío
-                </th>
-                <th scope="col">
-                  Total
-                </th>
-                <th scope="col">
-                  Abono
-                </th>
-                <th scope="col">
-                  Detalle
-                </th>
-                <th scope="col">
-                  Fecha
-                </th>
-                <th scope="col">
-                  Status
-                </th>
+                <th scope="col">ID</th>
+                <th scope="col">Tipo</th>
+                <th scope="col">Cliente</th>
+                <th scope="col">Entrega</th>
+                <th scope="col">Vendedor</th>
+                <th scope="col">Cantidad de productos</th>
+                <th scope="col">Subtotal</th>
+                <th scope="col">Costo de envío</th>
+                <th scope="col">Total</th>
+                <th scope="col">Abono</th>
+                <th scope="col">Detalle</th>
+                <th scope="col">Fecha</th>
+                <th scope="col">Status</th>
               </tr>
             </thead>
 

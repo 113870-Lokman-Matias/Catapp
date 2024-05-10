@@ -30,6 +30,8 @@ import { ReactComponent as RolInput } from "../../../../assets/svgs/rol.svg";
 import { ReactComponent as PasswordInput } from "../../../../assets/svgs/password.svg";
 //#endregion
 
+import Loader from "../../../../components/Loaders/LoaderCircle";
+
 import {
   GetUsers,
   GetUsersByRole,
@@ -41,6 +43,8 @@ import {
 
 function UserManager() {
   //#region Constantes
+  const [isLoading, setIsLoading] = useState(false);
+
   const pathname = window.location.pathname.toLowerCase();
 
   const [idUsuario, setIdUsuario] = useState("");
@@ -75,7 +79,7 @@ function UserManager() {
 
   const [originalUsersList, setOriginalUsersList] = useState(users);
 
-  const [title, setTitle] = useState("");
+  const [title, setTitle] = useState("Detalles de Usuarios");
 
   const [filterName, setFilterName] = useState("");
 
@@ -109,7 +113,14 @@ function UserManager() {
   //#region UseEffect
   useEffect(() => {
     (async () => {
-      await GetUsers(setAllUsers);
+      setIsLoading(true);
+      try {
+        await Promise.all([GetUsers(setAllUsers)]);
+        setIsLoading(false);
+      } catch (error) {
+        // Manejar errores aquí si es necesario
+        setIsLoading(false);
+      }
     })();
 
     if (pathname.includes("gerentes")) {
@@ -1147,62 +1158,66 @@ function UserManager() {
               </Link>
 
               <h2 className="title title-general">{title}</h2>
-              <button
-                type="button"
-                className="btn btn-success btn-add"
-                data-bs-toggle="modal"
-                data-bs-target="#modal"
-                onClick={() => {
-                  ClearUserInputs();
-                  setModalTitle(() => {
-                    if (pathname.includes("vendedores")) {
-                      return "Registrar Vendedor";
-                    } else if (pathname.includes("supervisores")) {
-                      return "Registrar Supervisor";
-                    } else if (pathname.includes("gerentes")) {
-                      return "Registrar Gerente";
-                    } else {
-                      return "Registrar Usuario";
-                    }
-                  });
-                  setTimeout(function () {
-                    $("#nombre").focus();
-                  }, 500);
-                  setActivo(true);
-                }}
-              >
-                <div className="btn-add-content">
-                  <Add className="add" />
-                  <p className="p-add">Añadir</p>
-                </div>
-              </button>
+
+              {isLoading === false && (
+                <button
+                  type="button"
+                  className="btn btn-success btn-add"
+                  data-bs-toggle="modal"
+                  data-bs-target="#modal"
+                  onClick={() => {
+                    ClearUserInputs();
+                    setModalTitle(() => {
+                      if (pathname.includes("vendedores")) {
+                        return "Registrar Vendedor";
+                      } else if (pathname.includes("supervisores")) {
+                        return "Registrar Supervisor";
+                      } else if (pathname.includes("gerentes")) {
+                        return "Registrar Gerente";
+                      } else {
+                        return "Registrar Usuario";
+                      }
+                    });
+                    setTimeout(function () {
+                      $("#nombre").focus();
+                    }, 500);
+                    setActivo(true);
+                  }}
+                >
+                  <div className="btn-add-content">
+                    <Add className="add" />
+                    <p className="p-add">Añadir</p>
+                  </div>
+                </button>
+              )}
             </div>
 
-            {users.length > 1 || users.length === 0 ? (
-              <p className="total">
-                Hay {users.length}{" "}
-                {pathname.includes("vendedores")
-                  ? "vendedores"
-                  : pathname.includes("supervisores")
-                  ? "supervisores"
-                  : pathname.includes("gerentes")
-                  ? "gerentes"
-                  : "usuarios"}
-                .
-              </p>
-            ) : (
-              <p className="total">
-                Hay {users.length}{" "}
-                {pathname.includes("vendedores")
-                  ? "vendedor"
-                  : pathname.includes("supervisores")
-                  ? "supervisor"
-                  : pathname.includes("gerentes")
-                  ? "gerente"
-                  : "usuario"}
-                .
-              </p>
-            )}
+            {isLoading === false &&
+              (users.length > 1 || users.length === 0 ? (
+                <p className="total">
+                  Hay {users.length}{" "}
+                  {pathname.includes("vendedores")
+                    ? "vendedores"
+                    : pathname.includes("supervisores")
+                    ? "supervisores"
+                    : pathname.includes("gerentes")
+                    ? "gerentes"
+                    : "usuarios"}
+                  .
+                </p>
+              ) : (
+                <p className="total">
+                  Hay {users.length}{" "}
+                  {pathname.includes("vendedores")
+                    ? "vendedor"
+                    : pathname.includes("supervisores")
+                    ? "supervisor"
+                    : pathname.includes("gerentes")
+                    ? "gerente"
+                    : "usuario"}
+                  .
+                </p>
+              ))}
           </div>
 
           {/* modal con el formulario para registrar un usuario */}
@@ -1590,211 +1605,222 @@ function UserManager() {
             </div>
           </div>
 
-          <div className="filters-left3">
-            <div className="pagination-count-filter">
-              <button
-                className="btn btn-secondary btn-filters"
-                data-bs-toggle="modal"
-                data-bs-target="#modal-filters"
-              >
-                <div
-                  className="filter-btn-title-container-2"
-                  id="filter-btn-title-container"
+          {users.length > 0 && (
+            <div className="filters-left3">
+              <div className="pagination-count-filter">
+                <button
+                  className="btn btn-secondary btn-filters"
+                  data-bs-toggle="modal"
+                  data-bs-target="#modal-filters"
                 >
-                  <p className="filter-btn">
-                    <Filter className="filter-svg2" />
-                  </p>
-                  <p className="filter-title2">Filtro</p>
-                </div>
-              </button>
+                  <div
+                    className="filter-btn-title-container-2"
+                    id="filter-btn-title-container"
+                  >
+                    <p className="filter-btn">
+                      <Filter className="filter-svg2" />
+                    </p>
+                    <p className="filter-title2">Filtro</p>
+                  </div>
+                </button>
 
-              <button
-                id="clear-filter"
-                className="clear-filter2"
-                onClick={ClearFilter}
-              >
-                <Close className="close-svg2" />
-                <p className="clear-filter-p">{filterName}</p>
-              </button>
+                <button
+                  id="clear-filter"
+                  className="clear-filter2"
+                  onClick={ClearFilter}
+                >
+                  <Close className="close-svg2" />
+                  <p className="clear-filter-p">{filterName}</p>
+                </button>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* tabla de usuarios */}
-          <table
-            className="table table-dark table-bordered table-hover table-list"
-            align="center"
-          >
-            <thead>
-              <tr className="table-header">
-                <th className="table-title" scope="col">
-                  #
-                </th>
-                <th className="table-title" scope="col">
-                  Nombre completo
-                </th>
-                <th className="table-title" scope="col">
-                  Usuario
-                </th>
-                <th className="table-title" scope="col">
-                  Email
-                </th>
-                <th className="table-title" scope="col">
-                  Rol
-                </th>
-                <th className="table-title" scope="col">
-                  Activo
-                </th>
-                <th className="table-title" scope="col">
-                  Acciones
-                </th>
-              </tr>
-            </thead>
-
-            {users.length > 0 ? (
-              usersTable
-                .filter((user) => user.nombre !== "Super Admin")
-                .map(function fn(user, index) {
-                  return (
-                    <tbody key={1 + user.idUsuario}>
-                      <tr>
-                        <th scope="row" className="table-name">
-                          {index + 1}
-                        </th>
-                        <td className="table-name">{user.nombre}</td>
-                        <td className="table-name">{user.username}</td>
-                        <td className="table-name">{user.email}</td>
-                        <td
-                          className={`table-name ${
-                            user.rol === "Predeterminado"
-                              ? "predeterminado"
-                              : ""
-                          }`}
-                        >
-                          {user.rol}
-                        </td>
-
-                        {user.activo ? (
-                          <td className="table-name">
-                            <div className="status-btns">
-                              <div className="circulo-verificado"></div>
-                              <p className="status-name">Si</p>
-                              {(user.rol !== "Predeterminado" ||
-                                (user.rol === "Predeterminado" &&
-                                  (pathname.includes("vendedores") ||
-                                    pathname.includes("gerentes") ||
-                                    pathname.includes("supervisores")))) && (
-                                <button
-                                  type="button"
-                                  className="btn btn-light btn-delete4"
-                                  onClick={() => {
-                                    Pending(user);
-                                  }}
-                                >
-                                  <Pendiente className="edit3" />
-                                </button>
-                              )}
-                            </div>
-                          </td>
-                        ) : (
-                          <td className="table-name">
-                            <div className="status-btns">
-                              <div className="circulo-pendiente"></div>
-                              <p className="status-name">No</p>
-                              {(user.rol !== "Predeterminado" ||
-                                (user.rol === "Predeterminado" &&
-                                  (pathname.includes("vendedores") ||
-                                    pathname.includes("gerentes") ||
-                                    pathname.includes("supervisores")))) && (
-                                <button
-                                  type="button"
-                                  className="btn btn-light btn-delete4"
-                                  onClick={() => {
-                                    Verify(user);
-                                  }}
-                                >
-                                  <Verificar className="edit3" />
-                                </button>
-                              )}
-                            </div>
-                          </td>
-                        )}
-
-                        <td className="table-name">
-                          <button
-                            type="button"
-                            className="btn btn-warning btn-edit"
-                            data-bs-toggle="modal"
-                            data-bs-target="#modal"
-                            onClick={() => {
-                              RetrieveUserInputs(user);
-                              setModalTitle(() => {
-                                if (pathname.includes("vendedores")) {
-                                  return "Actualizar Vendedor";
-                                } else if (pathname.includes("supervisores")) {
-                                  return "Actualizar Supervisor";
-                                } else if (pathname.includes("gerentes")) {
-                                  return "Actualizar Gerente";
-                                } else {
-                                  return "Actualizar Usuario";
-                                }
-                              });
-                            }}
-                          >
-                            <Edit className="edit" />
-                          </button>
-
-                          <button
-                            type="button"
-                            className="btn btn-danger btn-delete"
-                            onClick={() =>
-                              Swal.fire({
-                                title: pathname.includes("vendedores")
-                                  ? "Esta seguro de que desea eliminar el siguiente vendedor: " +
-                                    user.nombre +
-                                    "?"
-                                  : pathname.includes("supervisores")
-                                  ? "Esta seguro de que desea eliminar el siguiente supervisor: " +
-                                    user.nombre +
-                                    "?"
-                                  : pathname.includes("gerentes")
-                                  ? "Esta seguro de que desea eliminar el siguiente gerente: " +
-                                    user.nombre +
-                                    "?"
-                                  : "Esta seguro de que desea eliminar el siguiente usuario: " +
-                                    user.nombre +
-                                    "?",
-                                text: "Una vez eliminado, no se podra recuperar",
-                                icon: "warning",
-                                showCancelButton: true,
-                                confirmButtonColor: "#F8BB86",
-                                cancelButtonColor: "#6c757d",
-                                confirmButtonText: "Aceptar",
-                                cancelButtonText: "Cancelar",
-                                focusCancel: true,
-                              }).then((result) => {
-                                if (result.isConfirmed) {
-                                  DeleteUser(user.idUsuario);
-                                }
-                              })
-                            }
-                          >
-                            <Delete className="delete" />
-                          </button>
-                        </td>
-                      </tr>
-                    </tbody>
-                  );
-                })
-            ) : (
-              <tbody>
-                <tr className="tr-name1">
-                  <td className="table-name table-name1" colSpan={13}>
-                    Sin registros
-                  </td>
+          {isLoading ? (
+            <div className="loading-generaltable-div">
+              <Loader />
+              <p className="bold-loading">Cargando usuarios...</p>
+            </div>
+          ) : (
+            <table
+              className="table table-dark table-bordered table-hover table-list"
+              align="center"
+            >
+              <thead>
+                <tr className="table-header">
+                  <th className="table-title" scope="col">
+                    #
+                  </th>
+                  <th className="table-title" scope="col">
+                    Nombre completo
+                  </th>
+                  <th className="table-title" scope="col">
+                    Usuario
+                  </th>
+                  <th className="table-title" scope="col">
+                    Email
+                  </th>
+                  <th className="table-title" scope="col">
+                    Rol
+                  </th>
+                  <th className="table-title" scope="col">
+                    Activo
+                  </th>
+                  <th className="table-title" scope="col">
+                    Acciones
+                  </th>
                 </tr>
-              </tbody>
-            )}
-          </table>
+              </thead>
+
+              {users.length > 0 ? (
+                usersTable
+                  .filter((user) => user.nombre !== "Super Admin")
+                  .map(function fn(user, index) {
+                    return (
+                      <tbody key={1 + user.idUsuario}>
+                        <tr>
+                          <th scope="row" className="table-name">
+                            {index + 1}
+                          </th>
+                          <td className="table-name">{user.nombre}</td>
+                          <td className="table-name">{user.username}</td>
+                          <td className="table-name">{user.email}</td>
+                          <td
+                            className={`table-name ${
+                              user.rol === "Predeterminado"
+                                ? "predeterminado"
+                                : ""
+                            }`}
+                          >
+                            {user.rol}
+                          </td>
+
+                          {user.activo ? (
+                            <td className="table-name">
+                              <div className="status-btns">
+                                <div className="circulo-verificado"></div>
+                                <p className="status-name">Si</p>
+                                {(user.rol !== "Predeterminado" ||
+                                  (user.rol === "Predeterminado" &&
+                                    (pathname.includes("vendedores") ||
+                                      pathname.includes("gerentes") ||
+                                      pathname.includes("supervisores")))) && (
+                                  <button
+                                    type="button"
+                                    className="btn btn-light btn-delete4"
+                                    onClick={() => {
+                                      Pending(user);
+                                    }}
+                                  >
+                                    <Pendiente className="edit3" />
+                                  </button>
+                                )}
+                              </div>
+                            </td>
+                          ) : (
+                            <td className="table-name">
+                              <div className="status-btns">
+                                <div className="circulo-pendiente"></div>
+                                <p className="status-name">No</p>
+                                {(user.rol !== "Predeterminado" ||
+                                  (user.rol === "Predeterminado" &&
+                                    (pathname.includes("vendedores") ||
+                                      pathname.includes("gerentes") ||
+                                      pathname.includes("supervisores")))) && (
+                                  <button
+                                    type="button"
+                                    className="btn btn-light btn-delete4"
+                                    onClick={() => {
+                                      Verify(user);
+                                    }}
+                                  >
+                                    <Verificar className="edit3" />
+                                  </button>
+                                )}
+                              </div>
+                            </td>
+                          )}
+
+                          <td className="table-name">
+                            <button
+                              type="button"
+                              className="btn btn-warning btn-edit"
+                              data-bs-toggle="modal"
+                              data-bs-target="#modal"
+                              onClick={() => {
+                                RetrieveUserInputs(user);
+                                setModalTitle(() => {
+                                  if (pathname.includes("vendedores")) {
+                                    return "Actualizar Vendedor";
+                                  } else if (
+                                    pathname.includes("supervisores")
+                                  ) {
+                                    return "Actualizar Supervisor";
+                                  } else if (pathname.includes("gerentes")) {
+                                    return "Actualizar Gerente";
+                                  } else {
+                                    return "Actualizar Usuario";
+                                  }
+                                });
+                              }}
+                            >
+                              <Edit className="edit" />
+                            </button>
+
+                            <button
+                              type="button"
+                              className="btn btn-danger btn-delete"
+                              onClick={() =>
+                                Swal.fire({
+                                  title: pathname.includes("vendedores")
+                                    ? "Esta seguro de que desea eliminar el siguiente vendedor: " +
+                                      user.nombre +
+                                      "?"
+                                    : pathname.includes("supervisores")
+                                    ? "Esta seguro de que desea eliminar el siguiente supervisor: " +
+                                      user.nombre +
+                                      "?"
+                                    : pathname.includes("gerentes")
+                                    ? "Esta seguro de que desea eliminar el siguiente gerente: " +
+                                      user.nombre +
+                                      "?"
+                                    : "Esta seguro de que desea eliminar el siguiente usuario: " +
+                                      user.nombre +
+                                      "?",
+                                  text: "Una vez eliminado, no se podra recuperar",
+                                  icon: "warning",
+                                  showCancelButton: true,
+                                  confirmButtonColor: "#F8BB86",
+                                  cancelButtonColor: "#6c757d",
+                                  confirmButtonText: "Aceptar",
+                                  cancelButtonText: "Cancelar",
+                                  focusCancel: true,
+                                }).then((result) => {
+                                  if (result.isConfirmed) {
+                                    DeleteUser(user.idUsuario);
+                                  }
+                                })
+                              }
+                            >
+                              <Delete className="delete" />
+                            </button>
+                          </td>
+                        </tr>
+                      </tbody>
+                    );
+                  })
+              ) : (
+                <tbody>
+                  <tr className="tr-name1">
+                    <td className="table-name table-name1" colSpan={13}>
+                      Sin registros
+                    </td>
+                  </tr>
+                </tbody>
+              )}
+            </table>
+          )}
 
           <div className="pagination-count-container2">
             <div className="pagination-count">

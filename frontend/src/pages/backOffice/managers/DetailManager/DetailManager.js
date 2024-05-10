@@ -24,6 +24,8 @@ import { ReactComponent as MotivoInput } from "../../../../assets/svgs/motivo.sv
 import { ReactComponent as OtroInput } from "../../../../assets/svgs/otro.svg";
 //#endregion
 
+import Loader from "../../../../components/Loaders/LoaderCircle";
+
 import {
   GetDetailsById,
   SaveStockDetail,
@@ -38,6 +40,8 @@ import { formatDate } from "../../../../utils/DateFormat";
 
 function DetailManager() {
   //#region Constantes
+  const [isLoading, setIsLoading] = useState(false);
+
   const { id } = useParams();
 
   const [details, setDetails] = useState([]);
@@ -107,8 +111,17 @@ function DetailManager() {
 
   //#region UseEffect
   useEffect(() => {
-    fetchProduct();
-    fetchDetails();
+    (async () => {
+      setIsLoading(true);
+
+      try {
+        await Promise.all([fetchProduct(), fetchDetails()]);
+        setIsLoading(false);
+      } catch (error) {
+        // Manejar errores aquí si es necesario
+        setIsLoading(false);
+      }
+    })();
 
     if (window.matchMedia("(max-width: 500px)").matches) {
       setDetailsPerPage(1);
@@ -508,11 +521,12 @@ function DetailManager() {
               <h2 className="title title-general">Detalles de stock</h2>
             </div>
 
-            {details.length > 1 || details.length === 0 ? (
-              <p className="total">Hay {details.length} detalles.</p>
-            ) : (
-              <p className="total">Hay {details.length} detalle.</p>
-            )}
+            {isLoading === false &&
+              (details.length > 1 || details.length === 0 ? (
+                <p className="total">Hay {details.length} detalles.</p>
+              ) : (
+                <p className="total">Hay {details.length} detalle.</p>
+              ))}
           </div>
 
           <br />
@@ -865,145 +879,156 @@ function DetailManager() {
             </div>
           </div>
 
-          <div className="filters-left2">
-            <div className="info-container">
-              <img
-                src={product.urlImagen}
-                onClick={() =>
-                  Swal.fire({
-                    title: product.nombre,
-                    imageUrl: `${product.urlImagen}`,
-                    imageWidth: 400,
-                    imageHeight: 400,
-                    imageAlt: "Vista Producto",
-                    confirmButtonColor: "#6c757d",
-                    confirmButtonText: "Cerrar",
-                    focusConfirm: true,
-                  })
-                }
-                className="list-img-stock"
-                alt="Producto"
-              />
-              <b className="bold">{product.nombre}</b>
-            </div>
-
-            <div className="pagination-count-filter">
-              {(rolUsuario === "Supervisor" || rolUsuario === "SuperAdmin") && (
-                <button
-                  type="button"
-                  className="btn btn-danger btn-delete5"
-                  data-bs-toggle="modal"
-                  data-bs-target="#modalQuitar"
-                  onClick={() => {
-                    RetrieveProductInputs(product);
-                    setOriginalStock(product.stockTransitorio);
-                  }}
-                >
-                  <Quitar className="edit5" />
-                </button>
-              )}
-              <div
-                className={
-                  product.stockTransitorio === 0
-                    ? "btn btn-secondary btn-filters nocursor zero-stock"
-                    : "btn btn-secondary btn-filters nocursor"
-                }
-              >
-                <div
-                  className="filter-btn-title-container-2 nocursor"
-                  id="filter-btn-title-container"
-                >
-                  <p className="filter-btn">
-                    <StockInput className="filter-svg2" />
-                  </p>
-                  <p className="filter-title2 stock-total">
-                    STOCK: {product.stockTransitorio}
-                  </p>
-                </div>
+          {details.length > 0 && (
+            <div className="filters-left2">
+              <div className="info-container">
+                <img
+                  src={product.urlImagen}
+                  onClick={() =>
+                    Swal.fire({
+                      title: product.nombre,
+                      imageUrl: `${product.urlImagen}`,
+                      imageWidth: 400,
+                      imageHeight: 400,
+                      imageAlt: "Vista Producto",
+                      confirmButtonColor: "#6c757d",
+                      confirmButtonText: "Cerrar",
+                      focusConfirm: true,
+                    })
+                  }
+                  className="list-img-stock"
+                  alt="Producto"
+                />
+                <b className="bold">{product.nombre}</b>
               </div>
-              {(rolUsuario === "Supervisor" || rolUsuario === "SuperAdmin") && (
-                <button
-                  type="button"
-                  className="btn btn-success btn-add5"
-                  data-bs-toggle="modal"
-                  data-bs-target="#modalAgregar"
-                  onClick={() => {
-                    RetrieveProductInputs(product);
-                    setOriginalStock(product.stockTransitorio);
-                  }}
+
+              <div className="pagination-count-filter">
+                {(rolUsuario === "Supervisor" ||
+                  rolUsuario === "SuperAdmin") && (
+                  <button
+                    type="button"
+                    className="btn btn-danger btn-delete5"
+                    data-bs-toggle="modal"
+                    data-bs-target="#modalQuitar"
+                    onClick={() => {
+                      RetrieveProductInputs(product);
+                      setOriginalStock(product.stockTransitorio);
+                    }}
+                  >
+                    <Quitar className="edit5" />
+                  </button>
+                )}
+                <div
+                  className={
+                    product.stockTransitorio === 0
+                      ? "btn btn-secondary btn-filters nocursor zero-stock"
+                      : "btn btn-secondary btn-filters nocursor"
+                  }
                 >
-                  <Agregar className="edit5" />
-                </button>
-              )}
+                  <div
+                    className="filter-btn-title-container-2 nocursor"
+                    id="filter-btn-title-container"
+                  >
+                    <p className="filter-btn">
+                      <StockInput className="filter-svg2" />
+                    </p>
+                    <p className="filter-title2 stock-total">
+                      STOCK: {product.stockTransitorio}
+                    </p>
+                  </div>
+                </div>
+                {(rolUsuario === "Supervisor" ||
+                  rolUsuario === "SuperAdmin") && (
+                  <button
+                    type="button"
+                    className="btn btn-success btn-add5"
+                    data-bs-toggle="modal"
+                    data-bs-target="#modalAgregar"
+                    onClick={() => {
+                      RetrieveProductInputs(product);
+                      setOriginalStock(product.stockTransitorio);
+                    }}
+                  >
+                    <Agregar className="edit5" />
+                  </button>
+                )}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* tabla de detalles */}
-          <table
-            className="table table-dark table-bordered table-hover table-list"
-            align="center"
-          >
-            <thead>
-              <tr className="table-header">
-                <th className="table-title" scope="col">
-                  #
-                </th>
-                <th className="table-title" scope="col">
-                  Cantidad
-                </th>
-                <th className="table-title" scope="col">
-                  Motivo
-                </th>
-                <th className="table-title" scope="col">
-                  Registrado por
-                </th>
-                <th className="table-title" scope="col">
-                  Fecha de registro
-                </th>
-              </tr>
-            </thead>
-
-            {details && details.length > 0 ? (
-              detailsTable.map(function fn(product, index) {
-                return (
-                  <tbody key={1 + product.idProducto}>
-                    <tr>
-                      <th className="table-name" scope="row">
-                        {index + 1}
-                      </th>
-                      <td
-                        className={
-                          product.accion === "Agregar"
-                            ? "table-name agregar"
-                            : "table-name quitar"
-                        }
-                      >
-                        {product.accion === "Agregar" ? "+" : "-"}{" "}
-                        {product.cantidad}
-                      </td>
-
-                      <td className="table-name">{product.motivo}</td>
-
-                      <td className="table-name">{product.modificador}</td>
-
-                      <td className="table-name">
-                        {formatDate(product.fecha)}
-                      </td>
-                    </tr>
-                  </tbody>
-                );
-              })
-            ) : (
-              <tbody>
-                <tr className="tr-name1">
-                  <td className="table-name table-name1" colSpan={5}>
-                    Sin registros
-                  </td>
+          {isLoading ? (
+            <div className="loading-generaltable-div">
+              <Loader />
+              <p className="bold-loading">Cargando detalles...</p>
+            </div>
+          ) : (
+            <table
+              className="table table-dark table-bordered table-hover table-list"
+              align="center"
+            >
+              <thead>
+                <tr className="table-header">
+                  <th className="table-title" scope="col">
+                    #
+                  </th>
+                  <th className="table-title" scope="col">
+                    Cantidad
+                  </th>
+                  <th className="table-title" scope="col">
+                    Motivo
+                  </th>
+                  <th className="table-title" scope="col">
+                    Registrado por
+                  </th>
+                  <th className="table-title" scope="col">
+                    Fecha de registro
+                  </th>
                 </tr>
-                <td className="table-name">{product.registrador}</td>
-              </tbody>
-            )}
-          </table>
+              </thead>
+
+              {details && details.length > 0 ? (
+                detailsTable.map(function fn(product, index) {
+                  return (
+                    <tbody key={1 + product.idProducto}>
+                      <tr>
+                        <th className="table-name" scope="row">
+                          {index + 1}
+                        </th>
+                        <td
+                          className={
+                            product.accion === "Agregar"
+                              ? "table-name agregar"
+                              : "table-name quitar"
+                          }
+                        >
+                          {product.accion === "Agregar" ? "+" : "-"}{" "}
+                          {product.cantidad}
+                        </td>
+
+                        <td className="table-name">{product.motivo}</td>
+
+                        <td className="table-name">{product.modificador}</td>
+
+                        <td className="table-name">
+                          {formatDate(product.fecha)}
+                        </td>
+                      </tr>
+                    </tbody>
+                  );
+                })
+              ) : (
+                <tbody>
+                  <tr className="tr-name1">
+                    <td className="table-name table-name1" colSpan={5}>
+                      Sin registros
+                    </td>
+                  </tr>
+                  <td className="table-name">{product.registrador}</td>
+                </tbody>
+              )}
+            </table>
+          )}
 
           <div className="pagination-count-container2">
             <div className="pagination-count">

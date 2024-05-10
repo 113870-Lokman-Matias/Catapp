@@ -21,6 +21,8 @@ import { ReactComponent as AvgInput } from "../../../../assets/svgs/avg.svg";
 import { ReactComponent as SellInput } from "../../../../assets/svgs/sell.svg";
 //#endregion
 
+import Loader from "../../../../components/Loaders/LoaderCircle";
+
 import {
   GetCotizacionDolar,
   UpdateCotizacionDolar,
@@ -32,6 +34,8 @@ import { formatDate } from "../../../../utils/DateFormat";
 
 function DollarManager() {
   //#region Constantes
+  const [isLoading, setIsLoading] = useState(false);
+
   const [idDolar, setIdDolar] = useState("");
 
   const [precio, setNombre] = useState("");
@@ -55,7 +59,17 @@ function DollarManager() {
 
   //#region UseEffect
   useEffect(() => {
-    (async () => await [GetCotizacionDolar(setCotizacionDolar)])();
+    (async () => {
+      setIsLoading(true);
+
+      try {
+        await Promise.all([GetCotizacionDolar(setCotizacionDolar)]);
+        setIsLoading(false);
+      } catch (error) {
+        // Manejar errores aquí si es necesario
+        setIsLoading(false);
+      }
+    })();
     const token = localStorage.getItem("token");
 
     if (token) {
@@ -492,69 +506,76 @@ function DollarManager() {
           <br />
 
           {/* tabla con la cotización del dolar */}
-          <table
-            className="table table-dark table-bordered table-hover table-list"
-            align="center"
-          >
-            <thead>
-              <tr className="table-header">
-                <th className="table-title" scope="col">
-                  Cotización del dolar
-                </th>
-                <th className="table-title" scope="col">
-                  Modificado por
-                </th>
-                <th className="table-title" scope="col">
-                  Fecha de modificación
-                </th>
-                <th className="table-title" scope="col">
-                  Acción
-                </th>
-              </tr>
-            </thead>
-
-            {cotizacionDolar ? (
-              <tbody key={1 + cotizacionDolar.idDolar}>
-                <tr>
-                  <td className="table-name table-cotizacion">
-                    {cotizacionDolar && cotizacionDolar.precio !== undefined
-                      ? `$${cotizacionDolar.precio.toLocaleString()}`
-                      : ""}
-                  </td>
-
-                  <td className="table-name table-cotizacion">
-                    {cotizacionDolar.ultimoModificador}
-                  </td>
-
-                  <td className="table-name table-cotizacion">
-                    {formatDate(cotizacionDolar.fechaModificacion)}
-                  </td>
-
-                  <td className="table-name">
-                    <button
-                      type="button"
-                      className="btn btn-warning btn-edit"
-                      data-bs-toggle="modal"
-                      data-bs-target="#modal"
-                      onClick={() => {
-                        RetrieveCotizacionInputs(cotizacionDolar);
-                      }}
-                    >
-                      <Edit className="edit" />
-                    </button>
-                  </td>
+          {isLoading ? (
+            <div className="loading-generaltable-div">
+              <Loader />
+              <p className="bold-loading">Cargando cotización del dolar...</p>
+            </div>
+          ) : (
+            <table
+              className="table table-dark table-bordered table-hover table-list"
+              align="center"
+            >
+              <thead>
+                <tr className="table-header">
+                  <th className="table-title" scope="col">
+                    Cotización del dolar
+                  </th>
+                  <th className="table-title" scope="col">
+                    Modificado por
+                  </th>
+                  <th className="table-title" scope="col">
+                    Fecha de modificación
+                  </th>
+                  <th className="table-title" scope="col">
+                    Acción
+                  </th>
                 </tr>
-              </tbody>
-            ) : (
-              <tbody>
-                <tr className="tr-name1">
-                  <td className="table-name table-name1" colSpan={4}>
-                    Sin registros
-                  </td>
-                </tr>
-              </tbody>
-            )}
-          </table>
+              </thead>
+
+              {cotizacionDolar ? (
+                <tbody key={1 + cotizacionDolar.idDolar}>
+                  <tr>
+                    <td className="table-name table-cotizacion">
+                      {cotizacionDolar && cotizacionDolar.precio !== undefined
+                        ? `$${cotizacionDolar.precio.toLocaleString()}`
+                        : ""}
+                    </td>
+
+                    <td className="table-name table-cotizacion">
+                      {cotizacionDolar.ultimoModificador}
+                    </td>
+
+                    <td className="table-name table-cotizacion">
+                      {formatDate(cotizacionDolar.fechaModificacion)}
+                    </td>
+
+                    <td className="table-name">
+                      <button
+                        type="button"
+                        className="btn btn-warning btn-edit"
+                        data-bs-toggle="modal"
+                        data-bs-target="#modal"
+                        onClick={() => {
+                          RetrieveCotizacionInputs(cotizacionDolar);
+                        }}
+                      >
+                        <Edit className="edit" />
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              ) : (
+                <tbody>
+                  <tr className="tr-name1">
+                    <td className="table-name table-name1" colSpan={4}>
+                      Sin registros
+                    </td>
+                  </tr>
+                </tbody>
+              )}
+            </table>
+          )}
         </div>
       </section>
     </div>
