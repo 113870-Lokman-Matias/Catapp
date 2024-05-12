@@ -742,6 +742,7 @@ function OrderReports() {
                     className="search-input-filter-date"
                     type="date"
                     max={new Date().toISOString().split("T")[0]} // Establecer el atributo max a la fecha actual en formato ISO (AAAA-MM-DD)
+                    min="2024-01-01"
                     value={desde}
                     onChange={(e) => {
                       const newDesde = e.target.value;
@@ -765,7 +766,7 @@ function OrderReports() {
                     className="search-input-filter-date"
                     type="date"
                     max={new Date().toISOString().split("T")[0]} // Establecer el atributo max a la fecha actual en formato ISO (AAAA-MM-DD)
-                    min={desde} // Establecer el atributo min al valor de 'desde'
+                    min="2024-01-01"
                     value={hasta}
                     onChange={(e) => {
                       const newHasta = e.target.value;

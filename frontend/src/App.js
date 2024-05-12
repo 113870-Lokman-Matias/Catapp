@@ -28,6 +28,7 @@ import OrderManager from "./pages/backOffice/managers/OrderManager/OrderManager"
 
 import OrderStatistics from './pages/backOffice/statistics/StatisticsOptions';
 import OrderReports from './pages/backOffice/statistics/OrderReports/OrderReports';
+import OrderGraphics from './pages/backOffice/statistics/OrderGraphics/OrderGraphics';
 
 import { ProtectedRoute } from "./components/ProtectedRoute/ProtectedRoute";
 
@@ -62,6 +63,7 @@ function App() {
           <Route path="administrar-pedidos" element={<OrderManager />} />
           <Route path='estadisticas-pedidos' element={<OrderStatistics />} />
           <Route path='reportes-pedidos' element={<OrderReports />} />
+          <Route path='graficos-pedidos' element={<OrderGraphics />} />
         </Route>
 
         <Route path="*" element={<NotFound />} />

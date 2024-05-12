@@ -14,7 +14,14 @@ async function GetOrders(state) {
 //#endregion
 
 //#region Función para obtener los pedidos verificados por fecha con filtros opcionales
-async function GetVerifiedOrdersByDate(fechaDesde, fechaHasta, IdVendedor = null, IdTipoPedido = null, IdMetodoEntrega = null, IdMetodoPago = null) {
+async function GetVerifiedOrdersByDate(
+  fechaDesde,
+  fechaHasta,
+  IdVendedor = null,
+  IdTipoPedido = null,
+  IdMetodoEntrega = null,
+  IdMetodoPago = null
+) {
   const token = localStorage.getItem("token");
   const headers = {
     Authorization: `Bearer ${token}`,
@@ -37,6 +44,39 @@ async function GetVerifiedOrdersByDate(fechaDesde, fechaHasta, IdVendedor = null
   }
 
   const result = await axios.get(url, { headers });
+
+  return result.data;
+}
+//#endregion
+
+//#region Función para obtener los datos para los graficos de pedidos por año
+async function GetOrdersDataByYear(anio) {
+  const token = localStorage.getItem("token");
+  const headers = {
+    Authorization: `Bearer ${token}`,
+  };
+
+  const result = await axios.get(`https://localhost:7207/pedido/${anio}`, {
+    headers,
+  });
+
+  return result.data;
+}
+//#endregion
+
+//#region Función para obtener los datos para los graficos de pedidos por año y mes
+async function GetOrdersDataByMonthYear(mes, anio) {
+  const token = localStorage.getItem("token");
+  const headers = {
+    Authorization: `Bearer ${token}`,
+  };
+
+  const result = await axios.get(
+    `https://localhost:7207/pedido/fecha/${mes}/${anio}`,
+    {
+      headers,
+    }
+  );
 
   return result.data;
 }
@@ -70,6 +110,8 @@ async function DeleteOrders(id, headers) {
 export {
   GetOrders,
   GetVerifiedOrdersByDate,
+  GetOrdersDataByYear,
+  GetOrdersDataByMonthYear,
   SaveOrders,
   UpdateOrders,
   UpdateOrdersVerified,
