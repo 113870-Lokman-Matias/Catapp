@@ -2,7 +2,6 @@ import Swal from "sweetalert2";
 import { ReactComponent as Lupa } from "../../../../assets/svgs/lupa.svg";
 import { useDownloadExcel } from "react-export-table-to-excel";
 import $ from "jquery";
-import { useNavigate } from "react-router-dom";
 import React, { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet";
@@ -90,8 +89,6 @@ function OrderManager() {
   };
   const rolUsuario = JSON.parse(atob(token.split(".")[1])).role;
 
-  const navigate = useNavigate();
-
   const [cantidadPedidosPendientes, setCantidadPedidosPendientes] =
     useState("");
 
@@ -153,51 +150,7 @@ function OrderManager() {
       setOrdersPerPage(4);
       setMaxPageNumbersToShow(9);
     }
-
-    const token = localStorage.getItem("token");
-
-    if (token) {
-      const expiracionEnSegundos = JSON.parse(atob(token.split(".")[1])).exp;
-      const expiracionEnMilisegundos = expiracionEnSegundos * 1000;
-      const fechaExpiracion = new Date(expiracionEnMilisegundos);
-      const fechaActual = new Date();
-
-      if (fechaExpiracion <= fechaActual) {
-        localStorage.removeItem("token");
-        navigate("/login");
-      }
-
-      const temporizador = setInterval(() => {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          clearInterval(temporizador);
-          return;
-        }
-
-        const expiracionEnSegundos = JSON.parse(atob(token.split(".")[1])).exp;
-        const expiracionEnMilisegundos = expiracionEnSegundos * 1000;
-        const fechaExpiracion = new Date(expiracionEnMilisegundos);
-        const fechaActual = new Date();
-
-        if (fechaExpiracion <= fechaActual) {
-          localStorage.removeItem("token");
-          Swal.fire({
-            icon: "warning",
-            title: "Tu sesión ha expirado",
-            text: "Te estamos redirigiendo a la página de autenticación...",
-            timer: 4500,
-            timerProgressBar: true,
-            showConfirmButton: false,
-          });
-          navigate("/login");
-        }
-      }, 3 * 60 * 60 * 1000); // 3 horas
-
-      return () => {
-        clearInterval(temporizador);
-      };
-    }
-  }, [navigate, costoEnvio, entrega]);
+  }, [costoEnvio, entrega]);
 
   useEffect(() => {
     setCantidadPedidosPendientes(
