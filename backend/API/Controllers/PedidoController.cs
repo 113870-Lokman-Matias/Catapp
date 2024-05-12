@@ -4,6 +4,8 @@ using MediatR;
 using API.Dtos.PedidoDtos;
 using API.Services.PedidoServices.Queries.GetPedidosQuery;
 using API.Services.PedidoServices.Queries.GetPedidosByDateQuery;
+using API.Services.PedidoServices.Queries.GetPedidosDataByYearQuery;
+using API.Services.PedidoServices.Queries.GetPedidosDataByMonthYearQuery;
 using API.Services.PedidoServices.Commands.CreatePedidoCommand;
 using API.Services.PedidoServices.Commands.UpdatePedidoCommand;
 using API.Services.PedidoServices.Commands.DeletePedidoCommand;
@@ -42,6 +44,26 @@ public class PedidoController : ControllerBase
     var pedidosVerificadosPorFecha = await _mediator.Send(query);
 
     return pedidosVerificadosPorFecha;
+  }
+
+  [HttpGet("{anio}")]
+  [Authorize(Roles = "SuperAdmin, Gerente")]
+  public async Task<ListaEstadisticasPedidosAnioDto> GetDatosPedidosPorAnio(int anio)
+  {
+    var query = new GetPedidosDataByYearQuery(anio);
+    var datosPedidosPorAio = await _mediator.Send(query);
+
+    return datosPedidosPorAio;
+  }
+
+  [HttpGet("fecha/{mes}/{anio}")]
+  [Authorize(Roles = "SuperAdmin, Gerente")]
+  public async Task<ListaEstadisticasPedidosMesAnioDto> GetDatosPedidosPorMesAnio(int mes, int anio)
+  {
+    var query = new GetPedidosDataByMonthYearQuery(mes, anio);
+    var datosPedidosPorMesAnio = await _mediator.Send(query);
+
+    return datosPedidosPorMesAnio;
   }
 
   [HttpPost]
