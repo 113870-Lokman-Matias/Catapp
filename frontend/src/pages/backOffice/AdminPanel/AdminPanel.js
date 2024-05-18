@@ -26,6 +26,7 @@ import { ReactComponent as Update } from "../../../assets/svgs/update.svg";
 import { ReactComponent as Close } from "../../../assets/svgs/closebtn.svg";
 import { ReactComponent as Show } from "../../../assets/svgs/visible.svg";
 import { ReactComponent as Hide } from "../../../assets/svgs/invisible.svg";
+import { ReactComponent as Terms } from "../../../assets/svgs/terms.svg";
 //#endregion
 
 import { UpdatePasswordUsers } from "../../../services/UserService";
@@ -342,7 +343,7 @@ function AdminPanel() {
             Cliqué en la sección que desee administrar
           </h2>
 
-          <div className="secciones">
+          <div className="secciones antes-faqs-terms">
             <div className="seccion-dividida2">
               {(rolUsuario === "Vendedor" ||
                 rolUsuario === "Supervisor" ||
@@ -449,6 +450,17 @@ function AdminPanel() {
                   <p className="category-title">Dolar</p>
                 </Link>
               )}
+            </div>
+          </div>
+
+          <div className="social-media">
+            <div className="faqs-terms-container">
+              <Link to="/terminos-y-condiciones">
+                <Terms className="faqs-term-svg" />
+              </Link>
+              <Link to="/terminos-y-condiciones" className="term-faq-title">
+                Términos y condiciones
+              </Link>
             </div>
           </div>
         </div>

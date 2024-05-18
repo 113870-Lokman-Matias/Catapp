@@ -1,0 +1,27 @@
+.mb {
+  margin-bottom: 25px;
+}
+
+.subtitle {
+  color: #000000;
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
+.terms-content {
+  gap: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: justify;
+}
+
+.one-term {
+  align-items: flex-start;
+  gap: 5px;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+}

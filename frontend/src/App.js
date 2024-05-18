@@ -18,6 +18,8 @@ import CreateUser from "./pages/frontOffice/CreateUser/CreateUser";
 import ResetPassword from "./pages/frontOffice/ResetPassword/ResetPassword";
 
 import AdminPanel from "./pages/backOffice/AdminPanel/AdminPanel";
+import TermsConditions from "./pages/backOffice/TermsConditions/TermsConditions";
+
 import UserManager from "./pages/backOffice/managers/UserManager/UserManager";
 import CategoryManager from "./pages/backOffice/managers/CategoryManager/CategoryManager";
 import DollarManager from "./pages/backOffice/managers/DollarManager/DollarManager";
@@ -26,9 +28,9 @@ import DetailManager from "./pages/backOffice/managers/DetailManager/DetailManag
 import ShipmentManager from "./pages/backOffice/managers/ShipmentManager/ShipmentManager";
 import OrderManager from "./pages/backOffice/managers/OrderManager/OrderManager";
 
-import OrderStatistics from './pages/backOffice/statistics/StatisticsOptions';
-import OrderReports from './pages/backOffice/statistics/OrderReports/OrderReports';
-import OrderGraphics from './pages/backOffice/statistics/OrderGraphics/OrderGraphics';
+import OrderStatistics from "./pages/backOffice/statistics/StatisticsOptions";
+import OrderReports from "./pages/backOffice/statistics/OrderReports/OrderReports";
+import OrderGraphics from "./pages/backOffice/statistics/OrderGraphics/OrderGraphics";
 
 import { ProtectedRoute } from "./components/ProtectedRoute/ProtectedRoute";
 
@@ -51,6 +53,8 @@ function App() {
 
         <Route element={<ProtectedRoute />}>
           <Route path="panel-de-administrador" element={<AdminPanel />} />
+          <Route path="terminos-y-condiciones" element={<TermsConditions />} />
+
           <Route path="administrar-usuarios" element={<UserManager />} />
           <Route path="administrar-gerentes" element={<UserManager />} />
           <Route path="administrar-supervisores" element={<UserManager />} />
@@ -61,9 +65,9 @@ function App() {
           <Route path="detalles/:id" element={<DetailManager />} />
           <Route path="administrar-envio" element={<ShipmentManager />} />
           <Route path="administrar-pedidos" element={<OrderManager />} />
-          <Route path='estadisticas-pedidos' element={<OrderStatistics />} />
-          <Route path='reportes-pedidos' element={<OrderReports />} />
-          <Route path='graficos-pedidos' element={<OrderGraphics />} />
+          <Route path="estadisticas-pedidos" element={<OrderStatistics />} />
+          <Route path="reportes-pedidos" element={<OrderReports />} />
+          <Route path="graficos-pedidos" element={<OrderGraphics />} />
         </Route>
 
         <Route path="*" element={<NotFound />} />
