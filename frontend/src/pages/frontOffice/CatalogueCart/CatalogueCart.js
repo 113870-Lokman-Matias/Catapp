@@ -180,9 +180,6 @@ const CatalogueCart = () => {
   }, []);
 
   useEffect(() => {
-    // Mostrar u ocultar el botón de WhatsApp en función de totalQuantity (Si es mayor o igual a 1 se mostrara, por lo contrario se escondera)
-    setShowButton(totalQuantity >= 1);
-
     // Funciónes asincronas
     (async () => {
       try {
@@ -195,6 +192,11 @@ const CatalogueCart = () => {
         setIsLoading(false);
       }
     })();
+  }, []);
+
+  useEffect(() => {
+    // Mostrar u ocultar el botón de WhatsApp en función de totalQuantity (Si es mayor o igual a 1 se mostrara, por lo contrario se escondera)
+    setShowButton(totalQuantity >= 1);
   }, [totalQuantity]);
 
   useEffect(() => {
