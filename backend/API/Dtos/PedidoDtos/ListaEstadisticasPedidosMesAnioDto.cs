@@ -16,5 +16,7 @@ namespace API.Dtos.PedidoDtos
     public int CantidadVendida4 { get; set; }
     public string? Producto5 { get; set; }
     public int CantidadVendida5 { get; set; }
+    public string? Producto6 { get; set; }
+    public int CantidadVendida6 { get; set; }
   }
 }

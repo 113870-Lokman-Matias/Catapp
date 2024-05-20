@@ -191,6 +191,25 @@ namespace API.Services.PedidoServices.Queries.GetPedidosDataByMonthYearQuery
             .FirstOrDefault()?.Sum(d => d.Cantidad) ?? 0;
             #endregion
 
+            #region Todo el resto de los productos
+            listaEstadisticasPedidosMesAnioDto.Producto6 = "Resto de los productos";
+
+            // Obtener los IDs de los primeros cinco productos más vendidos
+            var primerosCincoIds = pedidosQuery.SelectMany(p => p.Detalles)
+                .GroupBy(d => d.IdProducto)
+                .OrderByDescending(g => g.Sum(d => d.Cantidad))
+                .Select(g => g.Key)
+                .Take(5)
+                .ToList();
+
+            // Obtener la cantidad vendida de todos los productos que no están entre los primeros cinco más vendidos
+            var cantidadVendidaRestoProductos = pedidosQuery.SelectMany(p => p.Detalles)
+                .Where(d => !primerosCincoIds.Contains(d.IdProducto)) // Filtrar productos que no están en la lista de primeros cinco
+                .Sum(d => d.Cantidad); // Sumar la cantidad vendida
+
+            listaEstadisticasPedidosMesAnioDto.CantidadVendida6 = cantidadVendidaRestoProductos;
+            #endregion
+
             listaEstadisticasPedidosMesAnioDto.StatusCode = StatusCodes.Status200OK;
             listaEstadisticasPedidosMesAnioDto.IsSuccess = true;
             listaEstadisticasPedidosMesAnioDto.ErrorMessage = "";

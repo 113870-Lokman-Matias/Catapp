@@ -370,7 +370,7 @@ function OrderGraphics() {
         const vendedoresAPI = response.vendedores;
 
         // Iterar sobre los datos de la respuesta para cada mes
-        for (let i = 1; i <= 5; i++) {
+        for (let i = 1; i <= 6; i++) {
           const productosMes = response[`producto${i}`];
           const cantidadesVendidasMes = response[`cantidadVendida${i}`];
 
