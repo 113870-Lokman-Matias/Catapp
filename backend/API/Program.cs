@@ -25,6 +25,7 @@ using API.Services.CategoriaServices.Commands.DeleteCategoriaCommand;
 using API.Services.CotizacionServices.Commands.UpdateCotizacionDolarCommand;
 
 using API.Services.ProductoServices.Queries.GetProductosByCategoryQuery;
+using API.Services.ProductoServices.Queries.GetProductosByQueryQuery;
 using API.Services.ProductoServices.Queries.GetProductoByIdQuery;
 using API.Services.ProductoServices.Commands.CreateProductoCommand;
 using API.Services.ProductoServices.Commands.UpdateProductoCommand;
@@ -121,6 +122,7 @@ builder.Services.AddScoped<IValidator<UpdateProductoCommand>, UpdateProductoComm
 builder.Services.AddScoped<IValidator<UpdateStockProductoCommand>, UpdateStockProductoCommandValidator>();
 builder.Services.AddScoped<IValidator<DeleteProductoCommand>, DeleteProductoCommandValidator>();
 builder.Services.AddScoped<IValidator<GetProductosByCategoryQuery>, GetProductosByCategoryQueryValidator>();
+builder.Services.AddScoped<IValidator<GetProductosByQueryQuery>, GetProductosByQueryQueryValidator>();
 builder.Services.AddScoped<IValidator<GetProductoByIdQuery>, GetProductoByIdQueryValidator>();
 
 // Validacion para el servicio de Envio

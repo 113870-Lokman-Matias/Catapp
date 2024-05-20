@@ -32,6 +32,15 @@ async function GetProductsByCategory(category) {
 }
 //#endregion
 
+//#region Funcion para obtener todos los productos por query
+async function GetProductsByQuery(query) {
+  const result = await axios.get(
+    "https://localhost:7207/producto/query/" + query
+  );
+  return result.data.productos || [];
+}
+//#endregion
+
 //#region Función para obtener un producto por su ID
 async function GetProductById(id) {
   const response = await axios.get(`https://localhost:7207/producto/${id}`);
@@ -94,6 +103,7 @@ export {
   GetProductsManage,
   GetProducts,
   GetProductsByCategory,
+  GetProductsByQuery,
   GetProductById,
   SaveProducts,
   UpdateProducts,

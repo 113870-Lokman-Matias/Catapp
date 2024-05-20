@@ -15,7 +15,7 @@ import { GetUsersSellers } from "../../../services/UserService";
 import { SaveOrders } from "../../../services/OrderService";
 import {
   GetProductsByCategory,
-  GetProducts,
+  GetProductsByQuery,
 } from "../../../services/ProductService";
 import {
   PayWithMercadoPago,
@@ -105,7 +105,6 @@ const CatalogueCart = () => {
   //#endregion
 
   //#region Constantes necesarias para el filtro por busqueda
-  const [originalProductsList, setOriginalProductsList] = useState([]);
   const [products, setProducts] = useState([]);
   const [query, setQuery] = useState("");
   const [searchValue, setSearchValue] = useState("");
@@ -187,7 +186,6 @@ const CatalogueCart = () => {
     // Funciónes asincronas
     (async () => {
       try {
-        await GetProducts(setOriginalProductsList);
         await GetCostoEnvioUnicamente(setCostoEnvioDomicilio);
         await GetCotizacionDolarUnicamente(setvalorDolar);
         await GetUsersSellers(setListaNombresVendedores);
@@ -389,27 +387,42 @@ const CatalogueCart = () => {
   //#endregion
 
   //#region Función para filtrar los productos por query
-  const search = () => {
-    setProducts(originalProductsList);
-    setQuery(searchValue);
-
-    try {
-      setIsLoadingQuery(true);
-      const result = originalProductsList.filter(
-        (product) =>
-          product.nombre.toLowerCase().includes(searchValue.toLowerCase()) ||
-          product.descripcion.toLowerCase().includes(searchValue.toLowerCase())
-      );
-      setProducts(result);
-      window.scrollTo(0, 0);
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setIsLoadingQuery(false);
-    }
-
+  const search = async () => {
     if (searchValue === "") {
-      window.scrollTo(0, 0);
+      Swal.fire({
+        icon: "warning",
+        title: "Consulta vacía",
+        text: "Ingrese un término de búsqueda.",
+        confirmButtonText: "Aceptar",
+        showCancelButton: false,
+        confirmButtonColor: "#f8bb86",
+      });
+    } else if (searchValue === query) {
+      Swal.fire({
+        icon: "warning",
+        title: "Término de búsqueda no cambiado",
+        text: "El término de búsqueda es el mismo que la última consulta. Intente con un término diferente.",
+        confirmButtonText: "Aceptar",
+        showCancelButton: false,
+        confirmButtonColor: "#f8bb86",
+      });
+    } else {
+      setQuery(searchValue);
+      try {
+        setIsLoadingQuery(true);
+        const products = await GetProductsByQuery(searchValue);
+
+        setProducts(products);
+        window.scrollTo(0, 0);
+      } catch (error) {
+        console.log(error);
+      } finally {
+        setIsLoadingQuery(false);
+      }
+
+      if (searchValue === "") {
+        window.scrollTo(0, 0);
+      }
     }
   };
   //#endregion
@@ -420,6 +433,11 @@ const CatalogueCart = () => {
       ...prevSigns,
       [index]: prevSigns[index] === "-" ? "+" : "-",
     }));
+
+    if (categorySign[index] === "-") {
+      setIsLoadingProductByCategory(false);
+      return; // No hacer la petición de productos
+    }
 
     const category = categories[index].nombre;
     let products;
@@ -1686,7 +1704,9 @@ const CatalogueCart = () => {
             {isLoadingQuery === true ? (
               <div className="loading-single-furniture">
                 <Loader />
-                <p className="bold-loading">Cargando...</p>
+                <p className="bold-loading">
+                  Cargando productos con: "{query}"...
+                </p>
               </div>
             ) : query !== "" ? (
               <div className="categorias-container">
