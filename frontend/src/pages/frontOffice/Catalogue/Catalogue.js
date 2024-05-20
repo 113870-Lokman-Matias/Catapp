@@ -40,22 +40,18 @@ const Catalogue = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingProductByCategory, setIsLoadingProductByCategory] =
     useState(true);
+  const [isLoadingQuery, setIsLoadingQuery] = useState(false);
 
   //#region Constantes necesarias para el filtro por busqueda
   const [originalProductsList, setOriginalProductsList] = useState([]);
   const [products, setProducts] = useState([]);
   const [query, setQuery] = useState("");
+  const [searchValue, setSearchValue] = useState("");
   //#endregion
   //#endregion
 
   //#region UseEffect
   useEffect(() => {
-    // Si el query de la busqueda está vacío se ocultan el contenedor de filtrado de productos, por lo contrario se muestra el contenedor con las categorias y sus respectivos productos
-    if (query === "") {
-      document.getElementById("productos-filtrados").style.display = "none";
-      document.getElementById("categorias-container").style.display = "flex";
-    }
-
     // Funciones asincronas para obtener las categorias y todos los productos
     (async () => {
       try {
@@ -67,7 +63,7 @@ const Catalogue = () => {
         setIsLoading(false);
       }
     })();
-  }, [query]);
+  }, []);
 
   useEffect(() => {
     const connection = new signalR.HubConnectionBuilder()
@@ -108,21 +104,24 @@ const Catalogue = () => {
   //#region Funcion para filtrar los productos por query
   const search = () => {
     setProducts(originalProductsList);
-    const result = originalProductsList.filter(
-      (product) =>
-        product.nombre.toLowerCase().includes(query.toLowerCase()) ||
-        product.descripcion.toLowerCase().includes(query.toLowerCase())
-    );
-    if (result) {
-      document.getElementById("productos-filtrados").style.display = "flex";
-      document.getElementById("categorias-container").style.display = "none";
-    }
-    setProducts(result);
-    window.scrollTo(0, 0);
+    setQuery(searchValue);
 
-    if (query === "") {
-      document.getElementById("productos-filtrados").style.display = "none";
-      document.getElementById("categorias-container").style.display = "flex";
+    try {
+      setIsLoadingQuery(true);
+      const result = originalProductsList.filter(
+        (product) =>
+          product.nombre.toLowerCase().includes(searchValue.toLowerCase()) ||
+          product.descripcion.toLowerCase().includes(searchValue.toLowerCase())
+      );
+      setProducts(result);
+      window.scrollTo(0, 0);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsLoadingQuery(false);
+    }
+
+    if (searchValue === "") {
       window.scrollTo(0, 0);
     }
   };
@@ -157,6 +156,7 @@ const Catalogue = () => {
   const handleClearSearch = () => {
     // Función para limpiar la búsqueda (setear query a vacío)
     setQuery("");
+    setSearchValue("");
   };
   //#endregion
 
@@ -182,15 +182,14 @@ const Catalogue = () => {
               >
                 <div className="search-container">
                   <div className="form-group-input-search2">
-                    <span className="input-group-text2">
-                      <Lupa className="input-group-svg" />
+                    <span className="input-group-text2" onClick={search}>
+                      <Lupa className="input-group-svg lupa-catalogo" />
                     </span>
                     <input
                       className="search-input3"
                       type="text"
-                      value={query}
-                      onChange={(e) => setQuery(e.target.value)}
-                      onKeyUp={search}
+                      value={searchValue}
+                      onChange={(e) => setSearchValue(e.target.value)}
                       placeholder="Buscar..."
                     />
 
@@ -210,189 +209,202 @@ const Catalogue = () => {
             </div>
 
             {/* Renderizar la lista de productos filtrados */}
-            <div className="categorias-container" id="productos-filtrados">
-              <div className="productos-filtrados">
-                <div className="filters-left" key={1}>
-                  <div className="filter-container">
-                    <div className="filter-btn-container2" role="button">
-                      <p className="filter-btn-name2">{`Productos con: "${query}"`}</p>
-                    </div>
+            {isLoadingQuery === true ? (
+              <div className="loading-single-furniture">
+                <Loader />
+                <p className="bold-loading">Cargando...</p>
+              </div>
+            ) : query !== "" ? (
+              <div className="categorias-container">
+                <div className="productos-filtrados">
+                  <div className="filters-left" key={1}>
+                    <div className="filter-container">
+                      <div className="filter-btn-container2" role="button">
+                        <p className="filter-btn-name2">{`Productos con: "${query}"`}</p>
+                      </div>
 
-                    <div className="collapse show" id="collapseQuery">
-                      <div className="product-container">
-                        {products?.length === 0 ? (
-                          <div className="vacio2">
-                            <p className="product-desc no-p">
-                              No hay productos que contengan:{" "}
-                              <b className="category-name">"{query}"</b>.
-                            </p>
-                          </div>
-                        ) : (
-                          products?.map((product, index) => {
-                            return (
-                              <div className="contenedor-producto" key={index}>
-                                <div className="product">
-                                  <div className="product-1-col">
-                                    <figure className="figure">
-                                      <Zoom
-                                        className="zoom"
-                                        onClick={() =>
-                                          Swal.fire({
-                                            title: product.nombre,
-                                            imageUrl: `${product.urlImagen}`,
-                                            imageWidth: 400,
-                                            imageHeight: 400,
-                                            imageAlt: "Vista Producto",
-                                            confirmButtonColor: "#6c757d",
-                                            confirmButtonText: "Cerrar",
-                                            focusConfirm: true,
-                                          })
-                                        }
-                                      ></Zoom>
-                                      <img
-                                        src={product.urlImagen}
-                                        className="product-img"
-                                        alt="Producto"
-                                      />
-                                    </figure>
+                      <div className="collapse show" id="collapseQuery">
+                        <div className="product-container">
+                          {products?.length === 0 ? (
+                            <div className="vacio2">
+                              <p className="product-desc no-p">
+                                No hay productos que contengan:{" "}
+                                <b className="category-name">"{query}"</b>.
+                              </p>
+                            </div>
+                          ) : (
+                            products?.map((product, index) => {
+                              return (
+                                <div
+                                  className="contenedor-producto"
+                                  key={index}
+                                >
+                                  <div className="product">
+                                    <div className="product-1-col">
+                                      <figure className="figure">
+                                        <Zoom
+                                          className="zoom"
+                                          onClick={() =>
+                                            Swal.fire({
+                                              title: product.nombre,
+                                              imageUrl: `${product.urlImagen}`,
+                                              imageWidth: 400,
+                                              imageHeight: 400,
+                                              imageAlt: "Vista Producto",
+                                              confirmButtonColor: "#6c757d",
+                                              confirmButtonText: "Cerrar",
+                                              focusConfirm: true,
+                                            })
+                                          }
+                                        ></Zoom>
+                                        <img
+                                          src={product.urlImagen}
+                                          className="product-img"
+                                          alt="Producto"
+                                        />
+                                      </figure>
+                                    </div>
+                                    <div className="product-2-col">
+                                      <h3 className="product-title">
+                                        {product.nombre}
+                                      </h3>
+                                      <h3 className="product-desc">
+                                        <pre className="pre">
+                                          {product.descripcion}
+                                        </pre>
+                                      </h3>
+                                    </div>
+                                    <div className="product-3-col"></div>
                                   </div>
-                                  <div className="product-2-col">
-                                    <h3 className="product-title">
-                                      {product.nombre}
-                                    </h3>
-                                    <h3 className="product-desc">
-                                      <pre className="pre">
-                                        {product.descripcion}
-                                      </pre>
-                                    </h3>
-                                  </div>
-                                  <div className="product-3-col"></div>
                                 </div>
-                              </div>
-                            );
-                          })
-                        )}
+                              );
+                            })
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-
-            <div className="categorias-container" id="categorias-container">
-              {isLoading === true ? (
-                <div className="loading-single-furniture">
-                  <Loader />
-                  <p className="bold-loading">Cargando categorías...</p>
-                </div>
-              ) : categories === null ? (
-                <div className="filter-container">
-                  <div className="vacio">
-                    <p className="product-desc">
-                      No hay categorías disponibles en este momento.
-                    </p>
+            ) : (
+              <div className="categorias-container">
+                {isLoading === true ? (
+                  <div className="loading-single-furniture">
+                    <Loader />
+                    <p className="bold-loading">Cargando categorías...</p>
                   </div>
-                </div>
-              ) : (
-                categories.map((category, index) => (
-                  <div className="filters-left" key={index}>
-                    <div className="filter-container">
-                      <div
-                        className="filter-btn-container2"
-                        style={{
-                          backgroundImage: `linear-gradient(#ffffffa6,#ffffffa6), url(${category.urlImagen})`,
-                        }}
-                        onClick={() => handleCategoryClick(index)}
-                        data-bs-toggle="collapse"
-                        href={`#collapseCategory${index}`}
-                        role="button"
-                        aria-expanded="false"
-                        aria-controls={`collapseCategory${index}`}
-                      >
-                        <p className="filter-btn-name2">{category.nombre}</p>
-                        <p className="filter-btn2">
-                          {categorySign[index] || "+"}
-                        </p>
-                      </div>
-                      <div className="collapse" id={`collapseCategory${index}`}>
-                        <div className="product-container">
-                          {isLoadingProductByCategory === true ? (
-                            <div className="loading-single-furniture">
-                              <Loader />
-                              <p className="bold-loading">
-                                Cargando productos pertenecientes a la categoría
-                                "{category.nombre}"...
-                              </p>
-                            </div>
-                          ) : categoryProducts[category.nombre]?.length ===
-                            0 ? (
-                            <div className="vacio2">
-                              <p className="product-desc no-p">
-                                No hay productos correspondientes a{" "}
-                                <b className="category-name">
-                                  {category.nombre}
-                                </b>
-                                .
-                              </p>
-                            </div>
-                          ) : (
-                            categoryProducts[category.nombre]?.map(
-                              (product, index) => {
-                                return (
-                                  <div
-                                    className="contenedor-producto"
-                                    key={index}
-                                  >
-                                    <div className="product">
-                                      <div className="product-1-col">
-                                        <figure className="figure">
-                                          <Zoom
-                                            className="zoom"
-                                            onClick={() =>
-                                              Swal.fire({
-                                                title: product.nombre,
-                                                imageUrl: `${product.urlImagen}`,
-                                                imageWidth: 400,
-                                                imageHeight: 400,
-                                                imageAlt: "Vista Producto",
-                                                confirmButtonColor: "#6c757d",
-                                                confirmButtonText: "Cerrar",
-                                                focusConfirm: true,
-                                              })
-                                            }
-                                          ></Zoom>
-                                          <img
-                                            src={product.urlImagen}
-                                            className="product-img"
-                                            alt="Producto"
-                                          />
-                                        </figure>
-                                      </div>
-                                      <div className="product-2-col">
-                                        <h3 className="product-title">
-                                          {product.nombre}
-                                        </h3>
-                                        <h3 className="product-desc">
-                                          <pre className="pre">
-                                            {product.descripcion}
-                                          </pre>
-                                        </h3>
-                                      </div>
-                                      <div className="product-3-col"></div>
-                                    </div>
-                                  </div>
-                                );
-                              }
-                            )
-                          )}
-                        </div>
-                      </div>
-                      <p className="filter-separator2"></p>
+                ) : categories === null ? (
+                  <div className="filter-container">
+                    <div className="vacio">
+                      <p className="product-desc">
+                        No hay categorías disponibles en este momento.
+                      </p>
                     </div>
                   </div>
-                ))
-              )}
-            </div>
+                ) : (
+                  categories.map((category, index) => (
+                    <div className="filters-left" key={index}>
+                      <div className="filter-container">
+                        <div
+                          className="filter-btn-container2"
+                          style={{
+                            backgroundImage: `linear-gradient(#ffffffa6,#ffffffa6), url(${category.urlImagen})`,
+                          }}
+                          onClick={() => handleCategoryClick(index)}
+                          data-bs-toggle="collapse"
+                          href={`#collapseCategory${index}`}
+                          role="button"
+                          aria-expanded="false"
+                          aria-controls={`collapseCategory${index}`}
+                        >
+                          <p className="filter-btn-name2">{category.nombre}</p>
+                          <p className="filter-btn2">
+                            {categorySign[index] || "+"}
+                          </p>
+                        </div>
+                        <div
+                          className="collapse"
+                          id={`collapseCategory${index}`}
+                        >
+                          <div className="product-container">
+                            {isLoadingProductByCategory === true ? (
+                              <div className="loading-single-furniture">
+                                <Loader />
+                                <p className="bold-loading">
+                                  Cargando productos pertenecientes a la
+                                  categoría "{category.nombre}"...
+                                </p>
+                              </div>
+                            ) : categoryProducts[category.nombre]?.length ===
+                              0 ? (
+                              <div className="vacio2">
+                                <p className="product-desc no-p">
+                                  No hay productos correspondientes a{" "}
+                                  <b className="category-name">
+                                    {category.nombre}
+                                  </b>
+                                  .
+                                </p>
+                              </div>
+                            ) : (
+                              categoryProducts[category.nombre]?.map(
+                                (product, index) => {
+                                  return (
+                                    <div
+                                      className="contenedor-producto"
+                                      key={index}
+                                    >
+                                      <div className="product">
+                                        <div className="product-1-col">
+                                          <figure className="figure">
+                                            <Zoom
+                                              className="zoom"
+                                              onClick={() =>
+                                                Swal.fire({
+                                                  title: product.nombre,
+                                                  imageUrl: `${product.urlImagen}`,
+                                                  imageWidth: 400,
+                                                  imageHeight: 400,
+                                                  imageAlt: "Vista Producto",
+                                                  confirmButtonColor: "#6c757d",
+                                                  confirmButtonText: "Cerrar",
+                                                  focusConfirm: true,
+                                                })
+                                              }
+                                            ></Zoom>
+                                            <img
+                                              src={product.urlImagen}
+                                              className="product-img"
+                                              alt="Producto"
+                                            />
+                                          </figure>
+                                        </div>
+                                        <div className="product-2-col">
+                                          <h3 className="product-title">
+                                            {product.nombre}
+                                          </h3>
+                                          <h3 className="product-desc">
+                                            <pre className="pre">
+                                              {product.descripcion}
+                                            </pre>
+                                          </h3>
+                                        </div>
+                                        <div className="product-3-col"></div>
+                                      </div>
+                                    </div>
+                                  );
+                                }
+                              )
+                            )}
+                          </div>
+                        </div>
+                        <p className="filter-separator2"></p>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
           </div>
         </div>
       </section>

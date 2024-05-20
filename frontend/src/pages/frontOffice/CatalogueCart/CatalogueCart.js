@@ -77,6 +77,7 @@ const CatalogueCart = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingProductByCategory, setIsLoadingProductByCategory] =
     useState(true);
+  const [isLoadingQuery, setIsLoadingQuery] = useState(false);
   const [listaNombresVendedores, setListaNombresVendedores] = useState(true);
 
   //#region Constantes para el formulario del cliente
@@ -107,6 +108,7 @@ const CatalogueCart = () => {
   const [originalProductsList, setOriginalProductsList] = useState([]);
   const [products, setProducts] = useState([]);
   const [query, setQuery] = useState("");
+  const [searchValue, setSearchValue] = useState("");
   //#endregion
   //#endregion
 
@@ -179,12 +181,6 @@ const CatalogueCart = () => {
   }, []);
 
   useEffect(() => {
-    // Si el query de la busqueda está vacío se ocultan el contenedor de filtrado de productos, por lo contrario se muestra el contenedor con las categorias y sus respectivos productos
-    if (query === "") {
-      document.getElementById("productos-filtrados").style.display = "none";
-      document.getElementById("categorias-container").style.display = "flex";
-    }
-
     // Mostrar u ocultar el botón de WhatsApp en función de totalQuantity (Si es mayor o igual a 1 se mostrara, por lo contrario se escondera)
     setShowButton(totalQuantity >= 1);
 
@@ -201,7 +197,7 @@ const CatalogueCart = () => {
         setIsLoading(false);
       }
     })();
-  }, [totalQuantity, query]);
+  }, [totalQuantity]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -395,21 +391,24 @@ const CatalogueCart = () => {
   //#region Función para filtrar los productos por query
   const search = () => {
     setProducts(originalProductsList);
-    const result = originalProductsList.filter(
-      (product) =>
-        product.nombre.toLowerCase().includes(query.toLowerCase()) ||
-        product.descripcion.toLowerCase().includes(query.toLowerCase())
-    );
-    if (result) {
-      document.getElementById("productos-filtrados").style.display = "flex";
-      document.getElementById("categorias-container").style.display = "none";
-    }
-    setProducts(result);
-    window.scrollTo(0, 0);
+    setQuery(searchValue);
 
-    if (query === "") {
-      document.getElementById("productos-filtrados").style.display = "none";
-      document.getElementById("categorias-container").style.display = "flex";
+    try {
+      setIsLoadingQuery(true);
+      const result = originalProductsList.filter(
+        (product) =>
+          product.nombre.toLowerCase().includes(searchValue.toLowerCase()) ||
+          product.descripcion.toLowerCase().includes(searchValue.toLowerCase())
+      );
+      setProducts(result);
+      window.scrollTo(0, 0);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsLoadingQuery(false);
+    }
+
+    if (searchValue === "") {
       window.scrollTo(0, 0);
     }
   };
@@ -1219,6 +1218,7 @@ const CatalogueCart = () => {
   const handleClearSearch = () => {
     // Función para limpiar la búsqueda (setear query a vacío)
     setQuery("");
+    setSearchValue("");
   };
   //#endregion
 
@@ -1655,15 +1655,14 @@ const CatalogueCart = () => {
                 >
                   <div className="search-container">
                     <div className="form-group-input-search2">
-                      <span className="input-group-text2">
-                        <Lupa className="input-group-svg" />
+                      <span className="input-group-text2" onClick={search}>
+                        <Lupa className="input-group-svg lupa-catalogo" />
                       </span>
                       <input
                         className="search-input3"
                         type="text"
-                        value={query}
-                        onChange={(e) => setQuery(e.target.value)}
-                        onKeyUp={search}
+                        value={searchValue}
+                        onChange={(e) => setSearchValue(e.target.value)}
                         placeholder="Buscar..."
                       />
 
@@ -1684,476 +1683,494 @@ const CatalogueCart = () => {
             </div>
 
             {/* Renderizar la lista de productos filtrados */}
-            <div className="categorias-container" id="productos-filtrados">
-              <div className="productos-filtrados">
-                <div className="filters-left" key={1}>
-                  <div className="filter-container">
-                    <div className="filter-btn-container2" role="button">
-                      <p className="filter-btn-name2">{`Productos con: "${query}"`}</p>
-                    </div>
+            {isLoadingQuery === true ? (
+              <div className="loading-single-furniture">
+                <Loader />
+                <p className="bold-loading">Cargando...</p>
+              </div>
+            ) : query !== "" ? (
+              <div className="categorias-container">
+                <div className="productos-filtrados">
+                  <div className="filters-left" key={1}>
+                    <div className="filter-container">
+                      <div className="filter-btn-container2" role="button">
+                        <p className="filter-btn-name2">{`Productos con: "${query}"`}</p>
+                      </div>
 
-                    <div className="collapse show" id="collapseQuery">
-                      <div className="product-container">
-                        {products?.length === 0 ? (
-                          <div className="vacio2">
-                            <p className="product-desc no-p">
-                              No hay productos que contengan:{" "}
-                              <b className="category-name">"{query}"</b>.
-                            </p>
-                          </div>
-                        ) : (
-                          products?.map((product, index) => {
-                            const quantity =
-                              productQuantities[product.idProducto] || 0;
-                            const subtotal = calculateSubtotal(product);
+                      <div className="collapse show" id="collapseQuery">
+                        <div className="product-container">
+                          {products?.length === 0 ? (
+                            <div className="vacio2">
+                              <p className="product-desc no-p">
+                                No hay productos que contengan:{" "}
+                                <b className="category-name">"{query}"</b>.
+                              </p>
+                            </div>
+                          ) : (
+                            products?.map((product, index) => {
+                              const quantity =
+                                productQuantities[product.idProducto] || 0;
+                              const subtotal = calculateSubtotal(product);
 
-                            if (
-                              (clientType === "Minorista" &&
-                                product.porcentajeMinorista === 0 &&
-                                product.precioMinorista === 0) ||
-                              (clientType === "Mayorista" &&
-                                product.porcentajeMayorista === 0 &&
-                                product.precioMayorista === 0)
-                            ) {
-                              return <></>; // No renderizar el producto
-                            }
+                              if (
+                                (clientType === "Minorista" &&
+                                  product.porcentajeMinorista === 0 &&
+                                  product.precioMinorista === 0) ||
+                                (clientType === "Mayorista" &&
+                                  product.porcentajeMayorista === 0 &&
+                                  product.precioMayorista === 0)
+                              ) {
+                                return <></>; // No renderizar el producto
+                              }
 
-                            return (
-                              <div
-                                className={`contenedor-producto ${
-                                  product.stockTransitorio === 0
-                                    ? "sin-stock"
-                                    : ""
-                                }`}
-                                key={index}
-                              >
-                                <div className="product">
-                                  <div className="product-1-col">
-                                    <figure className="figure">
-                                      <Zoom
-                                        className="zoom"
-                                        onClick={() =>
-                                          Swal.fire({
-                                            title: product.nombre,
-                                            imageUrl: `${product.urlImagen}`,
-                                            imageWidth: 400,
-                                            imageHeight: 400,
-                                            imageAlt: "Vista Producto",
-                                            confirmButtonColor: "#6c757d",
-                                            confirmButtonText: "Cerrar",
-                                            focusConfirm: true,
-                                          })
-                                        }
-                                      ></Zoom>
-                                      <img
-                                        src={product.urlImagen}
-                                        className="product-img"
-                                        alt="Producto"
-                                      />
-                                    </figure>
-                                  </div>
-                                  <div className="product-2-col">
-                                    <h3 className="product-title">
-                                      {product.nombre}
-                                    </h3>
-                                    <h3 className="product-desc">
-                                      <pre className="pre">
-                                        {product.descripcion}
-                                      </pre>
-                                    </h3>
-                                    {product.stockTransitorio === 0 && (
-                                      <h3 className="product-title sin-stock-h">
-                                        SIN STOCK
+                              return (
+                                <div
+                                  className={`contenedor-producto ${
+                                    product.stockTransitorio === 0
+                                      ? "sin-stock"
+                                      : ""
+                                  }`}
+                                  key={index}
+                                >
+                                  <div className="product">
+                                    <div className="product-1-col">
+                                      <figure className="figure">
+                                        <Zoom
+                                          className="zoom"
+                                          onClick={() =>
+                                            Swal.fire({
+                                              title: product.nombre,
+                                              imageUrl: `${product.urlImagen}`,
+                                              imageWidth: 400,
+                                              imageHeight: 400,
+                                              imageAlt: "Vista Producto",
+                                              confirmButtonColor: "#6c757d",
+                                              confirmButtonText: "Cerrar",
+                                              focusConfirm: true,
+                                            })
+                                          }
+                                        ></Zoom>
+                                        <img
+                                          src={product.urlImagen}
+                                          className="product-img"
+                                          alt="Producto"
+                                        />
+                                      </figure>
+                                    </div>
+                                    <div className="product-2-col">
+                                      <h3 className="product-title">
+                                        {product.nombre}
                                       </h3>
-                                    )}
-                                  </div>
-                                  <div className="product-3-col">
-                                    <p className="product-price">
-                                      {(clientType === "Minorista"
-                                        ? product.precioMinorista
-                                        : product.precioMayorista) > 0
-                                        ? `$${Math.ceil(
-                                            clientType === "Minorista"
-                                              ? product.precioMinorista
-                                              : product.precioMayorista
-                                          )
-                                            .toLocaleString("es-ES", {
-                                              minimumFractionDigits: 0,
-                                              maximumFractionDigits: 2,
-                                            })
-                                            .replace(",", ".")
-                                            .replace(
-                                              /\B(?=(\d{3})+(?!\d))/g,
-                                              "."
-                                            )}`
-                                        : `$${Math.ceil(
-                                            Math.round(
-                                              ((product.divisa === "Dólar"
-                                                ? product.precio * valorDolar
-                                                : product.precio) *
-                                                (1 +
-                                                  (clientType === "Minorista"
-                                                    ? product.porcentajeMinorista
-                                                    : product.porcentajeMayorista) /
-                                                    100)) /
-                                                50
-                                            ) * 50
-                                          )
-                                            .toLocaleString("es-ES", {
-                                              minimumFractionDigits: 0,
-                                              maximumFractionDigits: 2,
-                                            })
-                                            .replace(",", ".")
-                                            .replace(
-                                              /\B(?=(\d{3})+(?!\d))/g,
-                                              "."
-                                            )}`}
-                                    </p>
-                                  </div>
-                                </div>
-
-                                {product.stockTransitorio !== 0 && (
-                                  <div className="product-2">
-                                    <div className="product-subtotal2">
-                                      <p className="product-desc">
-                                        Cantidad:{" "}
-                                        <b className="product-price">
-                                          {quantity !== null &&
-                                          quantity !== undefined
-                                            ? quantity
-                                            : 0}
-                                        </b>
-                                      </p>
-                                      <p className="product-desc">
-                                        Subtotal:{" "}
-                                        <b className="product-price">
-                                          $
-                                          {subtotal
-                                            .toLocaleString("es-ES", {
-                                              minimumFractionDigits: 0,
-                                              maximumFractionDigits: 2,
-                                            })
-                                            .replace(",", ".")
-                                            .replace(
-                                              /\B(?=(\d{3})+(?!\d))/g,
-                                              "."
-                                            )}
-                                        </b>
+                                      <h3 className="product-desc">
+                                        <pre className="pre">
+                                          {product.descripcion}
+                                        </pre>
+                                      </h3>
+                                      {product.stockTransitorio === 0 && (
+                                        <h3 className="product-title sin-stock-h">
+                                          SIN STOCK
+                                        </h3>
+                                      )}
+                                    </div>
+                                    <div className="product-3-col">
+                                      <p className="product-price">
+                                        {(clientType === "Minorista"
+                                          ? product.precioMinorista
+                                          : product.precioMayorista) > 0
+                                          ? `$${Math.ceil(
+                                              clientType === "Minorista"
+                                                ? product.precioMinorista
+                                                : product.precioMayorista
+                                            )
+                                              .toLocaleString("es-ES", {
+                                                minimumFractionDigits: 0,
+                                                maximumFractionDigits: 2,
+                                              })
+                                              .replace(",", ".")
+                                              .replace(
+                                                /\B(?=(\d{3})+(?!\d))/g,
+                                                "."
+                                              )}`
+                                          : `$${Math.ceil(
+                                              Math.round(
+                                                ((product.divisa === "Dólar"
+                                                  ? product.precio * valorDolar
+                                                  : product.precio) *
+                                                  (1 +
+                                                    (clientType === "Minorista"
+                                                      ? product.porcentajeMinorista
+                                                      : product.porcentajeMayorista) /
+                                                      100)) /
+                                                  50
+                                              ) * 50
+                                            )
+                                              .toLocaleString("es-ES", {
+                                                minimumFractionDigits: 0,
+                                                maximumFractionDigits: 2,
+                                              })
+                                              .replace(",", ".")
+                                              .replace(
+                                                /\B(?=(\d{3})+(?!\d))/g,
+                                                "."
+                                              )}`}
                                       </p>
                                     </div>
-                                    <div className="product-quantity">
-                                      <button
-                                        className="quantity-btn btnminus"
-                                        onClick={() => handleSubtract(product)}
-                                      >
-                                        -
-                                      </button>
-                                      <input
-                                        type="number"
-                                        min="0"
-                                        value={quantity}
-                                        onChange={(event) =>
-                                          handleQuantityChange(event, product)
+                                  </div>
+
+                                  {product.stockTransitorio !== 0 && (
+                                    <div className="product-2">
+                                      <div className="product-subtotal2">
+                                        <p className="product-desc">
+                                          Cantidad:{" "}
+                                          <b className="product-price">
+                                            {quantity !== null &&
+                                            quantity !== undefined
+                                              ? quantity
+                                              : 0}
+                                          </b>
+                                        </p>
+                                        <p className="product-desc">
+                                          Subtotal:{" "}
+                                          <b className="product-price">
+                                            $
+                                            {subtotal
+                                              .toLocaleString("es-ES", {
+                                                minimumFractionDigits: 0,
+                                                maximumFractionDigits: 2,
+                                              })
+                                              .replace(",", ".")
+                                              .replace(
+                                                /\B(?=(\d{3})+(?!\d))/g,
+                                                "."
+                                              )}
+                                          </b>
+                                        </p>
+                                      </div>
+                                      <div className="product-quantity">
+                                        <button
+                                          className="quantity-btn btnminus"
+                                          onClick={() =>
+                                            handleSubtract(product)
+                                          }
+                                        >
+                                          -
+                                        </button>
+                                        <input
+                                          type="number"
+                                          min="0"
+                                          value={quantity}
+                                          onChange={(event) =>
+                                            handleQuantityChange(event, product)
+                                          }
+                                          onBlur={() => updateTotalQuantity()}
+                                          className="quantity-input"
+                                        />
+                                        <button
+                                          className="quantity-btn btnplus"
+                                          onClick={() => handleAdd(product)}
+                                        >
+                                          +
+                                        </button>
+                                      </div>
+                                    </div>
+                                  )}
+
+                                  {product.stockTransitorio !== 0 && (
+                                    <div className="product-notes">
+                                      <textarea
+                                        className="textarea"
+                                        placeholder="Agregar aclaraciones..."
+                                        value={
+                                          productNotes[product.idProducto] || ""
                                         }
-                                        onBlur={() => updateTotalQuantity()}
-                                        className="quantity-input"
-                                      />
-                                      <button
-                                        className="quantity-btn btnplus"
-                                        onClick={() => handleAdd(product)}
-                                      >
-                                        +
-                                      </button>
+                                        onChange={(event) =>
+                                          handleAclaracionesChange(
+                                            event,
+                                            product
+                                          )
+                                        }
+                                      ></textarea>
                                     </div>
-                                  </div>
-                                )}
-
-                                {product.stockTransitorio !== 0 && (
-                                  <div className="product-notes">
-                                    <textarea
-                                      className="textarea"
-                                      placeholder="Agregar aclaraciones..."
-                                      value={
-                                        productNotes[product.idProducto] || ""
-                                      }
-                                      onChange={(event) =>
-                                        handleAclaracionesChange(event, product)
-                                      }
-                                    ></textarea>
-                                  </div>
-                                )}
-                              </div>
-                            );
-                          })
-                        )}
+                                  )}
+                                </div>
+                              );
+                            })
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-
-            <div className="categorias-container" id="categorias-container">
-              {isLoading === true ? (
-                <div className="loading-single-furniture">
-                  <Loader />
-                  <p className="bold-loading">Cargando categorías...</p>
-                </div>
-              ) : categories === null ? (
-                <div className="filter-container">
-                  <div className="vacio">
-                    <p className="product-desc">
-                      No hay categorías disponibles en este momento.
-                    </p>
+            ) : (
+              <div className="categorias-container">
+                {isLoading === true ? (
+                  <div className="loading-single-furniture">
+                    <Loader />
+                    <p className="bold-loading">Cargando categorías...</p>
                   </div>
-                </div>
-              ) : (
-                categories.map((category, index) => (
-                  <div className="filters-left" key={index}>
-                    <div className="filter-container">
-                      <div
-                        className="filter-btn-container2"
-                        style={{
-                          backgroundImage: `linear-gradient(#ffffffa6,#ffffffa6), url(${category.urlImagen})`,
-                        }}
-                        onClick={() => handleCategoryClick(index)}
-                        data-bs-toggle="collapse"
-                        href={`#collapseCategory${index}`}
-                        role="button"
-                        aria-expanded="false"
-                        aria-controls={`collapseCategory${index}`}
-                      >
-                        <p className="filter-btn-name2">{category.nombre}</p>
-                        <p className="filter-btn2">
-                          {categorySign[index] || "+"}
-                        </p>
-                      </div>
-                      <div className="collapse" id={`collapseCategory${index}`}>
-                        <div className="product-container">
-                          {isLoadingProductByCategory === true ? (
-                            <div className="loading-single-furniture">
-                              <Loader />
-                              <p className="bold-loading">
-                                Cargando productos de {category.nombre}...
-                              </p>
-                            </div>
-                          ) : categoryProducts[category.nombre]?.length ===
-                            0 ? (
-                            <div className="vacio2">
-                              <p className="product-desc no-p">
-                                No hay productos correspondientes a{" "}
-                                <b className="category-name">
-                                  {category.nombre}
-                                </b>
-                                .
-                              </p>
-                            </div>
-                          ) : (
-                            categoryProducts[category.nombre]?.map(
-                              (product, index) => {
-                                const quantity =
-                                  productQuantities[product.idProducto] || 0;
-                                const subtotal = calculateSubtotal(product);
+                ) : categories === null ? (
+                  <div className="filter-container">
+                    <div className="vacio">
+                      <p className="product-desc">
+                        No hay categorías disponibles en este momento.
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  categories.map((category, index) => (
+                    <div className="filters-left" key={index}>
+                      <div className="filter-container">
+                        <div
+                          className="filter-btn-container2"
+                          style={{
+                            backgroundImage: `linear-gradient(#ffffffa6,#ffffffa6), url(${category.urlImagen})`,
+                          }}
+                          onClick={() => handleCategoryClick(index)}
+                          data-bs-toggle="collapse"
+                          href={`#collapseCategory${index}`}
+                          role="button"
+                          aria-expanded="false"
+                          aria-controls={`collapseCategory${index}`}
+                        >
+                          <p className="filter-btn-name2">{category.nombre}</p>
+                          <p className="filter-btn2">
+                            {categorySign[index] || "+"}
+                          </p>
+                        </div>
+                        <div
+                          className="collapse"
+                          id={`collapseCategory${index}`}
+                        >
+                          <div className="product-container">
+                            {isLoadingProductByCategory === true ? (
+                              <div className="loading-single-furniture">
+                                <Loader />
+                                <p className="bold-loading">
+                                  Cargando productos de {category.nombre}...
+                                </p>
+                              </div>
+                            ) : categoryProducts[category.nombre]?.length ===
+                              0 ? (
+                              <div className="vacio2">
+                                <p className="product-desc no-p">
+                                  No hay productos correspondientes a{" "}
+                                  <b className="category-name">
+                                    {category.nombre}
+                                  </b>
+                                  .
+                                </p>
+                              </div>
+                            ) : (
+                              categoryProducts[category.nombre]?.map(
+                                (product, index) => {
+                                  const quantity =
+                                    productQuantities[product.idProducto] || 0;
+                                  const subtotal = calculateSubtotal(product);
 
-                                if (
-                                  (clientType === "Minorista" &&
-                                    product.porcentajeMinorista === 0 &&
-                                    product.precioMinorista === 0) ||
-                                  (clientType === "Mayorista" &&
-                                    product.porcentajeMayorista === 0 &&
-                                    product.precioMayorista === 0)
-                                ) {
-                                  return <></>; // No renderizar el producto
-                                }
+                                  if (
+                                    (clientType === "Minorista" &&
+                                      product.porcentajeMinorista === 0 &&
+                                      product.precioMinorista === 0) ||
+                                    (clientType === "Mayorista" &&
+                                      product.porcentajeMayorista === 0 &&
+                                      product.precioMayorista === 0)
+                                  ) {
+                                    return <></>; // No renderizar el producto
+                                  }
 
-                                return (
-                                  <div
-                                    className={`contenedor-producto ${
-                                      product.stockTransitorio === 0
-                                        ? "sin-stock"
-                                        : ""
-                                    }`}
-                                    key={index}
-                                  >
-                                    <div className="product">
-                                      <div className="product-1-col">
-                                        <figure className="figure">
-                                          <Zoom
-                                            className="zoom"
-                                            onClick={() =>
-                                              Swal.fire({
-                                                title: product.nombre,
-                                                imageUrl: `${product.urlImagen}`,
-                                                imageWidth: 400,
-                                                imageHeight: 400,
-                                                imageAlt: "Vista Producto",
-                                                confirmButtonColor: "#6c757d",
-                                                confirmButtonText: "Cerrar",
-                                                focusConfirm: true,
-                                              })
-                                            }
-                                          ></Zoom>
-                                          <img
-                                            src={product.urlImagen}
-                                            className="product-img"
-                                            alt="Producto"
-                                          />
-                                        </figure>
-                                      </div>
-                                      <div className="product-2-col">
-                                        <h3 className="product-title">
-                                          {product.nombre}
-                                        </h3>
-                                        <h3 className="product-desc">
-                                          <pre className="pre">
-                                            {product.descripcion}
-                                          </pre>
-                                        </h3>
-                                        {product.stockTransitorio === 0 && (
-                                          <h3 className="product-title sin-stock-h">
-                                            SIN STOCK
+                                  return (
+                                    <div
+                                      className={`contenedor-producto ${
+                                        product.stockTransitorio === 0
+                                          ? "sin-stock"
+                                          : ""
+                                      }`}
+                                      key={index}
+                                    >
+                                      <div className="product">
+                                        <div className="product-1-col">
+                                          <figure className="figure">
+                                            <Zoom
+                                              className="zoom"
+                                              onClick={() =>
+                                                Swal.fire({
+                                                  title: product.nombre,
+                                                  imageUrl: `${product.urlImagen}`,
+                                                  imageWidth: 400,
+                                                  imageHeight: 400,
+                                                  imageAlt: "Vista Producto",
+                                                  confirmButtonColor: "#6c757d",
+                                                  confirmButtonText: "Cerrar",
+                                                  focusConfirm: true,
+                                                })
+                                              }
+                                            ></Zoom>
+                                            <img
+                                              src={product.urlImagen}
+                                              className="product-img"
+                                              alt="Producto"
+                                            />
+                                          </figure>
+                                        </div>
+                                        <div className="product-2-col">
+                                          <h3 className="product-title">
+                                            {product.nombre}
                                           </h3>
-                                        )}
-                                      </div>
-                                      <div className="product-3-col">
-                                        <p className="product-price">
-                                          {(clientType === "Minorista"
-                                            ? product.precioMinorista
-                                            : product.precioMayorista) > 0
-                                            ? `$${Math.ceil(
-                                                clientType === "Minorista"
-                                                  ? product.precioMinorista
-                                                  : product.precioMayorista
-                                              )
-                                                .toLocaleString("es-ES", {
-                                                  minimumFractionDigits: 0,
-                                                  maximumFractionDigits: 2,
-                                                })
-                                                .replace(",", ".")
-                                                .replace(
-                                                  /\B(?=(\d{3})+(?!\d))/g,
-                                                  "."
-                                                )}`
-                                            : `$${Math.ceil(
-                                                Math.round(
-                                                  ((product.divisa === "Dólar"
-                                                    ? product.precio *
-                                                      valorDolar
-                                                    : product.precio) *
-                                                    (1 +
-                                                      (clientType ===
-                                                      "Minorista"
-                                                        ? product.porcentajeMinorista
-                                                        : product.porcentajeMayorista) /
-                                                        100)) /
-                                                    50
-                                                ) * 50
-                                              )
-                                                .toLocaleString("es-ES", {
-                                                  minimumFractionDigits: 0,
-                                                  maximumFractionDigits: 2,
-                                                })
-                                                .replace(",", ".")
-                                                .replace(
-                                                  /\B(?=(\d{3})+(?!\d))/g,
-                                                  "."
-                                                )}`}
-                                        </p>
-                                      </div>
-                                    </div>
-
-                                    {product.stockTransitorio !== 0 && (
-                                      <div className="product-2">
-                                        <div className="product-subtotal2">
-                                          <p className="product-desc">
-                                            Cantidad:{" "}
-                                            <b className="product-price">
-                                              {quantity !== null &&
-                                              quantity !== undefined
-                                                ? quantity
-                                                : 0}
-                                            </b>
-                                          </p>
-                                          <p className="product-desc">
-                                            Subtotal:{" "}
-                                            <b className="product-price">
-                                              $
-                                              {subtotal
-                                                .toLocaleString("es-ES", {
-                                                  minimumFractionDigits: 0,
-                                                  maximumFractionDigits: 2,
-                                                })
-                                                .replace(",", ".")
-                                                .replace(
-                                                  /\B(?=(\d{3})+(?!\d))/g,
-                                                  "."
-                                                )}
-                                            </b>
+                                          <h3 className="product-desc">
+                                            <pre className="pre">
+                                              {product.descripcion}
+                                            </pre>
+                                          </h3>
+                                          {product.stockTransitorio === 0 && (
+                                            <h3 className="product-title sin-stock-h">
+                                              SIN STOCK
+                                            </h3>
+                                          )}
+                                        </div>
+                                        <div className="product-3-col">
+                                          <p className="product-price">
+                                            {(clientType === "Minorista"
+                                              ? product.precioMinorista
+                                              : product.precioMayorista) > 0
+                                              ? `$${Math.ceil(
+                                                  clientType === "Minorista"
+                                                    ? product.precioMinorista
+                                                    : product.precioMayorista
+                                                )
+                                                  .toLocaleString("es-ES", {
+                                                    minimumFractionDigits: 0,
+                                                    maximumFractionDigits: 2,
+                                                  })
+                                                  .replace(",", ".")
+                                                  .replace(
+                                                    /\B(?=(\d{3})+(?!\d))/g,
+                                                    "."
+                                                  )}`
+                                              : `$${Math.ceil(
+                                                  Math.round(
+                                                    ((product.divisa === "Dólar"
+                                                      ? product.precio *
+                                                        valorDolar
+                                                      : product.precio) *
+                                                      (1 +
+                                                        (clientType ===
+                                                        "Minorista"
+                                                          ? product.porcentajeMinorista
+                                                          : product.porcentajeMayorista) /
+                                                          100)) /
+                                                      50
+                                                  ) * 50
+                                                )
+                                                  .toLocaleString("es-ES", {
+                                                    minimumFractionDigits: 0,
+                                                    maximumFractionDigits: 2,
+                                                  })
+                                                  .replace(",", ".")
+                                                  .replace(
+                                                    /\B(?=(\d{3})+(?!\d))/g,
+                                                    "."
+                                                  )}`}
                                           </p>
                                         </div>
-                                        <div className="product-quantity">
-                                          <button
-                                            className="quantity-btn btnminus"
-                                            onClick={() =>
-                                              handleSubtract(product)
+                                      </div>
+
+                                      {product.stockTransitorio !== 0 && (
+                                        <div className="product-2">
+                                          <div className="product-subtotal2">
+                                            <p className="product-desc">
+                                              Cantidad:{" "}
+                                              <b className="product-price">
+                                                {quantity !== null &&
+                                                quantity !== undefined
+                                                  ? quantity
+                                                  : 0}
+                                              </b>
+                                            </p>
+                                            <p className="product-desc">
+                                              Subtotal:{" "}
+                                              <b className="product-price">
+                                                $
+                                                {subtotal
+                                                  .toLocaleString("es-ES", {
+                                                    minimumFractionDigits: 0,
+                                                    maximumFractionDigits: 2,
+                                                  })
+                                                  .replace(",", ".")
+                                                  .replace(
+                                                    /\B(?=(\d{3})+(?!\d))/g,
+                                                    "."
+                                                  )}
+                                              </b>
+                                            </p>
+                                          </div>
+                                          <div className="product-quantity">
+                                            <button
+                                              className="quantity-btn btnminus"
+                                              onClick={() =>
+                                                handleSubtract(product)
+                                              }
+                                            >
+                                              -
+                                            </button>
+                                            <input
+                                              type="number"
+                                              min="0"
+                                              value={quantity}
+                                              onChange={(event) =>
+                                                handleQuantityChange(
+                                                  event,
+                                                  product
+                                                )
+                                              }
+                                              onBlur={() =>
+                                                updateTotalQuantity()
+                                              }
+                                              className="quantity-input"
+                                            />
+                                            <button
+                                              className="quantity-btn btnplus"
+                                              onClick={() => handleAdd(product)}
+                                            >
+                                              +
+                                            </button>
+                                          </div>
+                                        </div>
+                                      )}
+
+                                      {product.stockTransitorio !== 0 && (
+                                        <div className="product-notes">
+                                          <textarea
+                                            className="textarea"
+                                            placeholder="Agregar aclaraciones..."
+                                            value={
+                                              productNotes[
+                                                product.idProducto
+                                              ] || ""
                                             }
-                                          >
-                                            -
-                                          </button>
-                                          <input
-                                            type="number"
-                                            min="0"
-                                            value={quantity}
                                             onChange={(event) =>
-                                              handleQuantityChange(
+                                              handleAclaracionesChange(
                                                 event,
                                                 product
                                               )
                                             }
-                                            onBlur={() => updateTotalQuantity()}
-                                            className="quantity-input"
-                                          />
-                                          <button
-                                            className="quantity-btn btnplus"
-                                            onClick={() => handleAdd(product)}
-                                          >
-                                            +
-                                          </button>
+                                          ></textarea>
                                         </div>
-                                      </div>
-                                    )}
-
-                                    {product.stockTransitorio !== 0 && (
-                                      <div className="product-notes">
-                                        <textarea
-                                          className="textarea"
-                                          placeholder="Agregar aclaraciones..."
-                                          value={
-                                            productNotes[product.idProducto] ||
-                                            ""
-                                          }
-                                          onChange={(event) =>
-                                            handleAclaracionesChange(
-                                              event,
-                                              product
-                                            )
-                                          }
-                                        ></textarea>
-                                      </div>
-                                    )}
-                                  </div>
-                                );
-                              }
-                            )
-                          )}
+                                      )}
+                                    </div>
+                                  );
+                                }
+                              )
+                            )}
+                          </div>
                         </div>
+                        <p className="filter-separator2"></p>
                       </div>
-                      <p className="filter-separator2"></p>
                     </div>
-                  </div>
-                ))
-              )}
-            </div>
+                  ))
+                )}
+              </div>
+            )}
 
             {/* Botón "Enviar pedido por WhatsApp" con animación "shake" */}
             {showButton && (
