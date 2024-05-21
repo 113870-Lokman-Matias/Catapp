@@ -1757,13 +1757,13 @@ function OrderReports() {
 
               {orders.length > 0 ? (
                 <ul className="pagination-manager">
-                  <div className="page-item">
+                  <li className="page-item">
                     <div className="page-link" onClick={prePage}>
                       {"<"}
                     </div>
-                  </div>
+                  </li>
 
-                  <div className="numbers">
+                  <li className="numbers">
                     {numbers.map((n, i) => {
                       if (n === currentPage) {
                         // Render the current page number without a link
@@ -1782,14 +1782,16 @@ function OrderReports() {
                       ) {
                         // Render the first and last page numbers, or the page numbers within the range around the current page
                         return (
-                          <li className="page-item" key={i}>
-                            <div
-                              className="page-link"
-                              onClick={() => changeCPage(n)}
-                            >
-                              {n}
-                            </div>
-                          </li>
+                          <ul className="page-item-container" key={i}>
+                            <li className="page-item" key={i}>
+                              <div
+                                className="page-link"
+                                onClick={() => changeCPage(n)}
+                              >
+                                {n}
+                              </div>
+                            </li>
+                          </ul>
                         );
                       } else if (
                         (n === currentPage - maxPageNumbersToShow - 1 &&
@@ -1801,22 +1803,24 @@ function OrderReports() {
                       ) {
                         // Render the dots to show a break in the page numbers
                         return (
-                          <li className="page-item" key={i}>
-                            <div className="page-link">...</div>
-                          </li>
+                          <ul className="page-item-container" key={i}>
+                            <li className="page-item" key={i}>
+                              <div className="page-link">...</div>
+                            </li>
+                          </ul>
                         );
                       } else {
                         // Hide the page number if it's not within the range to show
                         return null;
                       }
                     })}
-                  </div>
+                  </li>
 
-                  <div className="page-item">
+                  <li className="page-item">
                     <div className="page-link" onClick={nextPage}>
                       {">"}
                     </div>
-                  </div>
+                  </li>
                 </ul>
               ) : (
                 <></>

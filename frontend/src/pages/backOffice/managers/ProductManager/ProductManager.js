@@ -3423,13 +3423,13 @@ function ProductManager() {
 
             {products.length > 0 ? (
               <ul className="pagination-manager">
-                <div className="page-item">
+                <li className="page-item">
                   <div className="page-link" onClick={prePage}>
                     {"<"}
                   </div>
-                </div>
+                </li>
 
-                <div className="numbers">
+                <li className="numbers">
                   {numbers.map((n, i) => {
                     if (n === currentPage) {
                       return (
@@ -3446,14 +3446,16 @@ function ProductManager() {
                         n <= currentPage + maxPageNumbersToShow)
                     ) {
                       return (
-                        <li className="page-item" key={i}>
-                          <div
-                            className="page-link"
-                            onClick={() => changeCPage(n)}
-                          >
-                            {n}
-                          </div>
-                        </li>
+                        <ul className="page-item-container" key={i}>
+                          <li className="page-item" key={i}>
+                            <div
+                              className="page-link"
+                              onClick={() => changeCPage(n)}
+                            >
+                              {n}
+                            </div>
+                          </li>
+                        </ul>
                       );
                     } else if (
                       (n === currentPage - maxPageNumbersToShow - 1 &&
@@ -3464,21 +3466,23 @@ function ProductManager() {
                           npage - minPageNumbersToShow)
                     ) {
                       return (
-                        <li className="page-item" key={i}>
-                          <div className="page-link">...</div>
-                        </li>
+                        <ul className="page-item-container" key={i}>
+                          <li className="page-item" key={i}>
+                            <div className="page-link">...</div>
+                          </li>
+                        </ul>
                       );
                     } else {
                       return null;
                     }
                   })}
-                </div>
+                </li>
 
-                <div className="page-item">
+                <li className="page-item">
                   <div className="page-link" onClick={nextPage}>
                     {">"}
                   </div>
-                </div>
+                </li>
               </ul>
             ) : (
               <></>

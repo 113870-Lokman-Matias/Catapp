@@ -945,7 +945,7 @@ function DetailManager() {
               {details && details.length > 0 ? (
                 detailsTable.map(function fn(product, index) {
                   return (
-                    <tbody key={1 + product.idProducto}>
+                    <tbody key={index}>
                       <tr>
                         <th className="table-name" scope="row">
                           {index + 1}
@@ -979,7 +979,6 @@ function DetailManager() {
                       Sin registros
                     </td>
                   </tr>
-                  <td className="table-name">{product.registrador}</td>
                 </tbody>
               )}
             </table>
@@ -1005,17 +1004,17 @@ function DetailManager() {
 
             {details.length > 0 ? (
               <ul className="pagination-manager">
-                <div className="page-item">
+                <li className="page-item">
                   <div className="page-link" onClick={prePage}>
                     {"<"}
                   </div>
-                </div>
+                </li>
 
-                <div className="numbers">
+                <li className="numbers">
                   {numbers.map((n, i) => {
                     if (n === currentPage) {
                       return (
-                        <ul className="page-item-container">
+                        <ul className="page-item-container" key={i}>
                           <li className="page-item active" key={i}>
                             <div className="page-link">{n}</div>
                           </li>
@@ -1028,14 +1027,16 @@ function DetailManager() {
                         n <= currentPage + maxPageNumbersToShow)
                     ) {
                       return (
-                        <li className="page-item" key={i}>
-                          <div
-                            className="page-link"
-                            onClick={() => changeCPage(n)}
-                          >
-                            {n}
-                          </div>
-                        </li>
+                        <ul className="page-item-container" key={i}>
+                          <li className="page-item" key={i}>
+                            <div
+                              className="page-link"
+                              onClick={() => changeCPage(n)}
+                            >
+                              {n}
+                            </div>
+                          </li>
+                        </ul>
                       );
                     } else if (
                       (n === currentPage - maxPageNumbersToShow - 1 &&
@@ -1046,21 +1047,23 @@ function DetailManager() {
                           npage - minPageNumbersToShow)
                     ) {
                       return (
-                        <li className="page-item" key={i}>
-                          <div className="page-link">...</div>
-                        </li>
+                        <ul className="page-item-container" key={i}>
+                          <li className="page-item" key={i}>
+                            <div className="page-link">...</div>
+                          </li>
+                        </ul>
                       );
                     } else {
                       return null;
                     }
                   })}
-                </div>
+                </li>
 
-                <div className="page-item">
+                <li className="page-item">
                   <div className="page-link" onClick={nextPage}>
                     {">"}
                   </div>
-                </div>
+                </li>
               </ul>
             ) : (
               <></>

@@ -1,7 +1,6 @@
 import Swal from "sweetalert2";
 import { ReactComponent as Filter } from "../../../../assets/svgs/filter.svg";
 import $ from "jquery";
-import { useNavigate } from "react-router-dom";
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet";
@@ -91,8 +90,6 @@ function UserManager() {
   const headers = {
     Authorization: `Bearer ${token}`, // Agregar el encabezado Authorization con el valor del token
   };
-
-  const navigate = useNavigate();
 
   //#region Constantes de la paginacion
   const [currentPage, setCurrentPage] = useState(1);
@@ -1662,7 +1659,8 @@ function UserManager() {
                                       pathname.includes("supervisores")))) && (
                                   <button
                                     type="button"
-                                    className="btn btn-light btn-delete4" aria-label="Desverificar"
+                                    className="btn btn-light btn-delete4"
+                                    aria-label="Desverificar"
                                     onClick={() => {
                                       Pending(user);
                                     }}
@@ -1684,7 +1682,8 @@ function UserManager() {
                                       pathname.includes("supervisores")))) && (
                                   <button
                                     type="button"
-                                    className="btn btn-light btn-delete4" aria-label="Verificar"
+                                    className="btn btn-light btn-delete4"
+                                    aria-label="Verificar"
                                     onClick={() => {
                                       Verify(user);
                                     }}
@@ -1812,13 +1811,13 @@ function UserManager() {
 
             {users.length > 0 ? (
               <ul className="pagination-manager">
-                <div className="page-item">
+                <li className="page-item">
                   <div className="page-link" onClick={prePage}>
                     {"<"}
                   </div>
-                </div>
+                </li>
 
-                <div className="numbers">
+                <li className="numbers">
                   {numbers.map((n, i) => {
                     if (n === currentPage) {
                       return (
@@ -1835,14 +1834,16 @@ function UserManager() {
                         n <= currentPage + maxPageNumbersToShow)
                     ) {
                       return (
-                        <li className="page-item" key={i}>
-                          <div
-                            className="page-link"
-                            onClick={() => changeCPage(n)}
-                          >
-                            {n}
-                          </div>
-                        </li>
+                        <ul className="page-item-container" key={i}>
+                          <li className="page-item" key={i}>
+                            <div
+                              className="page-link"
+                              onClick={() => changeCPage(n)}
+                            >
+                              {n}
+                            </div>
+                          </li>
+                        </ul>
                       );
                     } else if (
                       (n === currentPage - maxPageNumbersToShow - 1 &&
@@ -1853,21 +1854,23 @@ function UserManager() {
                           npage - minPageNumbersToShow)
                     ) {
                       return (
-                        <li className="page-item" key={i}>
-                          <div className="page-link">...</div>
-                        </li>
+                        <ul className="page-item-container" key={i}>
+                          <li className="page-item" key={i}>
+                            <div className="page-link">...</div>
+                          </li>
+                        </ul>
                       );
                     } else {
                       return null;
                     }
                   })}
-                </div>
+                </li>
 
-                <div className="page-item">
+                <li className="page-item">
                   <div className="page-link" onClick={nextPage}>
                     {">"}
                   </div>
-                </div>
+                </li>
               </ul>
             ) : (
               <></>
