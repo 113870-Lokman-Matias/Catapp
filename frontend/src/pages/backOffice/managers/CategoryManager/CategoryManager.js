@@ -945,6 +945,7 @@ function CategoryManager() {
                           <button
                             type="button"
                             className="btn btn-warning btn-edit"
+                            aria-label="Modificar"
                             data-bs-toggle="modal"
                             data-bs-target="#modal"
                             onClick={() => {
@@ -958,6 +959,7 @@ function CategoryManager() {
                           <button
                             type="button"
                             className="btn btn-danger btn-delete"
+                            aria-label="Eliminar"
                             onClick={() =>
                               Swal.fire({
                                 title:
@@ -1032,7 +1034,7 @@ function CategoryManager() {
                   {numbers.map((n, i) => {
                     if (n === currentPage) {
                       return (
-                        <ul className="page-item-container">
+                        <ul className="page-item-container" key={i}>
                           <li className="page-item active" key={i}>
                             <div className="page-link">{n}</div>
                           </li>

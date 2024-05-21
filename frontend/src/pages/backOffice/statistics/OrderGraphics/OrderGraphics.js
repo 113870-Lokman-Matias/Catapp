@@ -496,6 +496,7 @@ function OrderGraphics() {
               <div className="filter-container-graphics">
                 <p className="p-filter-date">Año:</p>
                 <select
+                  aria-label="Año"
                   className="year"
                   onChange={(e) => setAño(e.target.value)}
                 >
@@ -512,6 +513,7 @@ function OrderGraphics() {
                 </select>
                 <button
                   type="button"
+                  aria-label="Buscar"
                   className={`tag ${
                     busquedaPorAño === true
                       ? "btn btn-light btn-search-dates filtro-activo"
@@ -525,6 +527,7 @@ function OrderGraphics() {
                 {busquedaPorAño === true && (
                   <button
                     type="button"
+                    aria-label="Cancelar busqueda"
                     className="btn btn-light btn-search-dates"
                     onClick={() => ClearYearData()}
                   >
@@ -561,6 +564,7 @@ function OrderGraphics() {
                 <p className="p-filter-date">Mes y Año:</p>
                 <input
                   className="year"
+                  aria-label="Mes y año"
                   type="month"
                   min="2024-01" // Establece la fecha mínima a enero de 2024
                   max={new Date().toISOString().split("T")[0]} // Establece la fecha máxima a la fecha actual
@@ -570,6 +574,7 @@ function OrderGraphics() {
 
                 <button
                   type="button"
+                  aria-label="Buscar"
                   className={`tag ${
                     busquedaPorMesAño === true
                       ? "btn btn-light btn-search-dates filtro-activo"
@@ -583,6 +588,7 @@ function OrderGraphics() {
                 {busquedaPorMesAño === true && (
                   <button
                     type="button"
+                    aria-label="Cancelar busqueda"
                     className="btn btn-light btn-search-dates"
                     onClick={() => ClearMonthYearData()}
                   >

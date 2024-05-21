@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Swal from "sweetalert2";
 import $ from "jquery";
 
@@ -72,7 +72,6 @@ function Login() {
     if (IsValid() === true) {
       try {
         const response = await LoginUser(username, password);
-        console.log(response);
         if (response === true) {
           Swal.fire({
             icon: "success",

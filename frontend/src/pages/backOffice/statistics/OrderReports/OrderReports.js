@@ -740,6 +740,7 @@ function OrderReports() {
                 <div className="form-group-input-filter-date">
                   <input
                     className="search-input-filter-date"
+                    aria-label="Desde"
                     type="date"
                     max={new Date().toISOString().split("T")[0]} // Establecer el atributo max a la fecha actual en formato ISO (AAAA-MM-DD)
                     min="2024-01-01"
@@ -764,6 +765,7 @@ function OrderReports() {
                 <div className="form-group-input-filter-date">
                   <input
                     className="search-input-filter-date"
+                    aria-label="Hasta"
                     type="date"
                     max={new Date().toISOString().split("T")[0]} // Establecer el atributo max a la fecha actual en formato ISO (AAAA-MM-DD)
                     min="2024-01-01"
@@ -808,6 +810,7 @@ function OrderReports() {
                 <div className="form-group-input nombre-input filter-report-div">
                   <select
                     className="input2"
+                    aria-label="Vendedor"
                     style={{ cursor: "pointer" }}
                     name="vendedor"
                     id="nombreVendedor"
@@ -857,9 +860,10 @@ function OrderReports() {
                 <div className="form-group-input nombre-input filter-report-div">
                   <select
                     className="input2"
+                    aria-label="Tipo de pedido"
                     style={{ cursor: "pointer" }}
                     name="tipo"
-                    id="tipo"
+                    id="tipoPedido"
                     value={selectedTipo}
                     onChange={(e) => {
                       setSelectedTipo(e.target.value); // Asignar el tipo seleccionado a selectedTipo
@@ -904,9 +908,10 @@ function OrderReports() {
                 <div className="form-group-input nombre-input filter-report-div">
                   <select
                     className="input2"
+                    aria-label="Entrega"
                     style={{ cursor: "pointer" }}
                     name="tipo"
-                    id="tipo"
+                    id="tipoEntrega"
                     value={selectedEntrega}
                     onChange={(e) => {
                       setSelectedEntrega(e.target.value); // Asignar el tipo de entrega seleccionado a selectedEntrega
@@ -947,6 +952,7 @@ function OrderReports() {
                 <div className="form-group-input nombre-input filter-report-div">
                   <select
                     className="input2"
+                    aria-label="Abono"
                     style={{ cursor: "pointer" }}
                     name="abono"
                     id="abono"
@@ -1762,7 +1768,7 @@ function OrderReports() {
                       if (n === currentPage) {
                         // Render the current page number without a link
                         return (
-                          <ul className="page-item-container">
+                          <ul className="page-item-container" key={i}>
                             <li className="page-item active" key={i}>
                               <div className="page-link">{n}</div>
                             </li>

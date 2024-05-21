@@ -37,7 +37,7 @@ function DollarManager() {
 
   const [idDolar, setIdDolar] = useState("");
 
-  const [precio, setNombre] = useState("");
+  const [precio, setPrecio] = useState("");
   const [prevPrecio, setPrevPrecio] = useState("");
 
   const [cotizacionDolar, setCotizacionDolar] = useState([]);
@@ -72,7 +72,7 @@ function DollarManager() {
   function ClearCotizacionDolarInputs() {
     setIdDolar("");
 
-    setNombre("");
+    setPrecio("");
   }
   //#endregion
 
@@ -86,7 +86,7 @@ function DollarManager() {
   //#region Función para obtener los valores almacenados de la cotización del dolar y cargarlos en sus inputs correspondientes
   function RetrieveCotizacionInputs(cotizacion) {
     setIdDolar(cotizacion.idDolar);
-    setNombre(cotizacion.precio);
+    setPrecio(cotizacion.precio);
 
     setPrevPrecio(cotizacion.precio);
   }
@@ -267,7 +267,7 @@ function DollarManager() {
                             id="precio"
                             value={precio}
                             onChange={(event) => {
-                              setNombre(event.target.value);
+                              setPrecio(event.target.value);
                             }}
                           />
                         </div>
@@ -506,6 +506,7 @@ function DollarManager() {
                       <button
                         type="button"
                         className="btn btn-warning btn-edit"
+                        aria-label="Modificar"
                         data-bs-toggle="modal"
                         data-bs-target="#modal"
                         onClick={() => {

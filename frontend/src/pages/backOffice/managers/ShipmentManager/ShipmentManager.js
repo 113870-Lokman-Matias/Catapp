@@ -344,6 +344,7 @@ function ShipmentManager() {
                       <button
                         type="button"
                         className="btn btn-warning btn-edit"
+                        aria-label="Modificar"
                         data-bs-toggle="modal"
                         data-bs-target="#modal"
                         onClick={() => {

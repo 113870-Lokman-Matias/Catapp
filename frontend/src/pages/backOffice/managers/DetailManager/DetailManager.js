@@ -861,6 +861,7 @@ function DetailManager() {
                   <button
                     type="button"
                     className="btn btn-danger btn-delete5"
+                    aria-label="Quitar"
                     data-bs-toggle="modal"
                     data-bs-target="#modalQuitar"
                     onClick={() => {
@@ -895,6 +896,7 @@ function DetailManager() {
                   <button
                     type="button"
                     className="btn btn-success btn-add5"
+                    aria-label="Agregar"
                     data-bs-toggle="modal"
                     data-bs-target="#modalAgregar"
                     onClick={() => {

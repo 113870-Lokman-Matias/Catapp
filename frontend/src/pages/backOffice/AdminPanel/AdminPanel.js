@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import Swal from "sweetalert2";
 import $ from "jquery";
@@ -204,6 +204,7 @@ function AdminPanel() {
                 className="btn-logout"
                 data-bs-toggle="modal"
                 data-bs-target="#modal"
+                aria-label="Cambiar Contraseña"
                 onClick={() => {
                   ClearPasswordInputs();
                   setTimeout(function () {
@@ -214,7 +215,7 @@ function AdminPanel() {
                 <ResetPassword className="logout" />
               </button>
 
-              <Link to="/login" className="btn-logout">
+              <Link to="/login" className="btn-logout" aria-label="Logout">
                 <Logout className="logout" />
               </Link>
             </div>
@@ -455,7 +456,7 @@ function AdminPanel() {
 
           <div className="social-media">
             <div className="faqs-terms-container">
-              <Link to="/terminos-y-condiciones">
+              <Link to="/terminos-y-condiciones" aria-label="Términos y condiciones">
                 <Terms className="faqs-term-svg" />
               </Link>
               <Link to="/terminos-y-condiciones" className="term-faq-title">

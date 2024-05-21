@@ -1662,7 +1662,7 @@ function UserManager() {
                                       pathname.includes("supervisores")))) && (
                                   <button
                                     type="button"
-                                    className="btn btn-light btn-delete4"
+                                    className="btn btn-light btn-delete4" aria-label="Desverificar"
                                     onClick={() => {
                                       Pending(user);
                                     }}
@@ -1684,7 +1684,7 @@ function UserManager() {
                                       pathname.includes("supervisores")))) && (
                                   <button
                                     type="button"
-                                    className="btn btn-light btn-delete4"
+                                    className="btn btn-light btn-delete4" aria-label="Verificar"
                                     onClick={() => {
                                       Verify(user);
                                     }}
@@ -1700,6 +1700,7 @@ function UserManager() {
                             <button
                               type="button"
                               className="btn btn-warning btn-edit"
+                              aria-label="Modificar"
                               data-bs-toggle="modal"
                               data-bs-target="#modal"
                               onClick={() => {
@@ -1725,6 +1726,7 @@ function UserManager() {
                             <button
                               type="button"
                               className="btn btn-danger btn-delete"
+                              aria-label="Eliminar"
                               onClick={() =>
                                 Swal.fire({
                                   title: pathname.includes("vendedores")
@@ -1820,7 +1822,7 @@ function UserManager() {
                   {numbers.map((n, i) => {
                     if (n === currentPage) {
                       return (
-                        <ul className="page-item-container">
+                        <ul className="page-item-container" key={i}>
                           <li className="page-item active" key={i}>
                             <div className="page-link">{n}</div>
                           </li>

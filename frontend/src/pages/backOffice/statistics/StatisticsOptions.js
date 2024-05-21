@@ -64,14 +64,14 @@ function StatisticsOptions() {
   return (
     <div>
       <Helmet>
-        <title>Rober Polirrubro | Opciones para pedidos</title>
+        <title>Catapp | Opciones para pedidos</title>
       </Helmet>
       <section className='general-container'>
         <div className="general-content">
           <div className='wel-out'>
             <h2 className='error welc-title'>Estadísticas de pedidos</h2>
 
-            <Link to="/panel-de-administrador" className="btn-logout">
+            <Link to="/panel-de-administrador" className="btn-logout" aria-label='Logout'>
               <Back className="logout" />
             </Link>
           </div>

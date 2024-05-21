@@ -2565,6 +2565,7 @@ function ProductManager() {
                         target="_blank"
                         rel="noopener noreferrer"
                         className="btn btn-secondary btn-delete3"
+                        aria-label="Catalogo Minorista"
                       >
                         <Page className="edit2" />
                       </Link>
@@ -2581,6 +2582,7 @@ function ProductManager() {
                         target="_blank"
                         rel="noopener noreferrer"
                         className="btn btn-secondary btn-delete3"
+                        aria-label="Catalogo Matorista"
                       >
                         <Page className="edit2" />
                       </Link>
@@ -2983,6 +2985,7 @@ function ProductManager() {
                               <button
                                 type="button"
                                 className="btn btn-danger btn-delete3"
+                                aria-label="Quitar"
                                 data-bs-toggle="modal"
                                 data-bs-target="#modalQuitar"
                                 onClick={() => {
@@ -2999,6 +3002,7 @@ function ProductManager() {
                               <button
                                 type="button"
                                 className="btn btn-success btn-add2"
+                                aria-label="Agregar"
                                 data-bs-toggle="modal"
                                 data-bs-target="#modalAgregar"
                                 onClick={() => {
@@ -3113,6 +3117,7 @@ function ProductManager() {
                           <button
                             type="button"
                             className="btn btn-warning btn-edit"
+                            aria-label="Modificar"
                             data-bs-toggle="modal"
                             data-bs-target="#modal"
                             onClick={() => {
@@ -3128,6 +3133,7 @@ function ProductManager() {
                             <button
                               type="button"
                               className="btn btn-danger btn-delete"
+                              aria-label="Eliminar"
                               onClick={() =>
                                 Swal.fire({
                                   title:
@@ -3427,7 +3433,7 @@ function ProductManager() {
                   {numbers.map((n, i) => {
                     if (n === currentPage) {
                       return (
-                        <ul className="page-item-container">
+                        <ul className="page-item-container" key={i}>
                           <li className="page-item active" key={i}>
                             <div className="page-link">{n}</div>
                           </li>
