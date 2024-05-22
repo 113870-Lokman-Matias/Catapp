@@ -1557,7 +1557,7 @@ function UserManager() {
             </div>
           </div>
 
-          {users.length > 0 && (
+          {(users.length > 0 || (users.length === 0 && inactive === true)) && (
             <div className="filters-left3">
               <div className="pagination-count-filter">
                 <button

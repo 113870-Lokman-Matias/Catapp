@@ -1217,7 +1217,8 @@ function OrderManager() {
             </div>
           </div>
 
-          {orders.length > 0 && (
+          {(orders.length > 0 ||
+            (orders.length === 0 && (pending === true || tipo !== ""))) && (
             <div className="filters-left2">
               <div className="pagination-count3">
                 <div className="search-container">

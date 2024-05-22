@@ -545,10 +545,7 @@ function CategoryManager() {
         <div className="general-content">
           <div className="general-title">
             <div className="title-header">
-              <Link
-                to="/panel"
-                className="btn btn-info btn-back"
-              >
+              <Link to="/panel" className="btn btn-info btn-back">
                 <div className="btn-back-content">
                   <Back className="back" />
                   <p className="p-back">Regresar</p>
@@ -845,7 +842,8 @@ function CategoryManager() {
             </div>
           </div>
 
-          {categories.length > 0 && (
+          {(categories.length > 0 ||
+            (categories.length === 0 && hidden === true)) && (
             <div className="filters-left3">
               <div className="pagination-count-filter">
                 <button

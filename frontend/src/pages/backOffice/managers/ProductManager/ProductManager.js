@@ -358,7 +358,7 @@ function ProductManager() {
       }
     }
 
-    if (hidden === true) {
+    if (hidden === true && filterName !== "Oculto") {
       setHidden(false);
     }
   };
@@ -2455,7 +2455,8 @@ function ProductManager() {
             </div>
           </div>
 
-          {products.length > 0 && (
+          {(products.length > 0 ||
+            (products.length === 0 && hidden === true)) && (
             <div className="filters-left2">
               <div className="pagination-count3">
                 <div className="search-container">
