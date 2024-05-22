@@ -546,7 +546,7 @@ function CategoryManager() {
           <div className="general-title">
             <div className="title-header">
               <Link
-                to="/panel-de-administrador"
+                to="/panel"
                 className="btn btn-info btn-back"
               >
                 <div className="btn-back-content">

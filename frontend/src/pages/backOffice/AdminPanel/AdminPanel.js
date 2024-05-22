@@ -27,6 +27,7 @@ import { ReactComponent as Close } from "../../../assets/svgs/closebtn.svg";
 import { ReactComponent as Show } from "../../../assets/svgs/visible.svg";
 import { ReactComponent as Hide } from "../../../assets/svgs/invisible.svg";
 import { ReactComponent as Terms } from "../../../assets/svgs/terms.svg";
+import { ReactComponent as Faqs } from "../../../assets/svgs/faqs.svg";
 //#endregion
 
 import { UpdatePasswordUsers } from "../../../services/UserService";
@@ -190,7 +191,7 @@ function AdminPanel() {
   return (
     <div>
       <Helmet>
-        <title>Catapp | Panel de administrador</title>
+        <title>Catapp | Panel</title>
       </Helmet>
       <section className="general-container">
         <div className="general-content">
@@ -235,7 +236,7 @@ function AdminPanel() {
               <div className="modal-content">
                 <div className="modal-header">
                   <h1 className="modal-title" id="exampleModalLabel">
-                    Actulizar Contraseña
+                    Actualizar Contraseña
                   </h1>
                 </div>
                 <div className="modal-body">
@@ -461,6 +462,14 @@ function AdminPanel() {
               </Link>
               <Link to="/terminos-y-condiciones" className="term-faq-title">
                 Términos y condiciones
+              </Link>
+            </div>
+            <div className="faqs-terms-container">
+              <Link to="/preguntas-frecuentes" aria-label="Preguntas frecuentes"> 
+                <Faqs className="faqs-term-svg" />
+              </Link>
+              <Link to="/preguntas-frecuentes" className="term-faq-title">
+                Preguntas frecuentes
               </Link>
             </div>
           </div>

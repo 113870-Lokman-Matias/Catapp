@@ -71,7 +71,7 @@ function StatisticsOptions() {
           <div className='wel-out'>
             <h2 className='error welc-title'>Estadísticas de pedidos</h2>
 
-            <Link to="/panel-de-administrador" className="btn-logout" aria-label='Logout'>
+            <Link to="/panel" className="btn-logout" aria-label='Logout'>
               <Back className="logout" />
             </Link>
           </div>

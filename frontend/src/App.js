@@ -19,6 +19,7 @@ import ResetPassword from "./pages/frontOffice/ResetPassword/ResetPassword";
 
 import AdminPanel from "./pages/backOffice/AdminPanel/AdminPanel";
 import TermsConditions from "./pages/backOffice/TermsConditions/TermsConditions";
+import Faqs from "./pages/backOffice/Faqs/Faqs";
 
 import UserManager from "./pages/backOffice/managers/UserManager/UserManager";
 import CategoryManager from "./pages/backOffice/managers/CategoryManager/CategoryManager";
@@ -52,8 +53,9 @@ function App() {
         <Route path="reset-password" element={<ResetPassword />} />
 
         <Route element={<ProtectedRoute />}>
-          <Route path="panel-de-administrador" element={<AdminPanel />} />
+          <Route path="panel" element={<AdminPanel />} />
           <Route path="terminos-y-condiciones" element={<TermsConditions />} />
+          <Route path="preguntas-frecuentes" element={<Faqs />} />
 
           <Route path="administrar-usuarios" element={<UserManager />} />
           <Route path="administrar-gerentes" element={<UserManager />} />

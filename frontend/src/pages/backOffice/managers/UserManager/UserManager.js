@@ -724,7 +724,7 @@ function UserManager() {
           $("#nombre").focus();
         }, 500);
       });
-      ShowSaveButton();
+
       return false;
     } else if (username === "") {
       Swal.fire({
@@ -738,7 +738,7 @@ function UserManager() {
           $("#username").focus();
         }, 500);
       });
-      ShowSaveButton();
+
       return false;
     } else if (email === "") {
       Swal.fire({
@@ -752,7 +752,7 @@ function UserManager() {
           $("#email").focus();
         }, 500);
       });
-      ShowSaveButton();
+
       return false;
     } else if (
       !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email)
@@ -777,7 +777,7 @@ function UserManager() {
         confirmButtonText: "Aceptar",
         confirmButtonColor: "#f27474",
       });
-      ShowSaveButton();
+
       return false;
     } else if (activo === "") {
       Swal.fire({
@@ -787,7 +787,7 @@ function UserManager() {
         confirmButtonText: "Aceptar",
         confirmButtonColor: "#f27474",
       });
-      ShowSaveButton();
+
       return false;
     }
     return true;
@@ -813,7 +813,9 @@ function UserManager() {
           }, 500);
         });
 
-        ShowSaveButton();
+        if (modalTitle.includes("Registrar")) {
+          ShowSaveButton();
+        }
 
         return true;
       } else if (
@@ -832,7 +834,9 @@ function UserManager() {
           }, 500);
         });
 
-        ShowSaveButton();
+        if (modalTitle.includes("Registrar")) {
+          ShowSaveButton();
+        }
 
         return true;
       }
@@ -948,7 +952,7 @@ function UserManager() {
           ? "No puede actualizar el supervisor sin modificar ningun campo"
           : pathname.includes("gerentes")
           ? "No puede actualizar el gerente sin modificar ningun campo"
-          : "No puede actulizar el usuario sin modificar ningun campo",
+          : "No puede actualizar el usuario sin modificar ningun campo",
         text: "Modifique al menos un campo para poder actualizarlo",
         confirmButtonText: "Aceptar",
         confirmButtonColor: "#F27474",
@@ -985,7 +989,7 @@ function UserManager() {
             ? "Supervisor actualizado exitosamente!"
             : pathname.includes("gerentes")
             ? "Gerente actualizado exitosamente!"
-            : "Usuario actulizado exitosamente!",
+            : "Usuario actualizado exitosamente!",
           showConfirmButton: false,
           timer: 2000,
         });
@@ -1098,10 +1102,7 @@ function UserManager() {
         <div className="general-content">
           <div className="general-title">
             <div className="title-header">
-              <Link
-                to="/panel-de-administrador"
-                className="btn btn-info btn-back"
-              >
+              <Link to="/panel" className="btn btn-info btn-back">
                 <div className="btn-back-content">
                   <Back className="back" />
                   <p className="p-back">Regresar</p>

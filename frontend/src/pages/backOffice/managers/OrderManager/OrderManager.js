@@ -837,7 +837,7 @@ function OrderManager() {
           <div className="general-title">
             <div className="title-header">
               <Link
-                to="/panel-de-administrador"
+                to="/panel"
                 className="btn btn-info btn-back"
               >
                 <div className="btn-back-content">
@@ -1286,7 +1286,7 @@ function OrderManager() {
             </div>
           ) : (
             <table
-              className="table table-dark table-bordered table-hover table-list table-list-orders table-orders "
+              className="table table-dark table-bordered table-hover table-list table-list-orders table-orders"
               align="center"
             >
               <thead>

@@ -16,7 +16,7 @@ function TermsConditions() {
         <div className="general-content">
           <div className="title-header mb">
             <Link
-              to="/panel-de-administrador"
+              to="/panel"
               className="btn btn-info btn-back"
             >
               <div className="btn-back-content">

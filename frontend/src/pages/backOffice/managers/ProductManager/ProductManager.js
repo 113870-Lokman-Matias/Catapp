@@ -1382,10 +1382,7 @@ function ProductManager() {
         <div className="general-content">
           <div className="general-title">
             <div className="title-header">
-              <Link
-                to="/panel-de-administrador"
-                className="btn btn-info btn-back"
-              >
+              <Link to="/panel" className="btn btn-info btn-back">
                 <div className="btn-back-content">
                   <Back className="back" />
                   <p className="p-back">Regresar</p>
@@ -3235,6 +3232,9 @@ function ProductManager() {
                 <th className="table-title" scope="col">
                   Oculto
                 </th>
+                <th className="table-title" scope="col">
+                  URL Imagen
+                </th>
               </tr>
             </thead>
 
@@ -3390,6 +3390,7 @@ function ProductManager() {
                       <td>{product.stockTransitorio}</td>
                       <td>{product.nombreCategoria}</td>
                       {product.ocultar ? <td>Si</td> : <td>No</td>}
+                      <td>{product.urlImagen}</td>
                     </tr>
                   </tbody>
                 );

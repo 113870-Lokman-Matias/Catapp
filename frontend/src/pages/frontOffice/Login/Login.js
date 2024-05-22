@@ -80,7 +80,7 @@ function Login() {
             timer: 2000,
           });
           ClearLoginInputs();
-          navigate("/panel-de-administrador");
+          navigate("/panel");
         } else if (response.errorMessage === "Usuario desactivado") {
           Swal.fire({
             title: "Usuario desactivado",
@@ -209,7 +209,7 @@ function Login() {
             </h2>
 
             <Link
-              to="/panel-de-administrador"
+              to="/panel"
               className="btn btn-dark category-btn"
             >
               <Panel className="category-svg" />
