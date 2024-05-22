@@ -89,10 +89,9 @@ function CategoryManager() {
       setIsLoading(true);
 
       try {
-        await Promise.all([
-          GetCategoriesManage(setCategories),
-          GetCategoriesManage(setOriginalCategoriesList),
-        ]);
+        const result = await GetCategoriesManage();
+        setCategories(result);
+        setOriginalCategoriesList(result);
         setIsLoading(false);
       } catch (error) {
         // Manejar errores aquí si es necesario
@@ -222,10 +221,11 @@ function CategoryManager() {
   //#endregion
 
   //#region Función para volver el formulario a su estado inicial, borrando los valores de los inputs, cargando los selects y refrezcando la lista de categorías
-  function InitialState() {
+  async function InitialState() {
     ClearCategoryInputs();
-    GetCategoriesManage(setCategories);
-    GetCategoriesManage(setOriginalCategoriesList);
+    const result = await GetCategoriesManage();
+    setCategories(result);
+    setOriginalCategoriesList(result);
   }
   //#endregion
 
@@ -463,7 +463,8 @@ function CategoryManager() {
 
         // InitialState();
         ClearCategoryInputs();
-        await GetCategoriesManage(setCategories);
+        const result = await GetCategoriesManage();
+        setCategories(result);
 
         setCategories((prevCategories) => {
           setOriginalCategoriesList(prevCategories);

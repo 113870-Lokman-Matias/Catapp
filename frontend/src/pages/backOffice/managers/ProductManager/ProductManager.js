@@ -181,9 +181,12 @@ function ProductManager() {
         await Promise.all([
           GetProductsManage(setProducts),
           GetProductsManage(setOriginalProductsList),
-          GetCategoriesManage(setCategories),
           GetCotizacionDolarUnicamente(setvalorDolar),
         ]);
+
+        const result = await GetCategoriesManage();
+        setCategories(result);
+
         setIsLoading(false);
       } catch (error) {
         // Manejar errores aquí si es necesario
@@ -233,9 +236,8 @@ function ProductManager() {
 
     connection.on("MensajeCrudCategoria", async () => {
       try {
-        GetCategoriesManage(setCategories);
-        GetProductsManage(setProducts);
-        GetProductsManage(setOriginalProductsList);
+        const result = await GetCategoriesManage();
+        setCategories(result);
       } catch (error) {
         console.error("Error al obtener las categorias: " + error);
       }
@@ -565,11 +567,10 @@ function ProductManager() {
   //#endregion
 
   //#region Función para volver el formulario a su estado inicial, borrando los valores de los inputs, cargando los selects y refrezcando la lista de productos
-  function InitialState() {
+  async function InitialState() {
     ClearProductInputs();
     GetProductsManage(setProducts);
     GetProductsManage(setOriginalProductsList);
-    GetCategoriesManage(setCategories);
   }
   //#endregion
 
@@ -1173,7 +1174,6 @@ function ProductManager() {
         // InitialState();
         ClearProductInputs();
         await GetProductsManage(setProducts);
-        GetCategoriesManage(setCategories);
 
         setProducts((prevProducts) => {
           setOriginalProductsList(prevProducts);

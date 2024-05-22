@@ -1,7 +1,7 @@
 import axios from "axios";
 
 //#region Función para obtener las categorías para la lista administrativa
-async function GetCategoriesManage(state) {
+async function GetCategoriesManage() {
   const token = localStorage.getItem("token"); // Obtener el token almacenado en el localStorage
   const headers = {
     Authorization: `Bearer ${token}`, // Agregar el encabezado Authorization con el valor del token
@@ -11,7 +11,7 @@ async function GetCategoriesManage(state) {
     headers,
   });
   const categorias = result.data.categorias || [];
-  state(categorias);
+  return categorias;
 }
 //#endregion
 
