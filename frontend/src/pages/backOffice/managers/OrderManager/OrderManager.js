@@ -150,7 +150,7 @@ function OrderManager() {
       setOrdersPerPage(4);
       setMaxPageNumbersToShow(9);
     }
-  }, [costoEnvio, entrega]);
+  }, []);
 
   useEffect(() => {
     setCantidadPedidosPendientes(
@@ -1232,7 +1232,7 @@ function OrderManager() {
                       value={query}
                       onChange={(e) => setQuery(e.target.value)}
                       onKeyUp={search}
-                      placeholder="Buscar..."
+                      placeholder="Buscar por ID..."
                     />
                   </div>
                 </div>
