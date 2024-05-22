@@ -836,10 +836,7 @@ function OrderManager() {
         <div className="general-content">
           <div className="general-title">
             <div className="title-header">
-              <Link
-                to="/panel"
-                className="btn btn-info btn-back"
-              >
+              <Link to="/panel" className="btn btn-info btn-back">
                 <div className="btn-back-content">
                   <Back className="back" />
                   <p className="p-back">Regresar</p>
@@ -856,9 +853,13 @@ function OrderManager() {
                   onClick={() => {
                     Swal.fire({
                       title: `Hay ${cantidadPedidosPendientes} ${
-                        cantidadPedidosPendientes === 1 ? "pedido" : "pedidos"
-                      } pendientes`,
-                      text: "¿Desea visualizarlos?",
+                        cantidadPedidosPendientes === 1
+                          ? "pedido pendiente"
+                          : "pedidos pendientes"
+                      }`,
+                      text: `¿Desea visualizar${
+                        cantidadPedidosPendientes === 1 ? "lo" : "los"
+                      }?`,
                       icon: "question",
                       showCancelButton: true,
                       confirmButtonColor: "#87adbd",

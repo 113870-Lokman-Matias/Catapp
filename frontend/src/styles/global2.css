@@ -953,14 +953,14 @@ input[type="number"] {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 120px;
+    height: 70px;
   }
 
   .table-name-orders {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 120px;
+    height: 70px;
   }
 
   .table-orders {

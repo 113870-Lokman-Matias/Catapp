@@ -567,7 +567,7 @@ function OrderGraphics() {
                   aria-label="Mes y año"
                   type="month"
                   min="2024-01" // Establece la fecha mínima a enero de 2024
-                  max={new Date().toISOString().split("T")[0]} // Establece la fecha máxima a la fecha actual
+                  max={new Date().toISOString().slice(0, 7)} // Establece la fecha máxima al mes y año actuales
                   value={mesAño}
                   onChange={(e) => setMesAño(e.target.value)}
                 />
