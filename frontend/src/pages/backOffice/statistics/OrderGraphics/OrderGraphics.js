@@ -31,6 +31,9 @@ function OrderGraphics() {
   const [año2, setAño2] = useState("");
   const [mes, setMes] = useState("");
 
+  const [añoSeleccionado, setAñoSeleccionado] = useState("");
+  const [mesAñoSeleccionado, setMesAñoSeleccionado] = useState("");
+
   const [facturaciones, setFacturaciones] = useState([]);
   const [facturacionesSinEnvio, setFacturacionesSinEnvio] = useState([]);
   const [cantidades, setCantidades] = useState([]);
@@ -44,6 +47,10 @@ function OrderGraphics() {
   const [cantidadVentas, setCantidadVentas] = useState([]);
 
   const [mesAño, setMesAño] = useState("");
+
+  const mesAñoDate = new Date(mesAñoSeleccionado);
+  const añoMostrar = mesAñoDate.getUTCFullYear();
+  const mesMostrar = mesAñoDate.getUTCMonth() + 1;
 
   //#region Constantes para el grafico de barras (facturacion y ganancia por mes)
   const options = {
@@ -188,7 +195,10 @@ function OrderGraphics() {
       type: "donut",
     },
     title: {
-      text: "Porcentaje de ventas por vendedor",
+      text: `Porcentaje de ventas por vendedor ${
+        busquedaPorMesAño ? `(${mesMostrar + "/" + añoMostrar})` : ""
+      }`,
+      align: "left",
     },
     subtitle: {
       text: "Variación de los porcentajes de vendedores",
@@ -217,7 +227,10 @@ function OrderGraphics() {
       type: "pie",
     },
     title: {
-      text: "Porcentaje de ventas de los 5 productos mas vendidos",
+      text: `Porcentaje de ventas por 5 productos mas vendidos ${
+        busquedaPorMesAño ? `(${mesMostrar + "/" + añoMostrar})` : ""
+      }`,
+      align: "left",
     },
     subtitle: {
       text: "Variación de los porcentajes de productos",
@@ -260,8 +273,10 @@ function OrderGraphics() {
         .toString()
         .padStart(2, "0")}`;
       setMesAño(mesAñoActual);
+      setMesAñoSeleccionado(mesAñoActual);
 
       setAño(añoActual);
+      setAñoSeleccionado(añoActual);
 
       setAño2(añoActual);
       setMes(mesActual);
@@ -273,166 +288,214 @@ function OrderGraphics() {
 
   //#region Funcion para obtener los datos de facturación y pedidos por año
   const GetYearData = async () => {
-    setIsLoadingAnuales(true);
-    try {
-      const response = await GetOrdersDataByYear(año);
+    if (añoSeleccionado === "") {
+      Swal.fire({
+        icon: "warning",
+        title: "Consulta vacía",
+        text: "Ingrese un año para realizar la búsqueda.",
+        confirmButtonText: "Aceptar",
+        showCancelButton: false,
+        confirmButtonColor: "#f8bb86",
+      });
+    } else if (año === añoSeleccionado && busquedaPorAño === true) {
+      Swal.fire({
+        icon: "warning",
+        title: "Año de búsqueda no cambiado",
+        text: "El año de búsqueda es el mismo que el de la última consulta. Intente con un año diferente.",
+        confirmButtonText: "Aceptar",
+        showCancelButton: false,
+        confirmButtonColor: "#f8bb86",
+      });
+    } else {
+      setAño(añoSeleccionado);
 
-      // Procesar la respuesta aquí si es necesario
-      if (response.isSuccess && response.statusCode === 200) {
-        setBusquedaPorAño(true);
-        const facturacionesData = [];
-        const facturacionesSinEnvioData = [];
-        const cantidadesData = [];
+      setIsLoadingAnuales(true);
+      try {
+        const response = await GetOrdersDataByYear(añoSeleccionado);
 
-        // Iterar sobre los datos de la respuesta para cada mes
-        for (let i = 1; i <= 12; i++) {
-          const facturacionMes = response[`facturacion${i}`];
-          const facturacionSinEnvioMes = response[`facturacionSinEnvio${i}`];
-          const cantidadMes = response[`cantidadPedidos${i}`];
+        // Procesar la respuesta aquí si es necesario
+        if (response.isSuccess && response.statusCode === 200) {
+          setBusquedaPorAño(true);
+          const facturacionesData = [];
+          const facturacionesSinEnvioData = [];
+          const cantidadesData = [];
 
-          // Verificar si los datos son válidos antes de agregarlos al arreglo
-          if (
-            facturacionMes !== undefined &&
-            facturacionSinEnvioMes !== undefined &&
-            cantidadMes !== undefined
-          ) {
-            facturacionesData.push(facturacionMes);
-            facturacionesSinEnvioData.push(facturacionSinEnvioMes);
-            cantidadesData.push(cantidadMes);
-          } else {
-            console.error(`Los datos para el mes ${i} son inválidos.`);
+          // Iterar sobre los datos de la respuesta para cada mes
+          for (let i = 1; i <= 12; i++) {
+            const facturacionMes = response[`facturacion${i}`];
+            const facturacionSinEnvioMes = response[`facturacionSinEnvio${i}`];
+            const cantidadMes = response[`cantidadPedidos${i}`];
+
+            // Verificar si los datos son válidos antes de agregarlos al arreglo
+            if (
+              facturacionMes !== undefined &&
+              facturacionSinEnvioMes !== undefined &&
+              cantidadMes !== undefined
+            ) {
+              facturacionesData.push(facturacionMes);
+              facturacionesSinEnvioData.push(facturacionSinEnvioMes);
+              cantidadesData.push(cantidadMes);
+            } else {
+              console.error(`Los datos para el mes ${i} son inválidos.`);
+            }
           }
+
+          // Actualizar los estados con los datos procesados
+          setFacturaciones(facturacionesData);
+          setFacturacionesSinEnvio(facturacionesSinEnvioData);
+          setCantidades(cantidadesData);
+        } else if (
+          response.errorMessage ===
+          "No hay datos de pedidos verificados en el año seleccionado"
+        ) {
+          setIsLoadingAnuales(false);
+
+          setFacturaciones([]);
+          setFacturacionesSinEnvio([]);
+          setCantidades([]);
+
+          // Mostrar SweetAlert
+          Swal.fire({
+            icon: "warning",
+            title: "No hay gráficos de pedidos",
+            text: `No se encontraron gráficos de pedidos del año: ${añoSeleccionado}.`,
+            confirmButtonText: "Aceptar",
+            confirmButtonColor: "#f8bb86",
+          });
+
+          setBusquedaPorAño(true);
+        } else {
+          setBusquedaPorAño(false);
+          console.error("Error en la respuesta de GetOrdersDataByYear");
         }
-
-        // Actualizar los estados con los datos procesados
-        setFacturaciones(facturacionesData);
-        setFacturacionesSinEnvio(facturacionesSinEnvioData);
-        setCantidades(cantidadesData);
-      } else if (
-        response.errorMessage ===
-        "No hay datos de pedidos verificados en el año seleccionado"
-      ) {
         setIsLoadingAnuales(false);
+      } catch (error) {
+        setIsLoadingAnuales(false);
+        console.error(
+          "Error al obtener los datos de facturación y pedidos:",
+          error
+        );
 
-        setFacturaciones([]);
-        setFacturacionesSinEnvio([]);
-        setCantidades([]);
-
-        // Mostrar SweetAlert
         Swal.fire({
           icon: "warning",
-          title: "No hay gráficos de pedidos",
-          text: `No se encontraron gráficos de pedidos del año ${año}.`,
+          title: "Error al obtener los datos de facturación y pedidos",
+          text: `No se pudieron cargar los gráficos.`,
           confirmButtonText: "Aceptar",
           confirmButtonColor: "#f8bb86",
         });
-      } else {
-        setBusquedaPorAño(false);
-        console.error("Error en la respuesta de GetOrdersDataByYear");
       }
-      setIsLoadingAnuales(false);
-    } catch (error) {
-      setIsLoadingAnuales(false);
-      console.error(
-        "Error al obtener los datos de facturación y pedidos:",
-        error
-      );
-
-      Swal.fire({
-        icon: "warning",
-        title: "Error al obtener los datos de facturación y pedidos",
-        text: `No se pudieron cargar los gráficos.`,
-        confirmButtonText: "Aceptar",
-        confirmButtonColor: "#f8bb86",
-      });
     }
   };
   //#endregion
 
   //#region Funcion para obtener los datos de vendedores y productos por mes y año
   const GetMonthYearData = async () => {
-    setIsLoadingMensualesAnuales(true);
+    if (mesAñoSeleccionado === "") {
+      Swal.fire({
+        icon: "warning",
+        title: "Consulta vacía",
+        text: "Ingrese un mes y año para realizar la búsqueda.",
+        confirmButtonText: "Aceptar",
+        showCancelButton: false,
+        confirmButtonColor: "#f8bb86",
+      });
+    } else if (mesAño === mesAñoSeleccionado && busquedaPorMesAño === true) {
+      Swal.fire({
+        icon: "warning",
+        title: "Mes y año de búsqueda no cambiado",
+        text: "El mes y año de búsqueda es el mismo que el de la última consulta. Intente con un mes y año diferente.",
+        confirmButtonText: "Aceptar",
+        showCancelButton: false,
+        confirmButtonColor: "#f8bb86",
+      });
+    } else {
+      setMesAño(mesAñoSeleccionado);
 
-    const mesAñoDate = new Date(mesAño);
-    const añoApi = mesAñoDate.getUTCFullYear();
-    const mesApi = mesAñoDate.getUTCMonth() + 1; // Adding 1 to get the correct month index (0-11)
+      setIsLoadingMensualesAnuales(true);
 
-    try {
-      const response = await GetOrdersDataByMonthYear(mesApi, añoApi);
+      const mesAñoDate = new Date(mesAñoSeleccionado);
+      const añoApi = mesAñoDate.getUTCFullYear();
+      const mesApi = mesAñoDate.getUTCMonth() + 1; // Adding 1 to get the correct month index (0-11)
 
-      // Procesar la respuesta aquí si es necesario
-      if (response.isSuccess && response.statusCode === 200) {
-        setBusquedaPorMesAño(true);
-        const productosData = [];
-        const cantidadesVendidasData = [];
+      try {
+        const response = await GetOrdersDataByMonthYear(mesApi, añoApi);
 
-        // Obtener los vendedores y sus cantidades de ventas
-        const vendedoresAPI = response.vendedores;
+        // Procesar la respuesta aquí si es necesario
+        if (response.isSuccess && response.statusCode === 200) {
+          setBusquedaPorMesAño(true);
+          const productosData = [];
+          const cantidadesVendidasData = [];
 
-        // Iterar sobre los datos de la respuesta para cada mes
-        for (let i = 1; i <= 6; i++) {
-          const productosMes = response[`producto${i}`];
-          const cantidadesVendidasMes = response[`cantidadVendida${i}`];
+          // Obtener los vendedores y sus cantidades de ventas
+          const vendedoresAPI = response.vendedores;
 
-          // Verificar si los datos son válidos antes de agregarlos al arreglo
-          if (
-            productosMes !== undefined &&
-            cantidadesVendidasMes !== undefined
-          ) {
-            productosData.push(productosMes);
-            cantidadesVendidasData.push(cantidadesVendidasMes);
-          } else {
-            console.error(`Los datos para el mes ${i} son inválidos.`);
+          // Iterar sobre los datos de la respuesta para cada mes
+          for (let i = 1; i <= 6; i++) {
+            const productosMes = response[`producto${i}`];
+            const cantidadesVendidasMes = response[`cantidadVendida${i}`];
+
+            // Verificar si los datos son válidos antes de agregarlos al arreglo
+            if (
+              productosMes !== undefined &&
+              cantidadesVendidasMes !== undefined
+            ) {
+              productosData.push(productosMes);
+              cantidadesVendidasData.push(cantidadesVendidasMes);
+            } else {
+              console.error(`Los datos para el mes ${i} son inválidos.`);
+            }
           }
+
+          // Mapear los vendedores y sus cantidades de ventas a arreglos separados
+          const vendedoresData = Object.keys(vendedoresAPI);
+          const cantidadVentasData = Object.values(vendedoresAPI);
+
+          // Actualizar los estados con los datos procesados
+          setProductos(productosData);
+          setCantidadesVendidas(cantidadesVendidasData);
+          setVendedores(vendedoresData); // Guardar los nombres de los vendedores
+          setCantidadVentas(cantidadVentasData); // Guardar las cantidades de ventas de los vendedores
+        } else if (
+          response.errorMessage ===
+          "No hay datos de pedidos verificados en el mes y año seleccionado"
+        ) {
+          setIsLoadingMensualesAnuales(false);
+
+          setProductos([]);
+          setCantidadesVendidas([]);
+          setVendedores([]);
+          setCantidadVentas([]);
+
+          // Mostrar SweetAlert
+          Swal.fire({
+            icon: "warning",
+            title: "No hay gráficos de pedidos",
+            text: `No se encontraron gráficos de pedidos relacionados a vendedores y productos del mes y año: ${mesApi}/${añoApi}.`,
+            confirmButtonText: "Aceptar",
+            confirmButtonColor: "#f8bb86",
+          });
+
+          setBusquedaPorMesAño(true);
+        } else {
+          setBusquedaPorMesAño(false);
+          console.error("Error en la respuesta de GetOrdersDataByMonthYear");
         }
-
-        // Mapear los vendedores y sus cantidades de ventas a arreglos separados
-        const vendedoresData = Object.keys(vendedoresAPI);
-        const cantidadVentasData = Object.values(vendedoresAPI);
-
-        // Actualizar los estados con los datos procesados
-        setProductos(productosData);
-        setCantidadesVendidas(cantidadesVendidasData);
-        setVendedores(vendedoresData); // Guardar los nombres de los vendedores
-        setCantidadVentas(cantidadVentasData); // Guardar las cantidades de ventas de los vendedores
-      } else if (
-        response.errorMessage ===
-        "No hay datos de pedidos verificados en el mes y año seleccionado"
-      ) {
         setIsLoadingMensualesAnuales(false);
+      } catch (error) {
+        setIsLoadingMensualesAnuales(false);
+        console.error(
+          "Error al obtener los datos de vendedores y productos:",
+          error
+        );
 
-        setProductos([]);
-        setCantidadesVendidas([]);
-        setVendedores([]);
-        setCantidadVentas([]);
-
-        // Mostrar SweetAlert
         Swal.fire({
           icon: "warning",
-          title: "No hay gráficos de pedidos",
-          text: `No se encontraron gráficos de vendedores y productos del mes y año ${mesApi}/${añoApi}.`,
+          title: "Error al obtener los datos de vendedores y productos",
+          text: `No se pudieron cargar los gráficos.`,
           confirmButtonText: "Aceptar",
           confirmButtonColor: "#f8bb86",
         });
-      } else {
-        setBusquedaPorMesAño(false);
-        console.error("Error en la respuesta de GetOrdersDataByMonthYear");
       }
-      setIsLoadingMensualesAnuales(false);
-    } catch (error) {
-      setIsLoadingMensualesAnuales(false);
-      console.error(
-        "Error al obtener los datos de vendedores y productos:",
-        error
-      );
-
-      Swal.fire({
-        icon: "warning",
-        title: "Error al obtener los datos de vendedores y productos",
-        text: `No se pudieron cargar los gráficos.`,
-        confirmButtonText: "Aceptar",
-        confirmButtonColor: "#f8bb86",
-      });
     }
   };
   //#endregion
@@ -442,6 +505,9 @@ function OrderGraphics() {
     setFacturaciones([]);
     setFacturacionesSinEnvio([]);
     setCantidades([]);
+
+    setAño("");
+    setAñoSeleccionado("");
 
     setBusquedaPorAño(false);
   };
@@ -453,6 +519,9 @@ function OrderGraphics() {
     setCantidadesVendidas([]);
     setVendedores([]);
     setCantidadVentas([]);
+
+    setMesAño("");
+    setMesAñoSeleccionado("");
 
     setBusquedaPorMesAño(false);
   };
@@ -498,13 +567,13 @@ function OrderGraphics() {
                 <select
                   aria-label="Año"
                   className="year"
-                  onChange={(e) => setAño(e.target.value)}
+                  value={añoSeleccionado}
+                  onChange={(e) => setAñoSeleccionado(e.target.value)}
                 >
-                  {años.length > 1 && (
-                    <option hidden value="0">
-                      YYYY
-                    </option>
-                  )}
+                  <option hidden value="">
+                    YYYY
+                  </option>
+
                   {años.map((año) => (
                     <option key={año} value={año}>
                       {año}
@@ -568,8 +637,8 @@ function OrderGraphics() {
                   type="month"
                   min="2024-01" // Establece la fecha mínima a enero de 2024
                   max={new Date().toISOString().slice(0, 7)} // Establece la fecha máxima al mes y año actuales
-                  value={mesAño}
-                  onChange={(e) => setMesAño(e.target.value)}
+                  value={mesAñoSeleccionado}
+                  onChange={(e) => setMesAñoSeleccionado(e.target.value)}
                 />
 
                 <button
