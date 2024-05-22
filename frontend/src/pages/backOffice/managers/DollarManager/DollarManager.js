@@ -25,8 +25,7 @@ import Loader from "../../../../components/Loaders/LoaderCircle";
 import {
   GetCotizacionDolar,
   UpdateCotizacionDolar,
-  GetCotizacionDolarBlue,
-  GetFechaDolarBlue,
+  GetCotizacionFechaDolarBlue,
 } from "../../../../services/DollarService";
 
 import { formatDate } from "../../../../utils/DateFormat";
@@ -36,7 +35,6 @@ function DollarManager() {
   const [isLoading, setIsLoading] = useState(false);
 
   const [idDolar, setIdDolar] = useState("");
-
   const [precio, setPrecio] = useState("");
   const [prevPrecio, setPrevPrecio] = useState("");
 
@@ -78,14 +76,16 @@ function DollarManager() {
 
   //#region Función para obtener los valores almacenados de la cotización del dolar blue y cargarlos en sus inputs correspondientes
   async function RetrieveDolarBlue() {
-    await GetCotizacionDolarBlue(setCotizacionDolarBlue);
-    await GetFechaDolarBlue(setFechaDolarBlue);
+    const result = await GetCotizacionFechaDolarBlue();
+
+    setCotizacionDolarBlue(result.blue);
+    setFechaDolarBlue(result.last_update);
   }
   //#endregion
 
   //#region Función para obtener los valores almacenados de la cotización del dolar y cargarlos en sus inputs correspondientes
   function RetrieveCotizacionInputs(cotizacion) {
-    setIdDolar(cotizacion.idDolar);
+    setIdDolar(cotizacion.idCotizacion);
     setPrecio(cotizacion.precio);
 
     setPrevPrecio(cotizacion.precio);
@@ -193,10 +193,7 @@ function DollarManager() {
         <div className="general-content">
           <div className="general-title">
             <div className="title-header">
-              <Link
-                to="/panel"
-                className="btn btn-info btn-back"
-              >
+              <Link to="/panel" className="btn btn-info btn-back">
                 <div className="btn-back-content">
                   <Back className="back" />
                   <p className="p-back">Regresar</p>
@@ -486,7 +483,7 @@ function DollarManager() {
               </thead>
 
               {cotizacionDolar ? (
-                <tbody key={1 + cotizacionDolar.idDolar}>
+                <tbody key={1 + cotizacionDolar.idCotizacion}>
                   <tr>
                     <td className="table-name table-cotizacion">
                       {cotizacionDolar && cotizacionDolar.precio !== undefined
