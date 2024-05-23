@@ -13,6 +13,20 @@ async function GetOrders(state) {
 }
 //#endregion
 
+//#region Función para obtener un producto por su ID para la lista administrativa
+async function GetOrderById(id) {
+  const token = localStorage.getItem("token"); // Obtener el token almacenado en el localStorage
+  const headers = {
+    Authorization: `Bearer ${token}`, // Agregar el encabezado Authorization con el valor del token
+  };
+
+  const response = await axios.get(`https://localhost:7207/pedido/id/${id}`, {
+    headers,
+  });
+  return response.data;
+}
+//#endregion
+
 //#region Función para obtener los pedidos verificados por fecha con filtros opcionales
 async function GetVerifiedOrdersByDate(
   fechaDesde,
@@ -109,6 +123,7 @@ async function DeleteOrders(id, headers) {
 //#region Export
 export {
   GetOrders,
+  GetOrderById,
   GetVerifiedOrdersByDate,
   GetOrdersDataByYear,
   GetOrdersDataByMonthYear,

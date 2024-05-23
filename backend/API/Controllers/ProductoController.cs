@@ -57,6 +57,7 @@ public class ProductoController : ControllerBase
   }
 
   [HttpGet("{id}")]
+  [Authorize(Roles = "SuperAdmin, Supervisor, Vendedor")]
   public async Task<ProductoDto> GetProductoById(int id)
   {
     var producto = await _mediator.Send(new GetProductoByIdQuery(id));

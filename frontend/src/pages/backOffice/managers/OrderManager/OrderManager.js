@@ -30,6 +30,7 @@ import Loader from "../../../../components/Loaders/LoaderCircle";
 
 import {
   GetOrders,
+  GetOrderById,
   UpdateOrders,
   DeleteOrders,
   UpdateOrdersVerified,
@@ -72,6 +73,7 @@ function OrderManager() {
   const [filterType, setFilterType] = useState("");
 
   const [query, setQuery] = useState("");
+  const [selectedQuery, setSelectedQuery] = useState("");
 
   const [pending, setPending] = useState(false);
 
@@ -105,6 +107,8 @@ function OrderManager() {
   const minPageNumbersToShow = 0;
   //#endregion
   //#endregion
+
+  console.log(orders);
 
   //#region UseEffect
   useEffect(() => {
@@ -171,15 +175,6 @@ function OrderManager() {
       })
       .catch((err) => console.error(err.toString()));
 
-    connection.on("MensajeCrudPedido", async () => {
-      try {
-        GetOrders(setOrders);
-        GetOrders(setOriginalOrdersList);
-      } catch (error) {
-        console.error("Error al obtener la cotización: " + error);
-      }
-    });
-
     connection.on("MensajeUpdateCostoEnvio", async () => {
       try {
         await GetCostoEnvioUnicamente(setCostoEnvioDomicilio);
@@ -240,74 +235,84 @@ function OrderManager() {
             },
             headers
           );
+
           Swal.fire({
             icon: "success",
             title: "Estado del pedido actualizado exitosamente!",
             showConfirmButton: false,
             timer: 2000,
           });
-          await GetOrders(setOrders);
 
-          setOrders((prevOrders) => {
-            setOriginalOrdersList(prevOrders);
+          await GetOrders(setOriginalOrdersList);
 
-            if (filterType === "type") {
-              const result = prevOrders.filter((order) => {
-                return order.tipo === filterName;
-              });
+          if (filterType === "search") {
+            const orderData = await GetOrderById(query);
 
-              setTitle(`Detalles de Pedidos de ${filterName}`);
-              setOrders(result);
-              setQuery("");
-              document.getElementById("clear-filter").style.display = "flex";
-              document.getElementById("clear-filter2").style.display = "flex";
-              setFilterName(filterName);
-              setFilterType("type");
-              ClearPending();
-              setCurrentPage(1);
-            }
-
-            if (filterType === "pending") {
-              const result = prevOrders.filter((order) => {
-                return order.verificado === false;
-              });
-              setTitle("Detalles de Pedidos pendientes");
-              setOrders(result);
-              setQuery("");
-              document.getElementById("clear-filter").style.display = "flex";
-              document.getElementById("clear-filter2").style.display = "flex";
-              setFilterName("Pendiente");
-              setFilterType("pending");
-              setCurrentPage(1);
-            }
-
-            if (filterType === "search") {
-              const result = prevOrders.filter((order) => {
-                return order.idPedido
-                  .toLowerCase()
-                  .includes(filterName.toLowerCase());
-              });
-              setOrders(result);
-              document.getElementById("clear-filter").style.display = "flex";
-              document.getElementById("clear-filter2").style.display = "flex";
-              setTitle(`Detalles de Pedidos con ID: "${filterName}"`);
-              setFilterName(filterName);
-              setFilterType("search");
-              ClearPending();
-              setCurrentPage(1);
-              if (filterName === "") {
-                document.getElementById("clear-filter").style.display = "none";
-                document.getElementById("clear-filter2").style.display = "none";
-                setFilterType("");
-                setTitle("Detalles de Pedidos");
-              }
-            }
-            if (filterType === "other") {
-              setOrders(prevOrders);
+            if (orderData) {
+              setOrders([orderData]);
             } else {
-              return prevOrders;
+              setOrders([]);
             }
-          });
+
+            document.getElementById("clear-filter").style.display = "flex";
+            document.getElementById("clear-filter2").style.display = "flex";
+            setTitle(`Detalle de Pedido con ID: "${filterName}"`);
+            setFilterName(filterName);
+            setFilterType("search");
+            ClearPending();
+            setCurrentPage(1);
+
+            if (filterName === "") {
+              document.getElementById("clear-filter").style.display = "none";
+              document.getElementById("clear-filter2").style.display = "none";
+              setFilterType("");
+              setTitle("Detalles de Pedidos");
+            }
+          } else {
+            await GetOrders(setOrders);
+
+            setOrders((prevOrders) => {
+              setOriginalOrdersList(prevOrders);
+
+              if (filterType === "type") {
+                const result = prevOrders.filter((order) => {
+                  return order.tipo === filterName;
+                });
+
+                setTitle(`Detalles de Pedidos de ${filterName}`);
+                setOrders(result);
+                setQuery("");
+                setSelectedQuery("");
+                document.getElementById("clear-filter").style.display = "flex";
+                document.getElementById("clear-filter2").style.display = "flex";
+                setFilterName(filterName);
+                setFilterType("type");
+                ClearPending();
+                setCurrentPage(1);
+              }
+
+              if (filterType === "pending") {
+                const result = prevOrders.filter((order) => {
+                  return order.verificado === false;
+                });
+                setTitle("Detalles de Pedidos pendientes");
+                setOrders(result);
+                setQuery("");
+                setSelectedQuery("");
+                document.getElementById("clear-filter").style.display = "flex";
+                document.getElementById("clear-filter2").style.display = "flex";
+                setFilterName("Pendiente");
+                setFilterType("pending");
+                setCurrentPage(1);
+              }
+
+              if (filterType === "other") {
+                setOrders(prevOrders);
+              } else {
+                return prevOrders;
+              }
+            });
+          }
         } catch (error) {
           Swal.fire({
             title: error,
@@ -351,68 +356,88 @@ function OrderManager() {
             showConfirmButton: false,
             timer: 2000,
           });
-          await GetOrders(setOrders);
 
-          setOrders((prevOrders) => {
-            setOriginalOrdersList(prevOrders);
+          await GetOrders(setOriginalOrdersList);
 
-            if (filterType === "type") {
-              const result = prevOrders.filter((order) => {
-                return order.tipo === filterName;
-              });
+          if (filterType === "search") {
+            const fetchOrderData = async () => {
+              try {
+                const orderData = await GetOrderById(query);
 
-              setTitle(`Detalles de Pedidos de ${filterName}`);
-              setOrders(result);
-              setQuery("");
-              document.getElementById("clear-filter").style.display = "flex";
-              document.getElementById("clear-filter2").style.display = "flex";
-              setFilterName(filterName);
-              setFilterType("type");
-              ClearPending();
-              setCurrentPage(1);
-            }
+                if (orderData) {
+                  setOrders([orderData]);
+                } else {
+                  setOrders([]);
+                }
 
-            if (filterType === "pending") {
-              const result = prevOrders.filter((order) => {
-                return order.verificado === false;
-              });
-              setTitle("Detalles de Pedidos pendientes");
-              setOrders(result);
-              setQuery("");
-              document.getElementById("clear-filter").style.display = "flex";
-              document.getElementById("clear-filter2").style.display = "flex";
-              setFilterName("Pendiente");
-              setFilterType("pending");
-              setCurrentPage(1);
-            }
+                document.getElementById("clear-filter").style.display = "flex";
+                document.getElementById("clear-filter2").style.display = "flex";
+                setTitle(`Detalle de Pedido con ID: "${filterName}"`);
+                setFilterName(filterName);
+                setFilterType("search");
+                ClearPending();
+                setCurrentPage(1);
 
-            if (filterType === "search") {
-              const result = prevOrders.filter((order) => {
-                return order.idPedido
-                  .toLowerCase()
-                  .includes(filterName.toLowerCase());
-              });
-              setOrders(result);
-              document.getElementById("clear-filter").style.display = "flex";
-              document.getElementById("clear-filter2").style.display = "flex";
-              setTitle(`Detalles de Pedidos con ID: "${filterName}"`);
-              setFilterName(filterName);
-              setFilterType("search");
-              ClearPending();
-              setCurrentPage(1);
-              if (filterName === "") {
-                document.getElementById("clear-filter").style.display = "none";
-                document.getElementById("clear-filter2").style.display = "none";
-                setFilterType("");
-                setTitle("Detalles de Pedidos");
+                if (filterName === "") {
+                  document.getElementById("clear-filter").style.display =
+                    "none";
+                  document.getElementById("clear-filter2").style.display =
+                    "none";
+                  setFilterType("");
+                  setTitle("Detalles de Pedidos");
+                }
+              } catch (error) {
+                console.error("Error fetching order data:", error);
+                setOrders([]);
               }
-            }
-            if (filterType === "other") {
-              setOrders(prevOrders);
-            } else {
-              return prevOrders;
-            }
-          });
+            };
+
+            fetchOrderData();
+          } else {
+            await GetOrders(setOrders);
+
+            setOrders((prevOrders) => {
+              setOriginalOrdersList(prevOrders);
+
+              if (filterType === "type") {
+                const result = prevOrders.filter((order) => {
+                  return order.tipo === filterName;
+                });
+
+                setTitle(`Detalles de Pedidos de ${filterName}`);
+                setOrders(result);
+                setQuery("");
+                setSelectedQuery("");
+                document.getElementById("clear-filter").style.display = "flex";
+                document.getElementById("clear-filter2").style.display = "flex";
+                setFilterName(filterName);
+                setFilterType("type");
+                ClearPending();
+                setCurrentPage(1);
+              }
+
+              if (filterType === "pending") {
+                const result = prevOrders.filter((order) => {
+                  return order.verificado === false;
+                });
+                setTitle("Detalles de Pedidos pendientes");
+                setOrders(result);
+                setQuery("");
+                setSelectedQuery("");
+                document.getElementById("clear-filter").style.display = "flex";
+                document.getElementById("clear-filter2").style.display = "flex";
+                setFilterName("Pendiente");
+                setFilterType("pending");
+                setCurrentPage(1);
+              }
+
+              if (filterType === "other") {
+                setOrders(prevOrders);
+              } else {
+                return prevOrders;
+              }
+            });
+          }
         } catch (error) {
           Swal.fire({
             title: error,
@@ -439,6 +464,7 @@ function OrderManager() {
     setOrders(originalOrdersList); // trae la lista de pedidos original, sin ningun filtro
     setTipo("");
     setQuery("");
+    setSelectedQuery("");
     setFilterName("");
     setFilterType("");
     setTitle("Detalles de Pedidos");
@@ -461,6 +487,7 @@ function OrderManager() {
     setTitle(`Detalles de Pedidos ${type}`);
     setOrders(result);
     setQuery("");
+    setSelectedQuery("");
     document.getElementById("clear-filter").style.display = "flex";
     document.getElementById("clear-filter2").style.display = "flex";
     setFilterName(type);
@@ -483,6 +510,7 @@ function OrderManager() {
       setTitle("Detalles de Pedidos pendientes");
       setOrders(result);
       setQuery("");
+      setSelectedQuery("");
       document.getElementById("clear-filter").style.display = "flex";
       document.getElementById("clear-filter2").style.display = "flex";
       setFilterName("Pendiente");
@@ -497,26 +525,72 @@ function OrderManager() {
   //#endregion
 
   //#region Función para filtrar pedido mediante una consulta personalizada por su ID
-  const search = () => {
-    setOrders(originalOrdersList);
-    const result = orders.filter((order) =>
-      order.idPedido.toString().toLowerCase().includes(query.toLowerCase())
-    );
-    setOrders(result);
-    document.getElementById("clear-filter").style.display = "flex";
-    document.getElementById("clear-filter2").style.display = "flex";
-    setTitle(`Detalles de Pedido con ID: "${query}"`);
-    setFilterName(query);
-    setFilterType("search");
-    ClearPending();
-    setCurrentPage(1);
-    window.scrollTo(0, 0);
+  const search = async () => {
+    setSelectedQuery(query);
+
+    // setOrders(originalOrdersList);
+
     if (query === "") {
-      document.getElementById("clear-filter").style.display = "none";
-      document.getElementById("clear-filter2").style.display = "none";
-      setFilterType("");
-      setTitle("Detalles de Pedidos");
-      window.scrollTo(0, 0);
+      Swal.fire({
+        icon: "warning",
+        title: "Consulta vacía",
+        text: "Ingrese un ID para realizar la búsqueda.",
+        confirmButtonText: "Aceptar",
+        showCancelButton: false,
+        confirmButtonColor: "#f8bb86",
+      });
+    } else if (query === selectedQuery) {
+      Swal.fire({
+        icon: "warning",
+        title: "ID de pedido no cambiado",
+        text: "El ID de pedido es el mismo que el de la última consulta. Intente con un ID diferente.",
+        confirmButtonText: "Aceptar",
+        showCancelButton: false,
+        confirmButtonColor: "#f8bb86",
+      });
+    } else {
+      try {
+        const orderData = await GetOrderById(query);
+        setOrders([orderData]);
+
+        document.getElementById("clear-filter").style.display = "flex";
+        document.getElementById("clear-filter2").style.display = "flex";
+        setTitle(`Detalle de Pedido con ID: "${query}"`);
+        setFilterName(query);
+        setFilterType("search");
+        ClearPending();
+        setCurrentPage(1);
+        window.scrollTo(0, 0);
+        if (query === "") {
+          document.getElementById("clear-filter").style.display = "none";
+          document.getElementById("clear-filter2").style.display = "none";
+          setFilterType("");
+          setTitle("Detalles de Pedidos");
+          window.scrollTo(0, 0);
+        }
+      } catch (error) {
+        Swal.fire({
+          icon: "warning",
+          title: "Pedido no encontrado",
+          text: "No se encontró ningún pedido con el ID: " + query,
+          confirmButtonText: "Aceptar",
+          showCancelButton: false,
+          confirmButtonColor: "#f8bb86",
+        });
+
+        setOrders(originalOrdersList); // trae la lista de pedidos original, sin ningun filtro
+        setTipo("");
+        setFilterName("");
+        setFilterType("");
+        setTitle("Detalles de Pedidos");
+        document.getElementById("clear-filter").style.display = "none";
+        document.getElementById("clear-filter2").style.display = "none"; // esconde del DOM el boton de limpiar filtros
+        setCurrentPage(1);
+        ClearPending();
+        window.scrollTo(0, 0);
+
+        console.error("Error al obtener el pedido:", error);
+      }
     }
   };
   //#endregion
@@ -552,13 +626,19 @@ function OrderManager() {
 
   //#region Función para obtener los valores almacenados de un pedido y cargar cada uno de ellos en su input correspondiente
   function RetrieveOrderInputs(order) {
+    console.log(order);
+
     setIdPedido(order.idPedido);
+
+    console.log(order.entrega);
 
     if (order.entrega === "Lo retiro por el local") {
       setEntrega(1);
     } else if (order.entrega === "Envío a domicilio") {
       setEntrega(2);
     }
+
+    console.log(entrega);
 
     setVendedor(getIdVendedor(order.vendedor));
     setCostoEnvio(order.costoEnvio);
@@ -726,72 +806,81 @@ function OrderManager() {
           showConfirmButton: false,
           timer: 2000,
         });
+
+        await GetOrders(setOriginalOrdersList);
+
         CloseModal();
 
         // InitialState();
         ClearOrderInputs();
-        await GetOrders(setOrders);
 
-        setOrders((prevOrders) => {
-          setOriginalOrdersList(prevOrders);
-
-          if (filterType === "type") {
-            const result = prevOrders.filter((order) => {
-              return order.tipo === filterName;
-            });
-
-            setTitle(`Detalles de Pedidos de ${filterName}`);
-            setOrders(result);
-            setQuery("");
-            document.getElementById("clear-filter").style.display = "flex";
-            document.getElementById("clear-filter2").style.display = "flex";
-            setFilterName(filterName);
-            setFilterType("type");
-            ClearPending();
-            setCurrentPage(1);
-          }
-
-          if (filterType === "pending") {
-            const result = prevOrders.filter((order) => {
-              return order.verificado === false;
-            });
-            setTitle("Detalles de Pedidos pendientes");
-            setOrders(result);
-            setQuery("");
-            document.getElementById("clear-filter").style.display = "flex";
-            document.getElementById("clear-filter2").style.display = "flex";
-            setFilterName("Pendiente");
-            setFilterType("pending");
-            setCurrentPage(1);
-          }
-
-          if (filterType === "search") {
-            const result = prevOrders.filter((order) => {
-              return order.idPedido
-                .toLowerCase()
-                .includes(filterName.toLowerCase());
-            });
-            setOrders(result);
-            document.getElementById("clear-filter").style.display = "flex";
-            document.getElementById("clear-filter2").style.display = "flex";
-            setTitle(`Detalles de Pedidos con ID: "${filterName}"`);
-            setFilterName(filterName);
-            setFilterType("search");
-            ClearPending();
-            setCurrentPage(1);
-            if (filterName === "") {
-              document.getElementById("clear-filter").style.display = "none";
-              document.getElementById("clear-filter2").style.display = "none";
-              setFilterType("");
-              setTitle("Detalles de Pedidos");
-            }
-          }
-          if (filterType === "other") {
-            setOrders(prevOrders);
+        // Verificar el tipo de filtro y actualizar orders en consecuencia
+        if (filterType === "search") {
+          const orderData = await GetOrderById(query);
+          if (orderData) {
+            setOrders([orderData]);
           } else {
-            return prevOrders;
+            setOrders([]);
           }
-        });
+          document.getElementById("clear-filter").style.display = "flex";
+          document.getElementById("clear-filter2").style.display = "flex";
+          setTitle(`Detalle de Pedido con ID: "${filterName}"`);
+          setFilterName(filterName);
+          setFilterType("search");
+          ClearPending();
+          setCurrentPage(1);
+
+          if (filterName === "") {
+            document.getElementById("clear-filter").style.display = "none";
+            document.getElementById("clear-filter2").style.display = "none";
+            setFilterType("");
+            setTitle("Detalles de Pedidos");
+          }
+        } else {
+          await GetOrders(setOrders);
+
+          setOrders((prevOrders) => {
+            setOriginalOrdersList(prevOrders);
+
+            if (filterType === "type") {
+              const result = prevOrders.filter((order) => {
+                return order.tipo === filterName;
+              });
+
+              setTitle(`Detalles de Pedidos de ${filterName}`);
+              setOrders(result);
+              setQuery("");
+              setSelectedQuery("");
+              document.getElementById("clear-filter").style.display = "flex";
+              document.getElementById("clear-filter2").style.display = "flex";
+              setFilterName(filterName);
+              setFilterType("type");
+              ClearPending();
+              setCurrentPage(1);
+            }
+
+            if (filterType === "pending") {
+              const result = prevOrders.filter((order) => {
+                return order.verificado === false;
+              });
+              setTitle("Detalles de Pedidos pendientes");
+              setOrders(result);
+              setQuery("");
+              setSelectedQuery("");
+              document.getElementById("clear-filter").style.display = "flex";
+              document.getElementById("clear-filter2").style.display = "flex";
+              setFilterName("Pendiente");
+              setFilterType("pending");
+              setCurrentPage(1);
+            }
+
+            if (filterType === "other") {
+              setOrders(prevOrders);
+            } else {
+              return prevOrders;
+            }
+          });
+        }
       } catch (err) {
         Swal.fire({
           title: err,
@@ -1218,20 +1307,20 @@ function OrderManager() {
           </div>
 
           {(orders.length > 0 ||
-            (orders.length === 0 && (pending === true || tipo !== ""))) && (
+            (orders.length === 0 &&
+              (pending === true || tipo !== "" || query !== ""))) && (
             <div className="filters-left2">
               <div className="pagination-count3">
                 <div className="search-container">
                   <div className="form-group-input-search2">
-                    <span className="input-group-text3">
-                      <Lupa className="input-group-svg" />
+                    <span className="input-group-text3" onClick={search}>
+                      <Lupa className="input-group-svg lupa-catalogo" />
                     </span>
                     <input
                       className="search-input2"
                       type="text"
                       value={query}
                       onChange={(e) => setQuery(e.target.value)}
-                      onKeyUp={search}
                       placeholder="Buscar por ID..."
                     />
                   </div>

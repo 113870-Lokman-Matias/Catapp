@@ -449,7 +449,7 @@ function AdminPanel() {
                   className="btn btn-dark category-btn"
                 >
                   <Dolar className="category-svg" />
-                  <p className="category-title">Dolar</p>
+                  <p className="category-title">Dólar</p>
                 </Link>
               )}
             </div>

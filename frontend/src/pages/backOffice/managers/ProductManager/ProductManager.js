@@ -2456,7 +2456,7 @@ function ProductManager() {
           </div>
 
           {(products.length > 0 ||
-            (products.length === 0 && hidden === true)) && (
+            (products.length === 0 && (hidden === true || query !== ""))) && (
             <div className="filters-left2">
               <div className="pagination-count3">
                 <div className="search-container">

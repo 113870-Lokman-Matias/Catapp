@@ -43,7 +43,14 @@ async function GetProductsByQuery(query) {
 
 //#region Función para obtener un producto por su ID
 async function GetProductById(id) {
-  const response = await axios.get(`https://localhost:7207/producto/${id}`);
+  const token = localStorage.getItem("token"); // Obtener el token almacenado en el localStorage
+  const headers = {
+    Authorization: `Bearer ${token}`, // Agregar el encabezado Authorization con el valor del token
+  };
+
+  const response = await axios.get(`https://localhost:7207/producto/${id}`, {
+    headers,
+  });
   return response.data;
 }
 //#endregion
