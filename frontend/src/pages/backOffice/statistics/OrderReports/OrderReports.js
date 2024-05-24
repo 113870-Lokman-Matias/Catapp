@@ -107,6 +107,9 @@ function OrderReports() {
   const [desde, setDesde] = useState("");
   const [hasta, setHasta] = useState("");
 
+  const [desdeSeleccionado, setDesdeSeleccionado] = useState("");
+  const [hastaSeleccionado, setHastaSeleccionado] = useState("");
+
   const [selectedVendedor, setSelectedVendedor] = useState("");
   const [selectedTipo, setSelectedTipo] = useState("");
   const [selectedEntrega, setSelectedEntrega] = useState("");
@@ -233,234 +236,9 @@ function OrderReports() {
 
   //#region Función para buscar pedidos con los filtros
   const search = async () => {
-    setIsLoading(true);
+    setDesdeSeleccionado(desde);
+    setHastaSeleccionado(hasta);
 
-    // Formatear las fechas al formato deseado
-    const formattedFromDate = desde + " 00:00:00 +00:00";
-    const formattedToDate = hasta + " 23:59:59 +00:00";
-
-    try {
-      const response = await GetVerifiedOrdersByDate(
-        formattedFromDate,
-        formattedToDate,
-        selectedVendedor,
-        selectedTipo,
-        selectedEntrega,
-        selectedAbono
-      );
-
-      if (selectedVendedor !== "") {
-        setFiltroVendedorSeleccionado(nombreSelectedVendedor);
-      } else {
-        setFiltroVendedorSeleccionado("");
-      }
-
-      if (selectedTipo !== "") {
-        setFiltroTipoSeleccionado(nombreSelectedTipo);
-      } else {
-        setFiltroTipoSeleccionado("");
-      }
-
-      if (selectedEntrega !== "") {
-        setFiltroEntregaSeleccionado(nombreSelectedEntrega);
-      } else {
-        setFiltroEntregaSeleccionado("");
-      }
-
-      if (selectedAbono !== "") {
-        setFiltroAbonoSeleccionado(nombreSelectedAbono);
-      } else {
-        setFiltroAbonoSeleccionado("");
-      }
-
-      const respondeOrders = response.pedidos || [];
-      setOrders(respondeOrders);
-      setIsLoading(false);
-
-      // console.log(response);
-
-      if (
-        response.errorMessage === "No hay pedidos verificados entre esas fechas"
-      ) {
-        setIsLoading(false);
-
-        // Mostrar SweetAlert si no hay órdenes
-        Swal.fire({
-          icon: "warning",
-          title: "No hay reportes de pedidos",
-          text: `No se encontraron reportes de pedidos ${
-            desde === hasta
-              ? `de la fecha ${formatDate3(desde)}.`
-              : `comprendidos entre las fechas ${formatDate3(
-                  desde
-                )} y ${formatDate3(hasta)}.`
-          }`,
-          confirmButtonText: "Aceptar",
-          confirmButtonColor: "#f8bb86",
-        });
-
-        setCantidadPedidos(0);
-        setCantidadProductos(0);
-        setMontoTotal(0);
-        setPromedioMontoTotal(0);
-        setCantidadClientes(0);
-
-        setTitle("Reportes de Pedidos");
-        setShowOrders(false);
-        setShowFilters(true);
-      }
-
-      const cantidadPedidos = response.cantidadPedidos;
-      const cantidadProductos = response.cantidadProductos;
-      const montoTotal = response.montoTotalFacturado;
-      const promedioMontoTotal = response.promedioMontoTotalFacturado;
-      const cantidadClientes = response.cantidadClientes;
-
-      //#region Obtener los primeros 3 vendedores con más ventas
-      setVendedorMasPedidos(response.primerVendedorMasVentas);
-      setCantidadVendedorMasPedidos(response.cantidadVentasPrimerVendedor);
-
-      setSegundoVendedorMasPedidos(response.segundoVendedorMasVentas);
-      setCantidadSegundoVendedorMasPedidos(
-        response.cantidadVentasSegundoVendedor
-      );
-
-      setTercerVendedorMasPedidos(response.tercerVendedorMasVentas);
-      setCantidadTercerVendedorMasPedidos(
-        response.cantidadVentasTercerVendedor
-      );
-      //#endregion
-
-      //#region Obtener los primeros 3 productos más vendidos
-      setUrlProductoMasVendido(response.urlPrimerProductoMasVendido);
-      setProductoMasVendido(response.primerProductoMasVendido);
-      setCantidadProductoMasVendido(response.cantidadPrimerProductoVendidos);
-
-      setUrlSegundoProductoMasVendido(response.urlSegundoProductoMasVendido);
-      setSegundoProductoMasVendido(response.segundoProductoMasVendido);
-      setCantidadSegundoProductoMasVendido(
-        response.cantidadSegundoProductoVendidos
-      );
-
-      setUrlTercerProductoMasVendido(response.urlTercerProductoMasVendido);
-      setTercerProductoMasVendido(response.tercerProductoMasVendido);
-      setCantidadTercerProductoMasVendido(
-        response.cantidadTercerProductoVendidos
-      );
-      //#endregion
-
-      //#region Obtener las primeras 3 categorías más demandadas
-      setCategoriaMasDemandada(response.primerCategoriaMasAparecida);
-      setCantidadCategoriaMasDemandada(
-        response.cantidadPrimerCategoriaMasAparecida
-      );
-
-      setSegundaCategoriaMasDemandada(response.segundaCategoriaMasAparecida);
-      setCantidadSegundaCategoriaMasDemandada(
-        response.cantidadSegundaCategoriaMasAparecida
-      );
-
-      setTerceraCategoriaMasDemandada(response.terceraCategoriaMasAparecida);
-      setCantidadTerceraCategoriaMasDemandada(
-        response.cantidadTerceraCategoriaMasAparecida
-      );
-      //#endregion
-
-      setCantidadPedidos(cantidadPedidos);
-      setCantidadProductos(cantidadProductos);
-      setMontoTotal(montoTotal);
-      setPromedioMontoTotal(promedioMontoTotal);
-      setCantidadClientes(cantidadClientes);
-
-      if (response.isSuccess === true) {
-        setTitle(
-          `Reportes de Pedidos ${
-            desde === "" && hasta === ""
-              ? ""
-              : desde === hasta
-              ? `de: ${formatDate3(desde)}`
-              : `desde: ${formatDate3(desde)} hasta: ${formatDate3(hasta)}`
-          }`
-        );
-      }
-
-      setCurrentPage(1);
-      window.scrollTo(0, 0);
-
-      const countUpOptions = {
-        separator: ".",
-        prefix: "$", // Prefijo (por ejemplo, '$')
-      };
-
-      const cantidadPedidosNumero = new CountUp(
-        "cantidadPedidosNumero",
-        cantidadPedidos
-      );
-      const cantidadProductosNumero = new CountUp(
-        "cantidadProductosNumero",
-        cantidadProductos
-      );
-      const montoTotalNumero = new CountUp(
-        "montoTotalNumero",
-        montoTotal,
-        countUpOptions
-      );
-      const promedioMontoTotalNumero = new CountUp(
-        "promedioMontoTotalNumero",
-        promedioMontoTotal,
-        countUpOptions
-      );
-      const cantidadClientesNumero = new CountUp(
-        "cantidadClientesNumero",
-        cantidadClientes
-      );
-
-      if (
-        !cantidadPedidosNumero.error ||
-        !cantidadProductosNumero.error ||
-        !montoTotalNumero.error ||
-        !promedioMontoTotalNumero.error ||
-        !cantidadClientesNumero.error
-      ) {
-        cantidadPedidosNumero.start();
-        cantidadProductosNumero.start();
-        montoTotalNumero.start();
-        promedioMontoTotalNumero.start();
-        cantidadClientesNumero.start();
-      } else {
-        console.error(cantidadPedidosNumero.error);
-        console.error(cantidadProductosNumero.error);
-        console.error(montoTotalNumero.error);
-        console.error(promedioMontoTotalNumero.error);
-        console.error(cantidadClientesNumero.error);
-      }
-
-      if (desde === "") {
-        setTitle(
-          `Reportes de Pedidos ${
-            desde === "" && hasta === ""
-              ? ""
-              : desde === hasta
-              ? `de: ${formatDate3(desde)}`
-              : `desde: ${formatDate3(desde)} hasta: ${formatDate3(hasta)}`
-          }`
-        );
-      }
-    } catch {
-      setIsLoading(false); // Establecer isLoading como false después de la petición
-      Swal.fire({
-        icon: "warning",
-        title: "Error al obtener los datos de los reportes",
-        text: `No se pudieron cargar los reportes.`,
-        confirmButtonText: "Aceptar",
-        confirmButtonColor: "#f8bb86",
-      });
-    }
-  };
-  //#endregion
-
-  //#region Función para realizar la consulta
-  const handleSearchClick = () => {
     if (desde === "" && hasta === "") {
       Swal.fire({
         icon: "warning",
@@ -469,8 +247,247 @@ function OrderReports() {
         confirmButtonText: "Aceptar",
         confirmButtonColor: "#f8bb86",
       });
+    } else if (
+      desde === desdeSeleccionado &&
+      hasta === hastaSeleccionado &&
+      filtroVendedorSeleccionado === nombreSelectedVendedor &&
+      filtroTipoSeleccionado === nombreSelectedTipo &&
+      filtroEntregaSeleccionado === nombreSelectedEntrega &&
+      filtroAbonoSeleccionado === nombreSelectedAbono
+    ) {
+      Swal.fire({
+        icon: "warning",
+        title: "Parámetros de búsqueda sin cambios",
+        text: "Las fechas 'desde' y 'hasta', así como los parámetros opcionales (vendedor, tipo de pedido, tipo de entrega y forma de abono) no han cambiado con respecto a la consulta anterior. Intente con diferentes parámetros.",
+        confirmButtonText: "Aceptar",
+        showCancelButton: false,
+        confirmButtonColor: "#f8bb86",
+      });
     } else {
-      search();
+      setIsLoading(true);
+
+      // Formatear las fechas al formato deseado
+      const formattedFromDate = desde + " 00:00:00 +00:00";
+      const formattedToDate = hasta + " 23:59:59 +00:00";
+
+      try {
+        const response = await GetVerifiedOrdersByDate(
+          formattedFromDate,
+          formattedToDate,
+          selectedVendedor,
+          selectedTipo,
+          selectedEntrega,
+          selectedAbono
+        );
+
+        if (selectedVendedor !== "") {
+          setFiltroVendedorSeleccionado(nombreSelectedVendedor);
+        } else {
+          setFiltroVendedorSeleccionado("");
+        }
+
+        if (selectedTipo !== "") {
+          setFiltroTipoSeleccionado(nombreSelectedTipo);
+        } else {
+          setFiltroTipoSeleccionado("");
+        }
+
+        if (selectedEntrega !== "") {
+          setFiltroEntregaSeleccionado(nombreSelectedEntrega);
+        } else {
+          setFiltroEntregaSeleccionado("");
+        }
+
+        if (selectedAbono !== "") {
+          setFiltroAbonoSeleccionado(nombreSelectedAbono);
+        } else {
+          setFiltroAbonoSeleccionado("");
+        }
+
+        const respondeOrders = response.pedidos || [];
+        setOrders(respondeOrders);
+        setIsLoading(false);
+
+        // console.log(response);
+
+        if (
+          response.errorMessage ===
+          "No hay pedidos verificados entre esas fechas"
+        ) {
+          setIsLoading(false);
+
+          // Mostrar SweetAlert si no hay órdenes
+          Swal.fire({
+            icon: "warning",
+            title: "No hay reportes de pedidos",
+            text: `No se encontraron reportes de pedidos ${
+              desde === hasta
+                ? `de la fecha ${formatDate3(desde)}.`
+                : `comprendidos entre las fechas ${formatDate3(
+                    desde
+                  )} y ${formatDate3(hasta)}.`
+            }`,
+            confirmButtonText: "Aceptar",
+            confirmButtonColor: "#f8bb86",
+          });
+
+          setCantidadPedidos(0);
+          setCantidadProductos(0);
+          setMontoTotal(0);
+          setPromedioMontoTotal(0);
+          setCantidadClientes(0);
+
+          setTitle("Reportes de Pedidos");
+          setShowOrders(false);
+          setShowFilters(true);
+        }
+
+        const cantidadPedidos = response.cantidadPedidos;
+        const cantidadProductos = response.cantidadProductos;
+        const montoTotal = response.montoTotalFacturado;
+        const promedioMontoTotal = response.promedioMontoTotalFacturado;
+        const cantidadClientes = response.cantidadClientes;
+
+        //#region Obtener los primeros 3 vendedores con más ventas
+        setVendedorMasPedidos(response.primerVendedorMasVentas);
+        setCantidadVendedorMasPedidos(response.cantidadVentasPrimerVendedor);
+
+        setSegundoVendedorMasPedidos(response.segundoVendedorMasVentas);
+        setCantidadSegundoVendedorMasPedidos(
+          response.cantidadVentasSegundoVendedor
+        );
+
+        setTercerVendedorMasPedidos(response.tercerVendedorMasVentas);
+        setCantidadTercerVendedorMasPedidos(
+          response.cantidadVentasTercerVendedor
+        );
+        //#endregion
+
+        //#region Obtener los primeros 3 productos más vendidos
+        setUrlProductoMasVendido(response.urlPrimerProductoMasVendido);
+        setProductoMasVendido(response.primerProductoMasVendido);
+        setCantidadProductoMasVendido(response.cantidadPrimerProductoVendidos);
+
+        setUrlSegundoProductoMasVendido(response.urlSegundoProductoMasVendido);
+        setSegundoProductoMasVendido(response.segundoProductoMasVendido);
+        setCantidadSegundoProductoMasVendido(
+          response.cantidadSegundoProductoVendidos
+        );
+
+        setUrlTercerProductoMasVendido(response.urlTercerProductoMasVendido);
+        setTercerProductoMasVendido(response.tercerProductoMasVendido);
+        setCantidadTercerProductoMasVendido(
+          response.cantidadTercerProductoVendidos
+        );
+        //#endregion
+
+        //#region Obtener las primeras 3 categorías más demandadas
+        setCategoriaMasDemandada(response.primerCategoriaMasAparecida);
+        setCantidadCategoriaMasDemandada(
+          response.cantidadPrimerCategoriaMasAparecida
+        );
+
+        setSegundaCategoriaMasDemandada(response.segundaCategoriaMasAparecida);
+        setCantidadSegundaCategoriaMasDemandada(
+          response.cantidadSegundaCategoriaMasAparecida
+        );
+
+        setTerceraCategoriaMasDemandada(response.terceraCategoriaMasAparecida);
+        setCantidadTerceraCategoriaMasDemandada(
+          response.cantidadTerceraCategoriaMasAparecida
+        );
+        //#endregion
+
+        setCantidadPedidos(cantidadPedidos);
+        setCantidadProductos(cantidadProductos);
+        setMontoTotal(montoTotal);
+        setPromedioMontoTotal(promedioMontoTotal);
+        setCantidadClientes(cantidadClientes);
+
+        if (response.isSuccess === true) {
+          setTitle(
+            `Reportes de Pedidos ${
+              desde === "" && hasta === ""
+                ? ""
+                : desde === hasta
+                ? `de: ${formatDate3(desde)}`
+                : `desde: ${formatDate3(desde)} hasta: ${formatDate3(hasta)}`
+            }`
+          );
+        }
+
+        setCurrentPage(1);
+        window.scrollTo(0, 0);
+
+        const countUpOptions = {
+          separator: ".",
+          prefix: "$", // Prefijo (por ejemplo, '$')
+        };
+
+        const cantidadPedidosNumero = new CountUp(
+          "cantidadPedidosNumero",
+          cantidadPedidos
+        );
+        const cantidadProductosNumero = new CountUp(
+          "cantidadProductosNumero",
+          cantidadProductos
+        );
+        const montoTotalNumero = new CountUp(
+          "montoTotalNumero",
+          montoTotal,
+          countUpOptions
+        );
+        const promedioMontoTotalNumero = new CountUp(
+          "promedioMontoTotalNumero",
+          promedioMontoTotal,
+          countUpOptions
+        );
+        const cantidadClientesNumero = new CountUp(
+          "cantidadClientesNumero",
+          cantidadClientes
+        );
+
+        if (
+          !cantidadPedidosNumero.error ||
+          !cantidadProductosNumero.error ||
+          !montoTotalNumero.error ||
+          !promedioMontoTotalNumero.error ||
+          !cantidadClientesNumero.error
+        ) {
+          cantidadPedidosNumero.start();
+          cantidadProductosNumero.start();
+          montoTotalNumero.start();
+          promedioMontoTotalNumero.start();
+          cantidadClientesNumero.start();
+        } else {
+          console.error(cantidadPedidosNumero.error);
+          console.error(cantidadProductosNumero.error);
+          console.error(montoTotalNumero.error);
+          console.error(promedioMontoTotalNumero.error);
+          console.error(cantidadClientesNumero.error);
+        }
+
+        if (desde === "") {
+          setTitle(
+            `Reportes de Pedidos ${
+              desde === "" && hasta === ""
+                ? ""
+                : desde === hasta
+                ? `de: ${formatDate3(desde)}`
+                : `desde: ${formatDate3(desde)} hasta: ${formatDate3(hasta)}`
+            }`
+          );
+        }
+      } catch {
+        setIsLoading(false); // Establecer isLoading como false después de la petición
+        Swal.fire({
+          icon: "warning",
+          title: "Error al obtener los datos de los reportes",
+          text: `No se pudieron cargar los reportes.`,
+          confirmButtonText: "Aceptar",
+          confirmButtonColor: "#f8bb86",
+        });
+      }
     }
   };
   //#endregion
@@ -483,6 +500,9 @@ function OrderReports() {
     setSelectedAbono("");
     setDesde("");
     setHasta("");
+
+    setDesdeSeleccionado("");
+    setHastaSeleccionado("");
 
     setOrders([]);
 
@@ -789,7 +809,7 @@ function OrderReports() {
                   />
                 </div>
 
-                <button className="btn-filter-date" onClick={handleSearchClick}>
+                <button className="btn-filter-date" onClick={search}>
                   CONSULTAR
                 </button>
 
