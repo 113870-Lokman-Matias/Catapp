@@ -3,6 +3,8 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet";
 import Chart from "react-apexcharts";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 
 import "./OrderGraphics.css";
 
@@ -10,6 +12,7 @@ import "./OrderGraphics.css";
 import { ReactComponent as Back } from "../../../../assets/svgs/back.svg";
 import { ReactComponent as Lupa } from "../../../../assets/svgs/lupa.svg";
 import { ReactComponent as Close } from "../../../../assets/svgs/closebtn.svg";
+import { ReactComponent as Pdf } from "../../../../assets/svgs/pdf.svg";
 //#endregion
 
 import Loader from "../../../../components/Loaders/LoaderCircle";
@@ -313,7 +316,7 @@ function OrderGraphics() {
   }, []);
   //#endregion
 
-  //#region Funcion para obtener los datos de facturación y pedidos por año
+  //#region Función para obtener los datos de facturación y pedidos por año
   const GetYearData = async () => {
     if (añoSeleccionado === "") {
       Swal.fire({
@@ -415,7 +418,7 @@ function OrderGraphics() {
   };
   //#endregion
 
-  //#region Funcion para obtener los datos de vendedores y productos por mes y año
+  //#region Función para obtener los datos de vendedores y productos por mes y año
   const GetMonthYearData = async () => {
     if (mesAñoSeleccionado === "" && variableSeleccionada === "") {
       Swal.fire({
@@ -555,7 +558,7 @@ function OrderGraphics() {
   };
   //#endregion
 
-  //#region Funcion para borrar los datos de facturación y pedidos por año
+  //#region Función para borrar los datos de facturación y pedidos por año
   const ClearYearData = () => {
     setFacturaciones([]);
     setFacturacionesSinEnvio([]);
@@ -568,7 +571,7 @@ function OrderGraphics() {
   };
   //#endregion
 
-  //#region Funcion para borrar los datos de vendedores y productos por mes y año
+  //#region Función para borrar los datos de vendedores y productos por mes y año
   const ClearMonthYearData = () => {
     setProductos([]);
     setCantidadesVendidas([]);
@@ -584,6 +587,25 @@ function OrderGraphics() {
     setBusquedaPorMesAño(false);
   };
   //#endregion
+
+  //#region Función para descargar gráficos en PDF
+  const exportToPDF = () => {
+    const doc = new jsPDF();
+
+    const generalGraphics = document.getElementById("pdf");
+
+    const maxWidth = 1170;
+    const isMaxWidth = window.innerWidth <= maxWidth;
+
+    html2canvas(generalGraphics).then((canvas) => {
+      const imgData = canvas.toDataURL("image/png");
+      const width = isMaxWidth ? 80 : 190; // Ajusta la anchura según el ancho de la ventana
+      const height = isMaxWidth ? 240 : 170; // Ajusta la altura según el ancho de la ventana
+
+      doc.addImage(imgData, "PNG", 10, 10, width, height);
+      doc.save("gráficos.pdf");
+    });
+  };
 
   //#region Return
   return (
@@ -607,12 +629,28 @@ function OrderGraphics() {
               </Link>
 
               <h2 className="title title-general">Gráficos de Pedidos</h2>
+
+              {(facturaciones.length > 0 ||
+                cantidades.length > 0 ||
+                cantidadesVendidas.length > 0 ||
+                cantidadVentas.length > 0) && (
+                <button
+                  onClick={exportToPDF}
+                  type="button"
+                  className="btn btn-danger btn-excel"
+                >
+                  <div className="btn-add-content">
+                    <Pdf className="excel" />
+                    <p className="p-add">Descargar</p>
+                  </div>
+                </button>
+              )}
             </div>
           </div>
 
           <br />
 
-          <div className="general-graphics">
+          <div className="general-graphics" id="pdf">
             <div className="graphics-container">
               {isLoadingAnuales === true && (
                 <div className="loading-graphics-div">
