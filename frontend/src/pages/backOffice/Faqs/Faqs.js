@@ -374,7 +374,7 @@ function Faqs() {
                 <div className="answer">
                   <p>
                     Únicamente se pueden exportar datos a Excel en las gestiones
-                    de productos y pedidos. Para hacerlo, haz clic en el botón
+                    de productos, detalles de stock y pedidos. Para hacerlo, haz clic en el botón
                     verde que dice "Descargar" en la parte superior derecha.
                   </p>
                   <img

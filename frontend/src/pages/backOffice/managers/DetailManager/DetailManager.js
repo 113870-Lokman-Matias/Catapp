@@ -2,10 +2,11 @@
 
 import Swal from "sweetalert2";
 import $ from "jquery";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet";
+import { useDownloadExcel } from "react-export-table-to-excel";
 
 import * as signalR from "@microsoft/signalr";
 
@@ -21,6 +22,8 @@ import { ReactComponent as Quitar } from "../../../../assets/svgs/quitar.svg";
 import { ReactComponent as StockInput } from "../../../../assets/svgs/stockinput.svg";
 import { ReactComponent as MotivoInput } from "../../../../assets/svgs/motivo.svg";
 import { ReactComponent as OtroInput } from "../../../../assets/svgs/otro.svg";
+
+import { ReactComponent as Excel } from "../../../../assets/svgs/excel.svg";
 //#endregion
 
 import Loader from "../../../../components/Loaders/LoaderCircle";
@@ -58,6 +61,14 @@ function DetailManager() {
 
   const [unidadesQuitar, setUnidadesQuitar] = useState("");
   const [unidadesAgregar, setUnidadesAgregar] = useState("");
+
+  const tableRef = useRef(null);
+
+  const { onDownload } = useDownloadExcel({
+    currentTableRef: tableRef.current,
+    filename: `Detalles de stock de ${product.nombre}`,
+    sheet: `Detalles de stock de ${product.nombre}`,
+  });
 
   // Mantener el valor original del stock
   const [originalStock, setOriginalStock] = useState("");
@@ -832,84 +843,95 @@ function DetailManager() {
             </div>
           </div>
 
-          {details.length > 0 && (
-            <div className="filters-left2">
-              <div className="info-container">
-                <img
-                  src={product.urlImagen}
-                  onClick={() =>
-                    Swal.fire({
-                      title: product.nombre,
-                      imageUrl: `${product.urlImagen}`,
-                      imageWidth: 400,
-                      imageHeight: 400,
-                      imageAlt: "Vista Producto",
-                      confirmButtonColor: "#6c757d",
-                      confirmButtonText: "Cerrar",
-                      focusConfirm: true,
-                    })
-                  }
-                  className="list-img-stock"
-                  alt="Producto"
-                />
-                <b className="bold">{product.nombre}</b>
-              </div>
-
-              <div className="pagination-count-filter">
-                {(rolUsuario === "Supervisor" ||
-                  rolUsuario === "SuperAdmin") && (
-                  <button
-                    type="button"
-                    className="btn btn-danger btn-delete5"
-                    aria-label="Quitar"
-                    data-bs-toggle="modal"
-                    data-bs-target="#modalQuitar"
-                    onClick={() => {
-                      RetrieveProductInputs(product);
-                      setOriginalStock(product.stockTransitorio);
-                    }}
-                  >
-                    <Quitar className="edit5" />
-                  </button>
-                )}
-                <div
-                  className={
-                    product.stockTransitorio === 0
-                      ? "btn btn-secondary btn-filters nocursor zero-stock"
-                      : "btn btn-secondary btn-filters nocursor"
-                  }
-                >
-                  <div
-                    className="filter-btn-title-container-2 nocursor"
-                    id="filter-btn-title-container"
-                  >
-                    <p className="filter-btn">
-                      <StockInput className="filter-svg2" />
-                    </p>
-                    <p className="filter-title2 stock-total">
-                      STOCK: {product.stockTransitorio}
-                    </p>
-                  </div>
-                </div>
-                {(rolUsuario === "Supervisor" ||
-                  rolUsuario === "SuperAdmin") && (
-                  <button
-                    type="button"
-                    className="btn btn-success btn-add5"
-                    aria-label="Agregar"
-                    data-bs-toggle="modal"
-                    data-bs-target="#modalAgregar"
-                    onClick={() => {
-                      RetrieveProductInputs(product);
-                      setOriginalStock(product.stockTransitorio);
-                    }}
-                  >
-                    <Agregar className="edit5" />
-                  </button>
-                )}
-              </div>
+          <div className="filters-left2">
+            <div className="info-container">
+              <img
+                src={product.urlImagen}
+                onClick={() =>
+                  Swal.fire({
+                    title: product.nombre,
+                    imageUrl: `${product.urlImagen}`,
+                    imageWidth: 400,
+                    imageHeight: 400,
+                    imageAlt: "Vista Producto",
+                    confirmButtonColor: "#6c757d",
+                    confirmButtonText: "Cerrar",
+                    focusConfirm: true,
+                  })
+                }
+                className="list-img-stock"
+                alt="Producto"
+              />
+              <b className="bold">{product.nombre}</b>
             </div>
-          )}
+
+            <div className="pagination-count-filter">
+              {(rolUsuario === "Supervisor" || rolUsuario === "SuperAdmin") && (
+                <button
+                  type="button"
+                  className="btn btn-danger btn-delete5"
+                  aria-label="Quitar"
+                  data-bs-toggle="modal"
+                  data-bs-target="#modalQuitar"
+                  onClick={() => {
+                    RetrieveProductInputs(product);
+                    setOriginalStock(product.stockTransitorio);
+                  }}
+                >
+                  <Quitar className="edit5" />
+                </button>
+              )}
+              <div
+                className={
+                  product.stockTransitorio === 0
+                    ? "btn btn-secondary btn-filters nocursor zero-stock"
+                    : "btn btn-secondary btn-filters nocursor"
+                }
+              >
+                <div
+                  className="filter-btn-title-container-2 nocursor"
+                  id="filter-btn-title-container"
+                >
+                  <p className="filter-btn">
+                    <StockInput className="filter-svg2" />
+                  </p>
+                  <p className="filter-title2 stock-total">
+                    STOCK: {product.stockTransitorio}
+                  </p>
+                </div>
+              </div>
+              {(rolUsuario === "Supervisor" || rolUsuario === "SuperAdmin") && (
+                <button
+                  type="button"
+                  className="btn btn-success btn-add5"
+                  aria-label="Agregar"
+                  data-bs-toggle="modal"
+                  data-bs-target="#modalAgregar"
+                  onClick={() => {
+                    RetrieveProductInputs(product);
+                    setOriginalStock(product.stockTransitorio);
+                  }}
+                >
+                  <Agregar className="edit5" />
+                </button>
+              )}
+            </div>
+
+            {details.length > 0 && (
+              <div className="header-excel">
+                <button
+                  onClick={onDownload}
+                  type="button"
+                  className="btn btn-success btn-excel"
+                >
+                  <div className="btn-add-content">
+                    <Excel className="excel" />
+                    <p className="p-add">Descargar</p>
+                  </div>
+                </button>
+              </div>
+            )}
+          </div>
 
           {/* tabla de detalles */}
           {isLoading ? (
@@ -983,6 +1005,51 @@ function DetailManager() {
               )}
             </table>
           )}
+
+          {/* tabla de detalles para excel */}
+          <table
+            ref={tableRef}
+            className="table table-dark table-list-none"
+            align="center"
+          >
+            <thead>
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">Cantidad</th>
+                <th scope="col">Motivo</th>
+                <th scope="col">Registrado por</th>
+                <th scope="col">Fecha de registro</th>
+              </tr>
+            </thead>
+
+            {details && details.length > 0 ? (
+              detailsTable.map(function fn(product, index) {
+                return (
+                  <tbody key={index}>
+                    <tr>
+                      <th scope="row">{index + 1}</th>
+                      <td>
+                        {product.accion === "Agregar" ? "+" : "-"}{" "}
+                        {product.cantidad}
+                      </td>
+
+                      <td>{product.motivo}</td>
+
+                      <td>{product.modificador}</td>
+
+                      <td>{formatDate(product.fecha)}</td>
+                    </tr>
+                  </tbody>
+                );
+              })
+            ) : (
+              <tbody>
+                <tr>
+                  <td colSpan={5}>Sin registros</td>
+                </tr>
+              </tbody>
+            )}
+          </table>
 
           <div className="pagination-count-container2">
             <div className="pagination-count">
