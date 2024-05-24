@@ -57,11 +57,11 @@ public class PedidoController : ControllerBase
     return datosPedidosPorAio;
   }
 
-  [HttpGet("fecha/{mes}/{anio}")]
+  [HttpGet("fecha/{mes}/{anio}/{variable}")]
   [Authorize(Roles = "SuperAdmin, Gerente")]
-  public async Task<ListaEstadisticasPedidosMesAnioDto> GetDatosPedidosPorMesAnio(int mes, int anio)
+  public async Task<ListaEstadisticasPedidosMesAnioDto> GetDatosPedidosPorMesAnio(int mes, int anio, int variable)
   {
-    var query = new GetPedidosDataByMonthYearQuery(mes, anio);
+    var query = new GetPedidosDataByMonthYearQuery(mes, anio, variable);
     var datosPedidosPorMesAnio = await _mediator.Send(query);
 
     return datosPedidosPorMesAnio;

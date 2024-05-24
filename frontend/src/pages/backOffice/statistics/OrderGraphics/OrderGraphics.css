@@ -49,6 +49,14 @@
   gap: 5px;
 }
 
+.filter-container-graphics2 {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  flex-direction: row;
+  gap: 10px;
+}
+
 .btn-search-dates {
   display: flex;
   justify-content: center;
@@ -81,8 +89,44 @@
   transform: translate(-20px, -20px);
 }
 
+.filter-container-div {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
+.variable-select {
+  display: flex;
+  flex-direction: row;
+  gap: 5px;
+  align-items: center;
+  justify-content: center;
+}
+
+.div-btns {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: row;
+  gap: 5px;
+}
+
+.filter-container-div2 {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 5px;
+}
+
 @media (max-width: 1170px) {
   .anuales-container-graphics {
+    flex-direction: column;
+  }
+
+  .filter-container-graphics2 {
     flex-direction: column;
   }
 }
@@ -91,6 +135,12 @@
   .chart-anual-container {
     height: 250px;
     width: 400px;
+  }
+}
+
+@media (max-width: 505px) {
+  .filter-container-div2 {
+    flex-direction: column;
   }
 }
 

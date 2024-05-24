@@ -48,6 +48,9 @@ function OrderGraphics() {
 
   const [mesAño, setMesAño] = useState("");
 
+  const [variable, setVariable] = useState("");
+  const [variableSeleccionada, setVariableSeleccionada] = useState("");
+
   const mesAñoDate = new Date(mesAñoSeleccionado);
   const añoMostrar = mesAñoDate.getUTCFullYear();
   const mesMostrar = mesAñoDate.getUTCMonth() + 1;
@@ -195,13 +198,24 @@ function OrderGraphics() {
       type: "donut",
     },
     title: {
-      text: `Porcentaje de ventas por vendedor ${
-        busquedaPorMesAño ? `(${mesMostrar + "/" + añoMostrar})` : ""
-      }`,
+      text:
+        variable == 1
+          ? `Porcentaje de facturaciones por vendedor ${
+              busquedaPorMesAño ? `(${mesMostrar}/${añoMostrar})` : ""
+            }`
+          : variable == 2
+          ? `Porcentaje de ventas por vendedor ${
+              busquedaPorMesAño ? `(${mesMostrar}/${añoMostrar})` : ""
+            }`
+          : variable == ""
+          ? `Porcentaje de ventas/facturaciones por vendedor ${
+              busquedaPorMesAño ? `(${mesMostrar}/${añoMostrar})` : ""
+            }`
+          : "",
       align: "left",
     },
     subtitle: {
-      text: "Variación de los porcentajes de vendedores",
+      text: "Variación de los porcentajes por vendedores",
       align: "left",
     },
     labels: vendedores,
@@ -227,13 +241,24 @@ function OrderGraphics() {
       type: "pie",
     },
     title: {
-      text: `Porcentaje de ventas por 5 productos mas vendidos ${
-        busquedaPorMesAño ? `(${mesMostrar + "/" + añoMostrar})` : ""
-      }`,
+      text:
+        variable == 1
+          ? `Porcentaje de facturaciones por 5 productos más vendidos ${
+              busquedaPorMesAño ? `(${mesMostrar}/${añoMostrar})` : ""
+            }`
+          : variable == 2
+          ? `Porcentaje de ventas por 5 productos más vendidos ${
+              busquedaPorMesAño ? `(${mesMostrar}/${añoMostrar})` : ""
+            }`
+          : variable == ""
+          ? `Porcentaje de ventas/facturaciones 5 productos más vendidos ${
+              busquedaPorMesAño ? `(${mesMostrar}/${añoMostrar})` : ""
+            }`
+          : "",
       align: "left",
     },
     subtitle: {
-      text: "Variación de los porcentajes de productos",
+      text: "Variación de los porcentajes por productos",
       align: "left",
     },
     labels: productos.filter((producto) => producto !== null), // Filter out null values
@@ -274,6 +299,8 @@ function OrderGraphics() {
         .padStart(2, "0")}`;
       setMesAño(mesAñoActual);
       setMesAñoSeleccionado(mesAñoActual);
+
+      setVariableSeleccionada(1);
 
       setAño(añoActual);
       setAñoSeleccionado(añoActual);
@@ -390,26 +417,49 @@ function OrderGraphics() {
 
   //#region Funcion para obtener los datos de vendedores y productos por mes y año
   const GetMonthYearData = async () => {
-    if (mesAñoSeleccionado === "") {
+    if (mesAñoSeleccionado === "" && variableSeleccionada === "") {
       Swal.fire({
         icon: "warning",
-        title: "Consulta vacía",
+        title: "Fecha y variable vacías",
+        text: "Ingrese un mes y año, y seleccione una variable para realizar la búsqueda.",
+        confirmButtonText: "Aceptar",
+        showCancelButton: false,
+        confirmButtonColor: "#f8bb86",
+      });
+    } else if (mesAñoSeleccionado === "") {
+      Swal.fire({
+        icon: "warning",
+        title: "Fecha vacía",
         text: "Ingrese un mes y año para realizar la búsqueda.",
         confirmButtonText: "Aceptar",
         showCancelButton: false,
         confirmButtonColor: "#f8bb86",
       });
-    } else if (mesAño === mesAñoSeleccionado && busquedaPorMesAño === true) {
+    } else if (variableSeleccionada === "") {
       Swal.fire({
         icon: "warning",
-        title: "Mes y año de búsqueda no cambiado",
-        text: "El mes y año de búsqueda es el mismo que el de la última consulta. Intente con un mes y año diferente.",
+        title: "Variable vacía",
+        text: "Selecciones una variable para realizar la búsqueda.",
+        confirmButtonText: "Aceptar",
+        showCancelButton: false,
+        confirmButtonColor: "#f8bb86",
+      });
+    } else if (
+      mesAño === mesAñoSeleccionado &&
+      busquedaPorMesAño === true &&
+      variable === variableSeleccionada
+    ) {
+      Swal.fire({
+        icon: "warning",
+        title: "Mes, año y variable de búsqueda no cambiados",
+        text: "El mes, año y la variable de búsqueda son los mismos que los de la última consulta. Intente con un mes, año o variable diferente.",
         confirmButtonText: "Aceptar",
         showCancelButton: false,
         confirmButtonColor: "#f8bb86",
       });
     } else {
       setMesAño(mesAñoSeleccionado);
+      setVariable(variableSeleccionada);
 
       setIsLoadingMensualesAnuales(true);
 
@@ -418,7 +468,11 @@ function OrderGraphics() {
       const mesApi = mesAñoDate.getUTCMonth() + 1; // Adding 1 to get the correct month index (0-11)
 
       try {
-        const response = await GetOrdersDataByMonthYear(mesApi, añoApi);
+        const response = await GetOrdersDataByMonthYear(
+          mesApi,
+          añoApi,
+          variableSeleccionada
+        );
 
         // Procesar la respuesta aquí si es necesario
         if (response.isSuccess && response.statusCode === 200) {
@@ -432,7 +486,8 @@ function OrderGraphics() {
           // Iterar sobre los datos de la respuesta para cada mes
           for (let i = 1; i <= 6; i++) {
             const productosMes = response[`producto${i}`];
-            const cantidadesVendidasMes = response[`cantidadVendida${i}`];
+            const cantidadesVendidasMes =
+              response[`cantidadVentasFacturacion${i}`];
 
             // Verificar si los datos son válidos antes de agregarlos al arreglo
             if (
@@ -522,6 +577,9 @@ function OrderGraphics() {
 
     setMesAño("");
     setMesAñoSeleccionado("");
+
+    setVariable("");
+    setVariableSeleccionada("");
 
     setBusquedaPorMesAño(false);
   };
@@ -629,41 +687,65 @@ function OrderGraphics() {
                   <p className="bold-loading">Cargando gráficos...</p>
                 </div>
               )}
-              <div className="filter-container-graphics">
-                <p className="p-filter-date">Mes y Año:</p>
-                <input
-                  className="year"
-                  aria-label="Mes y año"
-                  type="month"
-                  min="2024-01" // Establece la fecha mínima a enero de 2024
-                  max={new Date().toISOString().slice(0, 7)} // Establece la fecha máxima al mes y año actuales
-                  value={mesAñoSeleccionado}
-                  onChange={(e) => setMesAñoSeleccionado(e.target.value)}
-                />
+              <div className="filter-container-graphics2">
+                <div className="filter-container-div">
+                  <p className="p-filter-date">Mes y Año:</p>
+                  <input
+                    className="year"
+                    aria-label="Mes y año"
+                    type="month"
+                    min="2024-01" // Establece la fecha mínima a enero de 2024
+                    max={new Date().toISOString().slice(0, 7)} // Establece la fecha máxima al mes y año actuales
+                    value={mesAñoSeleccionado}
+                    onChange={(e) => setMesAñoSeleccionado(e.target.value)}
+                  />
+                </div>
 
-                <button
-                  type="button"
-                  aria-label="Buscar"
-                  className={`tag ${
-                    busquedaPorMesAño === true
-                      ? "btn btn-light btn-search-dates filtro-activo"
-                      : "btn btn-light btn-search-dates"
-                  }`}
-                  onClick={() => GetMonthYearData()}
-                >
-                  <Lupa className="lupa-svg" />
-                </button>
+                <div className="filter-container-div2">
+                  <div className="variable-select">
+                    <p className="p-filter-date">Variable:</p>
+                    <select
+                      aria-label="Variable"
+                      className="year"
+                      value={variableSeleccionada}
+                      onChange={(e) => setVariableSeleccionada(e.target.value)}
+                    >
+                      <option hidden value="">
+                        Seleccione una variable
+                      </option>
 
-                {busquedaPorMesAño === true && (
-                  <button
-                    type="button"
-                    aria-label="Cancelar busqueda"
-                    className="btn btn-light btn-search-dates"
-                    onClick={() => ClearMonthYearData()}
-                  >
-                    <Close className="lupa-svg" />
-                  </button>
-                )}
+                      <option value="1">Facturación</option>
+
+                      <option value="2">Ventas</option>
+                    </select>
+                  </div>
+
+                  <div className="div-btns">
+                    <button
+                      type="button"
+                      aria-label="Buscar"
+                      className={`tag ${
+                        busquedaPorMesAño === true
+                          ? "btn btn-light btn-search-dates filtro-activo"
+                          : "btn btn-light btn-search-dates"
+                      }`}
+                      onClick={() => GetMonthYearData()}
+                    >
+                      <Lupa className="lupa-svg" />
+                    </button>
+
+                    {busquedaPorMesAño === true && (
+                      <button
+                        type="button"
+                        aria-label="Cancelar busqueda"
+                        className="btn btn-light btn-search-dates"
+                        onClick={() => ClearMonthYearData()}
+                      >
+                        <Close className="lupa-svg" />
+                      </button>
+                    )}
+                  </div>
+                </div>
               </div>
 
               <div className="anuales-container-graphics">

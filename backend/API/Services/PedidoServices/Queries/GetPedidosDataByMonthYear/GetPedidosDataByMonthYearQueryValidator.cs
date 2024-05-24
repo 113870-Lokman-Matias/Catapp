@@ -22,6 +22,13 @@ namespace API.Services.PedidoServices.Queries.GetPedidosDataByMonthYearQuery
              .NotNull().WithMessage("El año no puede ser nulo")
              .GreaterThan(2023).WithMessage("El año ingresado debe ser mayor o igual a 2024")
              .LessThanOrEqualTo(DateTime.Now.Year).WithMessage("El año ingresado debe ser menor o igual al año actual");
+
+      RuleFor(p => p.variable)
+             .NotEmpty().WithMessage("La variable no puede estar vacía")
+             .NotNull().WithMessage("La variable no puede ser nula")
+             .GreaterThan(0).WithMessage("La variable ingresada debe ser mayor o igual a 1")
+             .LessThanOrEqualTo(2).WithMessage("La variable ingresada debe ser menor o igual a 2");
+
     }
 
   }

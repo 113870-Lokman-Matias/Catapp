@@ -79,14 +79,14 @@ async function GetOrdersDataByYear(anio) {
 //#endregion
 
 //#region Función para obtener los datos para los graficos de pedidos por año y mes
-async function GetOrdersDataByMonthYear(mes, anio) {
+async function GetOrdersDataByMonthYear(mes, anio, variable) {
   const token = localStorage.getItem("token");
   const headers = {
     Authorization: `Bearer ${token}`,
   };
 
   const result = await axios.get(
-    `https://localhost:7207/pedido/fecha/${mes}/${anio}`,
+    `https://localhost:7207/pedido/fecha/${mes}/${anio}/${variable}`,
     {
       headers,
     }
