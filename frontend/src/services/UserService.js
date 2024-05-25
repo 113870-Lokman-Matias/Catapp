@@ -22,7 +22,7 @@ async function LoginUser(username, password) {
 //#endregion
 
 //#region Función para obtener todos los usuarios
-async function GetUsers(state) {
+async function GetUsers() {
   const token = localStorage.getItem("token"); // Obtener el token almacenado en el localStorage
   const headers = {
     Authorization: `Bearer ${token}`, // Agregar el encabezado Authorization con el valor del token
@@ -30,7 +30,7 @@ async function GetUsers(state) {
 
   const result = await axios.get("https://localhost:7207/usuario", { headers });
   const usuarios = result.data.usuarios || [];
-  state(usuarios);
+  return usuarios;
 }
 //#endregion
 
@@ -43,7 +43,7 @@ async function GetUsersSellers(state) {
 //#endregion
 
 //#region Función para obtener usuarios por un rol especifico para lista administrativa
-async function GetUsersByRole(role, state) {
+async function GetUsersByRole(role) {
   const token = localStorage.getItem("token"); // Obtener el token almacenado en el localStorage
   const headers = {
     Authorization: `Bearer ${token}`, // Agregar el encabezado Authorization con el valor del token
@@ -54,7 +54,7 @@ async function GetUsersByRole(role, state) {
     { headers }
   );
   const usuarios = result.data.usuarios || [];
-  state(usuarios);
+  return usuarios;
 }
 //#endregion
 

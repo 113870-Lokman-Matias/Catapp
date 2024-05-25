@@ -110,39 +110,42 @@ function UserManager() {
     (async () => {
       setIsLoading(true);
       try {
-        await Promise.all([GetUsers(setAllUsers)]);
+        const result = await GetUsers();
+        setAllUsers(result);
+
+        if (pathname.includes("gerentes")) {
+          (async () => {
+            const gerentes = await GetUsersByRole("Gerente");
+            setUsers(gerentes);
+            setOriginalUsersList(gerentes);
+            setTitle("Detalles de Gerentes");
+          })();
+        } else if (pathname.includes("supervisores")) {
+          (async () => {
+            const supervisores = await GetUsersByRole("Supervisor");
+            setUsers(supervisores);
+            setOriginalUsersList(supervisores);
+            setTitle("Detalles de Supervisores");
+          })();
+        } else if (pathname.includes("vendedores")) {
+          (async () => {
+            const vendedores = await GetUsersByRole("Vendedor");
+            setUsers(vendedores);
+            setOriginalUsersList(vendedores);
+            setTitle("Detalles de Vendedores");
+          })();
+        } else if (pathname.includes("usuarios")) {
+          setUsers(result);
+          setOriginalUsersList(result);
+          setTitle("Detalles de Usuarios");
+        }
+
         setIsLoading(false);
       } catch (error) {
         // Manejar errores aquí si es necesario
         setIsLoading(false);
       }
     })();
-
-    if (pathname.includes("gerentes")) {
-      (async () => {
-        await GetUsersByRole("Gerente", setUsers);
-        await GetUsersByRole("Gerente", setOriginalUsersList);
-        setTitle("Detalles de Gerentes");
-      })();
-    } else if (pathname.includes("supervisores")) {
-      (async () => {
-        await GetUsersByRole("Supervisor", setUsers);
-        await GetUsersByRole("Supervisor", setOriginalUsersList);
-        setTitle("Detalles de Supervisores");
-      })();
-    } else if (pathname.includes("vendedores")) {
-      (async () => {
-        await GetUsersByRole("Vendedor", setUsers);
-        await GetUsersByRole("Vendedor", setOriginalUsersList);
-        setTitle("Detalles de Vendedores");
-      })();
-    } else if (pathname.includes("usuarios")) {
-      (async () => {
-        await GetUsers(setUsers);
-        await GetUsers(setOriginalUsersList);
-        setTitle("Detalles de Usuarios");
-      })();
-    }
 
     if (window.matchMedia("(max-width: 500px)").matches) {
       setUsersPerPage(1);
@@ -217,14 +220,19 @@ function UserManager() {
             showConfirmButton: false,
             timer: 2000,
           });
+
           if (pathname.includes("gerentes")) {
-            await GetUsersByRole("Gerente", setUsers);
+            const gerentes = await GetUsersByRole("Gerente");
+            setUsers(gerentes);
           } else if (pathname.includes("supervisores")) {
-            await GetUsersByRole("Supervisor", setUsers);
+            const supervisores = await GetUsersByRole("Supervisor");
+            setUsers(supervisores);
           } else if (pathname.includes("vendedores")) {
-            await GetUsersByRole("Vendedor", setUsers);
+            const vendedores = await GetUsersByRole("Vendedor");
+            setUsers(vendedores);
           } else if (pathname.includes("usuarios")) {
-            await GetUsers(setUsers);
+            const result = await GetUsers();
+            setUsers(result);
           }
 
           setUsers((prevUsers) => {
@@ -323,14 +331,19 @@ function UserManager() {
             showConfirmButton: false,
             timer: 2000,
           });
+
           if (pathname.includes("gerentes")) {
-            await GetUsersByRole("Gerente", setUsers);
+            const gerentes = await GetUsersByRole("Gerente");
+            setUsers(gerentes);
           } else if (pathname.includes("supervisores")) {
-            await GetUsersByRole("Supervisor", setUsers);
+            const supervisores = await GetUsersByRole("Supervisor");
+            setUsers(supervisores);
           } else if (pathname.includes("vendedores")) {
-            await GetUsersByRole("Vendedor", setUsers);
+            const vendedores = await GetUsersByRole("Vendedor");
+            setUsers(vendedores);
           } else if (pathname.includes("usuarios")) {
-            await GetUsers(setUsers);
+            const result = await GetUsers();
+            setUsers(result);
           }
 
           setUsers((prevUsers) => {
@@ -522,23 +535,27 @@ function UserManager() {
   //#endregion
 
   //#region Función para volver el formulario a su estado inicial, borrando los valores de los inputs, cargando los selects y refrezcando la lista de usuarios
-  function InitialState() {
+  async function InitialState() {
     ClearUserInputs();
 
-    GetUsers(setAllUsers);
+    const result = await GetUsers();
+    setAllUsers(result);
 
     if (pathname.includes("gerentes")) {
-      GetUsersByRole("Gerente", setUsers);
-      GetUsersByRole("Gerente", setOriginalUsersList);
+      const gerentes = await GetUsersByRole("Gerente");
+      setUsers(gerentes);
+      setOriginalUsersList(gerentes);
     } else if (pathname.includes("supervisores")) {
-      GetUsersByRole("Supervisor", setUsers);
-      GetUsersByRole("Supervisor", setOriginalUsersList);
+      const supervisores = await GetUsersByRole("Supervisor");
+      setUsers(supervisores);
+      setOriginalUsersList(supervisores);
     } else if (pathname.includes("vendedores")) {
-      GetUsersByRole("Vendedor", setUsers);
-      GetUsersByRole("Vendedor", setOriginalUsersList);
+      const vendedores = await GetUsersByRole("Vendedor");
+      setUsers(vendedores);
+      setOriginalUsersList(vendedores);
     } else {
-      GetUsers(setUsers);
-      GetUsers(setOriginalUsersList);
+      setUsers(result);
+      setOriginalUsersList(result);
     }
   }
   //#endregion
@@ -981,6 +998,7 @@ function UserManager() {
           },
           headers
         );
+
         Swal.fire({
           icon: "success",
           title: pathname.includes("vendedores")
@@ -993,19 +1011,30 @@ function UserManager() {
           showConfirmButton: false,
           timer: 2000,
         });
-        CloseModal();
 
+        CloseModal();
         // InitialState();
-        await GetUsers(setAllUsers);
+
         ClearUserInputs();
+
+        const result = await GetUsers();
+        setAllUsers(result);
+
         if (pathname.includes("gerentes")) {
-          await GetUsersByRole("Gerente", setUsers);
+          const gerentes = await GetUsersByRole("Gerente");
+          setUsers(gerentes);
+          setOriginalUsersList(gerentes);
         } else if (pathname.includes("supervisores")) {
-          await GetUsersByRole("Supervisor", setUsers);
+          const supervisores = await GetUsersByRole("Supervisor");
+          setUsers(supervisores);
+          setOriginalUsersList(supervisores);
         } else if (pathname.includes("vendedores")) {
-          await GetUsersByRole("Vendedor", setUsers);
+          const vendedores = await GetUsersByRole("Vendedor");
+          setUsers(vendedores);
+          setOriginalUsersList(vendedores);
         } else if (pathname.includes("usuarios")) {
-          await GetUsers(setUsers);
+          setUsers(result);
+          setOriginalUsersList(result);
         }
 
         setUsers((prevUsers) => {
