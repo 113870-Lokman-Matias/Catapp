@@ -4,6 +4,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet";
 import $ from "jquery";
+import * as signalR from "@microsoft/signalr";
 
 import { CountUp } from "countup.js";
 
@@ -26,7 +27,7 @@ import { ReactComponent as TipoInput } from "../../../../assets/svgs/typepricein
 import Loader from "../../../../components/Loaders/LoaderCircle";
 
 import { GetVerifiedOrdersByDate } from "../../../../services/OrderService";
-import { GetUsersSellers } from "../../../../services/UserService";
+import { GetUsersByRole } from "../../../../services/UserService";
 import { formatDate } from "../../../../utils/DateFormat";
 
 function OrderReports() {
@@ -126,6 +127,8 @@ function OrderReports() {
   const [filtroEntregaSeleccionado, setFiltroEntregaSeleccionado] =
     useState("");
   const [filtroAbonoSeleccionado, setFiltroAbonoSeleccionado] = useState("");
+
+  const [isLoadingVendedores, setIsLoadingVendedores] = useState(true);
   //#endregion
 
   const [listaVendedores, setListaVendedores] = useState({});
@@ -180,7 +183,18 @@ function OrderReports() {
 
   //#region UseEffect
   useEffect(() => {
-    GetUsersSellers(setListaVendedores);
+    const fetchVendedoresData = async () => {
+      try {
+        const responseVendedores = await GetUsersByRole("Vendedor");
+        setListaVendedores(responseVendedores);
+        setIsLoadingVendedores(false);
+      } catch (error) {
+        console.error("Hubo un error al obtener los vendedores:", error);
+        setIsLoadingVendedores(false);
+      }
+    };
+
+    fetchVendedoresData();
 
     if (window.matchMedia("(max-width: 500px)").matches) {
       setOrdersPerPage(1);
@@ -207,6 +221,35 @@ function OrderReports() {
       setOrdersPerPage(4);
       setMaxPageNumbersToShow(9);
     }
+  }, []);
+
+  useEffect(() => {
+    const connection = new signalR.HubConnectionBuilder()
+      .withUrl("https://localhost:7207/generalHub")
+      .configureLogging(signalR.LogLevel.Information)
+      .build();
+
+    connection
+      .start()
+      .then(() => {
+        // console.log("Conexión establecida con el servidor SignalR");
+      })
+      .catch((err) => console.error(err.toString()));
+
+    connection.on("MensajeCrudVendedor", async () => {
+      setIsLoadingVendedores(true);
+      try {
+        const responseVendedores = await GetUsersByRole("Vendedor");
+        setListaVendedores(responseVendedores);
+        setIsLoadingVendedores(false);
+      } catch (error) {
+        console.error("Error al obtener los vendedores: " + error);
+      }
+    });
+
+    return () => {
+      connection.stop();
+    };
   }, []);
   //#endregion
 
@@ -826,6 +869,13 @@ function OrderReports() {
 
             {showFilters === true && (
               <div className="pagination-count-filter-date">
+                {isLoadingVendedores === true && (
+                  <div className="loading-sellers-div">
+                    <Loader />
+                    <p className="bold-loading">Cargando vendedores...</p>
+                  </div>
+                )}
+
                 <p className="p-filter-date">Vendedor:</p>
                 <div className="form-group-input nombre-input filter-report-div">
                   <select

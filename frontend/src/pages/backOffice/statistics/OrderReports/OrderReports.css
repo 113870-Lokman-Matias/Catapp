@@ -37,6 +37,21 @@
   border-radius: 15px;
   width: 200px;
   justify-content: center;
+  position: relative;
+}
+
+.loading-sellers-div {
+  background-color: #808080e8;
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  z-index: 999;
+  border-radius: 15px;
+  transform: translate(-15px, 0px);
 }
 
 .pagination-count-filter-date2 {
@@ -195,7 +210,7 @@
   gap: 5px;
 }
 
-.filtro-activo{
+.filtro-activo {
   background-color: #b4ffae;
   border: 1px solid #b4ffae;
 }
