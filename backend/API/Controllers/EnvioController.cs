@@ -1,7 +1,7 @@
 ﻿using API.Dtos.EnvioDto;
 using API.Services.CategoriaServices.Commands.UpdateCategoriaCommand;
-using API.Services.EnvioServices.Commands.UpdateCostoEnvioCommand;
-using API.Services.EnvioServices.Queries.GetCostoEnvioQuery;
+using API.Services.EnvioServices.Commands.UpdateEnvioCommand;
+using API.Services.EnvioServices.Queries.GetEnvioQuery;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -24,22 +24,22 @@ namespace API.Controllers
         }
 
         [HttpGet]
-        public Task<EnvioDto> GetCostoEnvio()
+        public Task<EnvioDto> GetEnvio()
         {
-            var costoEnvio = _mediator.Send(new GetCostoEnvioQuery());
-            return costoEnvio;
+            var envio = _mediator.Send(new GetEnvioQuery());
+            return envio;
         }
 
 
         [HttpPut]
         [Authorize(Roles = "SuperAdmin, Supervisor")]
-        public async Task<EnvioDto> UpdateCostoEnvio(UpdateCostoEnvioCommand command)
+        public async Task<EnvioDto> UpdateEnvio(UpdateEnvioCommand command)
         {
-            var costoEnvioActualizado = await _mediator.Send(command);
+            var envioActualizado = await _mediator.Send(command);
 
-            await _hubContext.Clients.All.SendAsync("MensajeUpdateCostoEnvio", "Se ha actualizado el costo de envio");
+            await _hubContext.Clients.All.SendAsync("MensajeUpdateEnvio", "Se ha actualizado el envio");
 
-            return costoEnvioActualizado;
+            return envioActualizado;
         }
     }
 }

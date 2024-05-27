@@ -4,28 +4,28 @@ using AutoMapper;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace API.Services.EnvioServices.Queries.GetCostoEnvioQuery
+namespace API.Services.EnvioServices.Queries.GetEnvioQuery
 {
-    public class GetCostoEnvioQueryHandler : IRequestHandler<GetCostoEnvioQuery, EnvioDto>
+    public class GetEnvioQueryHandler : IRequestHandler<GetEnvioQuery, EnvioDto>
     {
         private readonly CatalogoContext _context;
         private readonly IMapper _mapper;
-        public GetCostoEnvioQueryHandler(CatalogoContext context, IMapper mapper)
+        public GetEnvioQueryHandler(CatalogoContext context, IMapper mapper)
         {
             _context = context;
             _mapper = mapper;
         }
 
-        public async Task<EnvioDto> Handle(GetCostoEnvioQuery request, CancellationToken cancellationToken)
+        public async Task<EnvioDto> Handle(GetEnvioQuery request, CancellationToken cancellationToken)
         {
             try
             {
-                var costoEnvio = await _context.Envios
+                var envio = await _context.Envios
                 .FirstAsync();
 
-                if (costoEnvio != null)
+                if (envio != null)
                 {
-                    var envioDto = _mapper.Map<EnvioDto>(costoEnvio);
+                    var envioDto = _mapper.Map<EnvioDto>(envio);
 
                     envioDto.StatusCode = StatusCodes.Status200OK;
                     envioDto.ErrorMessage = string.Empty;

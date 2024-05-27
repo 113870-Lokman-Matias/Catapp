@@ -36,7 +36,7 @@ import {
   UpdateOrdersVerified,
 } from "../../../../services/OrderService";
 import { GetUsersSellers } from "../../../../services/UserService";
-import { GetCostoEnvioUnicamente } from "../../../../services/ShipmentService";
+import { GetInfoEnvio } from "../../../../services/ShipmentService";
 import { formatDate } from "../../../../utils/DateFormat";
 
 function OrderManager() {
@@ -60,7 +60,8 @@ function OrderManager() {
   const [prevAbono, setPrevAbono] = useState("");
 
   const [listaNombresVendedores, setListaNombresVendedores] = useState(true);
-  const [costoEnvioDomicilio, setCostoEnvioDomicilio] = useState(0);
+  const [costoEnvioDomicilio, setCostoEnvioDomicilio] = useState("");
+  const [habilitadoEnvioDomicilio, setHabilitadoEnvioDomicilio] = useState("");
 
   const [orders, setOrders] = useState([]);
 
@@ -108,8 +109,6 @@ function OrderManager() {
   //#endregion
   //#endregion
 
-  console.log(orders);
-
   //#region UseEffect
   useEffect(() => {
     (async () => {
@@ -120,8 +119,12 @@ function OrderManager() {
           GetOrders(setOrders),
           GetOrders(setOriginalOrdersList),
           GetUsersSellers(setListaNombresVendedores),
-          GetCostoEnvioUnicamente(setCostoEnvioDomicilio),
         ]);
+
+        const response = await GetInfoEnvio();
+        setCostoEnvioDomicilio(response.precio);
+        setHabilitadoEnvioDomicilio(response.habilitado);
+
         setIsLoading(false);
       } catch (error) {
         // Manejar errores aquí si es necesario
@@ -175,9 +178,20 @@ function OrderManager() {
       })
       .catch((err) => console.error(err.toString()));
 
+    connection.on("MensajeCrudPedido", async () => {
+      try {
+        GetOrders(setOrders);
+        GetOrders(setOriginalOrdersList);
+      } catch (error) {
+        console.error("Error al obtener el costo de envío: " + error);
+      }
+    });
+
     connection.on("MensajeUpdateCostoEnvio", async () => {
       try {
-        await GetCostoEnvioUnicamente(setCostoEnvioDomicilio);
+        const response = await GetInfoEnvio();
+        setCostoEnvioDomicilio(response.precio);
+        setHabilitadoEnvioDomicilio(response.habilitado);
       } catch (error) {
         console.error("Error al obtener el costo de envío: " + error);
       }
@@ -626,19 +640,13 @@ function OrderManager() {
 
   //#region Función para obtener los valores almacenados de un pedido y cargar cada uno de ellos en su input correspondiente
   function RetrieveOrderInputs(order) {
-    console.log(order);
-
     setIdPedido(order.idPedido);
-
-    console.log(order.entrega);
 
     if (order.entrega === "Lo retiro por el local") {
       setEntrega(1);
     } else if (order.entrega === "Envío a domicilio") {
       setEntrega(2);
     }
-
-    console.log(entrega);
 
     setVendedor(getIdVendedor(order.vendedor));
     setCostoEnvio(order.costoEnvio);
@@ -1033,7 +1041,11 @@ function OrderManager() {
                             <option className="btn-option" value="1">
                               Lo retiro por el local ($0)
                             </option>
-                            <option className="btn-option" value="2">
+                            <option
+                              className="btn-option"
+                              value="2"
+                              hidden={!habilitadoEnvioDomicilio}
+                            >
                               Envío a domicilio (${costoEnvioDomicilio})
                             </option>
                           </select>

@@ -15,8 +15,10 @@ import { ReactComponent as PriceInput } from "../../../../assets/svgs/priceinput
 
 import Loader from "../../../../components/Loaders/LoaderCircle";
 
+import "./ShipmentManager.css";
+
 import {
-  GetCostoEnvio,
+  GetInfoEnvio,
   UpdateCostoEnvio,
 } from "../../../../services/ShipmentService";
 
@@ -28,10 +30,13 @@ function ShipmentManager() {
 
   const [idEnvio, setIdEnvio] = useState("");
 
+  const [habilitado, setHabilitado] = useState("");
+  const [prevHabilitado, setPrevHabilitado] = useState("");
+
   const [precio, setPrecio] = useState("");
   const [prevPrecio, setPrevPrecio] = useState("");
 
-  const [costoEnvio, setCostoEnvio] = useState([]);
+  const [infoEnvio, setInfoEnvio] = useState([]);
 
   const token = localStorage.getItem("token"); // Obtener el token del localStorage
   const headers = {
@@ -45,7 +50,8 @@ function ShipmentManager() {
       setIsLoading(true);
 
       try {
-        await Promise.all([GetCostoEnvio(setCostoEnvio)]);
+        const response = await GetInfoEnvio();
+        setInfoEnvio(response);
         setIsLoading(false);
       } catch (error) {
         // Manejar errores aquí si es necesario
@@ -59,15 +65,18 @@ function ShipmentManager() {
   function ClearCostoEnvioInputs() {
     setIdEnvio("");
 
+    setHabilitado("");
     setPrecio("");
   }
   //#endregion
 
-  //#region Función para obtener el valor almacenado del costo de envío y cargarlo en su input correspondiente
+  //#region Función para obtener los valores almacenados del envío y cargarlo en su input correspondiente
   function RetrieveEnvioInputs(envio) {
     setIdEnvio(envio.idEnvio);
+    setHabilitado(envio.habilitado);
     setPrecio(envio.precio);
 
+    setPrevHabilitado(envio.habilitado);
     setPrevPrecio(envio.precio);
   }
   //#endregion
@@ -82,7 +91,16 @@ function ShipmentManager() {
 
   //#region Funcion para verificar si el valore ingresado a traves del input es correcto
   function IsValid() {
-    if (precio === "") {
+    if (habilitado === "") {
+      Swal.fire({
+        icon: "error",
+        title: "Debe indicar si se encuentra habilitado",
+        text: "Clickeé el botón en caso de que el envio a domicilio se encuentre habilitado",
+        confirmButtonText: "Aceptar",
+        confirmButtonColor: "#f27474",
+      });
+      return false;
+    } else if (precio === "") {
       Swal.fire({
         icon: "error",
         title: "El costo de envío no puede estar vacío",
@@ -100,24 +118,25 @@ function ShipmentManager() {
   }
   //#endregion
 
-  //#region Funcion para verificar si se actualizo el valor del input (costo de envío)
+  //#region Funcion para verificar si se actualizaron los valores de los inputs (habilitado y costo de envío)
   function IsUpdated() {
-    if (prevPrecio !== precio) {
+    if (prevHabilitado !== habilitado || prevPrecio !== precio) {
       return true;
     }
     return false;
   }
   //#endregion
 
-  //#region Funcion para actualizar el costo de envío ya existente
+  //#region Funcion para actualizar la habilitacion y costo de envío ya existentes
   async function UpdateCostoEnvioFunc(event) {
     event.preventDefault();
 
     if (IsUpdated() === false) {
       Swal.fire({
         icon: "error",
-        title: "No puede actualizar el costo de envío sin modificar su costo",
-        text: "Modifique el costo poder actualizarlo",
+        title:
+          "No puede actualizar el envío sin modificar su costo o su habilitación",
+        text: "Modifique el costo o habilitacion para poder actualizarlo",
         confirmButtonText: "Aceptar",
         confirmButtonColor: "#F27474",
       });
@@ -126,18 +145,20 @@ function ShipmentManager() {
         await UpdateCostoEnvio(
           {
             idEnvio: idEnvio,
+            habilitado: habilitado,
             precio: precio,
           },
           headers
         );
         Swal.fire({
           icon: "success",
-          title: "Costo de envío actualizado exitosamente!",
+          title: "Envío actualizado exitosamente!",
           showConfirmButton: false,
           timer: 2000,
         });
         CloseModal();
-        await GetCostoEnvio(setCostoEnvio);
+        const response = await GetInfoEnvio();
+        setInfoEnvio(response);
 
         // InitialState();
         ClearCostoEnvioInputs();
@@ -165,10 +186,7 @@ function ShipmentManager() {
         <div className="general-content">
           <div className="general-title">
             <div className="title-header">
-              <Link
-                to="/panel"
-                className="btn btn-info btn-back"
-              >
+              <Link to="/panel" className="btn btn-info btn-back">
                 <div className="btn-back-content">
                   <Back className="back" />
                   <p className="p-back">Regresar</p>
@@ -179,7 +197,7 @@ function ShipmentManager() {
             </div>
           </div>
 
-          {/* modal con el formulario para actualizar el costo de envío */}
+          {/* modal con el formulario para actualizar la habilitacion y el costo de envío */}
           <div
             className="modal fade"
             id="modal"
@@ -193,7 +211,7 @@ function ShipmentManager() {
               <div className="modal-content">
                 <div className="modal-header">
                   <h1 className="modal-title" id="exampleModalLabel">
-                    Actualizar Costo de envío
+                    Actualizar Envío
                   </h1>
                 </div>
                 <div className="modal-body">
@@ -210,6 +228,23 @@ function ShipmentManager() {
                             setIdEnvio(event.target.value);
                           }}
                         />
+
+                        <div className="form-group2 ocultar2">
+                          <label className="label">Habilitado</label>
+                          <input
+                            type="checkbox"
+                            className="form-check-input tick"
+                            id="habilitado"
+                            checked={habilitado}
+                            onChange={(e) => {
+                              setHabilitado(e.target.checked);
+                            }}
+                          />
+                          <label
+                            htmlFor="habilitado"
+                            className="lbl-switch"
+                          ></label>
+                        </div>
 
                         <label className="label">Costo de envío:</label>
                         <div className="form-group-input">
@@ -293,11 +328,11 @@ function ShipmentManager() {
 
           <br />
 
-          {/* tabla con el costo de envío */}
+          {/* tabla con el envío */}
           {isLoading ? (
             <div className="loading-generaltable-div">
               <Loader />
-              <p className="bold-loading">Cargando costo de envío...</p>
+              <p className="bold-loading">Cargando envío...</p>
             </div>
           ) : (
             <table
@@ -306,6 +341,9 @@ function ShipmentManager() {
             >
               <thead>
                 <tr className="table-header">
+                  <th className="table-title" scope="col">
+                    Habilitado
+                  </th>
                   <th className="table-title" scope="col">
                     Costo de envío
                   </th>
@@ -321,23 +359,27 @@ function ShipmentManager() {
                 </tr>
               </thead>
 
-              {costoEnvio ? (
-                <tbody key={1 + costoEnvio.idEnvio}>
+              {infoEnvio ? (
+                <tbody key={1 + infoEnvio.idEnvio}>
                   <tr>
-                    {/* <td className="table-name table-costoenvio">${costoEnvio.precio}</td> */}
+                    {infoEnvio.habilitado ? (
+                      <td className="table-name">Si</td>
+                    ) : (
+                      <td className="table-name">No</td>
+                    )}
 
                     <td className="table-name table-costoenvio">
-                      {costoEnvio && costoEnvio.precio !== undefined
-                        ? `$${costoEnvio.precio.toLocaleString()}`
+                      {infoEnvio && infoEnvio.precio !== undefined
+                        ? `$${infoEnvio.precio.toLocaleString()}`
                         : ""}
                     </td>
 
                     <td className="table-name table-costoenvio">
-                      {costoEnvio.ultimoModificador}
+                      {infoEnvio.ultimoModificador}
                     </td>
 
                     <td className="table-name table-costoenvio">
-                      {formatDate(costoEnvio.fechaModificacion)}
+                      {formatDate(infoEnvio.fechaModificacion)}
                     </td>
 
                     <td className="table-name">
@@ -348,7 +390,7 @@ function ShipmentManager() {
                         data-bs-toggle="modal"
                         data-bs-target="#modal"
                         onClick={() => {
-                          RetrieveEnvioInputs(costoEnvio);
+                          RetrieveEnvioInputs(infoEnvio);
                         }}
                       >
                         <Edit className="edit" />

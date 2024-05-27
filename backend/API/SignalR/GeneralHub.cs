@@ -15,9 +15,9 @@ public class GeneralHub : Hub
     }
 
     // Mensaje de Costo Envio
-    public async Task EnviarMensajeUpdateCostoEnvio(string mensaje)
+    public async Task EnviarMensajeUpdateEnvio(string mensaje)
     {
-        await Clients.All.SendAsync("MensajeUpdateCostoEnvio", mensaje);
+        await Clients.All.SendAsync("MensajeUpdateEnvio", mensaje);
     }
 
     // Mensaje de Vendedor
@@ -37,4 +37,10 @@ public class GeneralHub : Hub
     {
         await Clients.All.SendAsync("MensajeCrudPedido", mensaje);
     }
+
+    // Mensaje de Producto
+    // public async Task EnviarMensajeCrudProducto(string mensaje)
+    // {
+    //     await Clients.All.SendAsync("MensajeCrudProducto", mensaje);
+    // }
 }

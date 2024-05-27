@@ -2870,11 +2870,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "c:\\Users\\mati_\\OneDrive\\Escritorio\\Catapp\\backend\\API\\API.csproj",
+      "projectUniqueName": "C:\\Users\\mati_\\OneDrive\\Escritorio\\Catapp\\backend\\API\\API.csproj",
       "projectName": "API",
-      "projectPath": "c:\\Users\\mati_\\OneDrive\\Escritorio\\Catapp\\backend\\API\\API.csproj",
+      "projectPath": "C:\\Users\\mati_\\OneDrive\\Escritorio\\Catapp\\backend\\API\\API.csproj",
       "packagesPath": "C:\\Users\\mati_\\.nuget\\packages\\",
-      "outputPath": "c:\\Users\\mati_\\OneDrive\\Escritorio\\Catapp\\backend\\API\\obj\\",
+      "outputPath": "C:\\Users\\mati_\\OneDrive\\Escritorio\\Catapp\\backend\\API\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\mati_\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -3005,7 +3005,7 @@
       "code": "NU1701",
       "level": "Warning",
       "warningLevel": 1,
-      "message": "El paquete \"BCrypt.Net 0.1.0\" se restauró con \".NETFramework,Version=v4.6.1, .NETFramework,Version=v4.6.2, .NETFramework,Version=v4.7, .NETFramework,Version=v4.7.1, .NETFramework,Version=v4.7.2, .NETFramework,Version=v4.8, .NETFramework,Version=v4.8.1\" en lugar de la plataforma de destino del proyecto \"net6.0\". Puede que el paquete no sea totalmente compatible con el proyecto.",
+      "message": "Package 'BCrypt.Net 0.1.0' was restored using '.NETFramework,Version=v4.6.1, .NETFramework,Version=v4.6.2, .NETFramework,Version=v4.7, .NETFramework,Version=v4.7.1, .NETFramework,Version=v4.7.2, .NETFramework,Version=v4.8, .NETFramework,Version=v4.8.1' instead of the project target framework 'net6.0'. This package may not be fully compatible with your project.",
       "libraryId": "BCrypt.Net",
       "targetGraphs": [
         "net6.0"

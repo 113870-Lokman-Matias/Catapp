@@ -176,6 +176,8 @@ namespace API.Data
 
                 entity.Property(e => e.IdEnvio).HasColumnName("id_envio");
 
+                entity.Property(e => e.Habilitado).HasColumnName("habilitado");
+
                 entity.Property(e => e.FechaModificacion).HasColumnName("fecha_modificacion");
 
                 entity.Property(e => e.Precio).HasColumnName("precio");

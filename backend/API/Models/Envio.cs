@@ -6,6 +6,7 @@ namespace API.Models
     public partial class Envio
     {
         public int IdEnvio { get; set; }
+        public bool Habilitado { get; set; }
         public float Precio { get; set; }
         public DateTimeOffset FechaModificacion { get; set; }
         public string UltimoModificador { get; set; } = null!;

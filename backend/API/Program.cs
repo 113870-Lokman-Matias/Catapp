@@ -32,7 +32,7 @@ using API.Services.ProductoServices.Commands.UpdateProductoCommand;
 using API.Services.ProductoServices.Commands.UpdateStockProductoCommand;
 using API.Services.ProductoServices.Commands.DeleteProductoCommand;
 
-using API.Services.EnvioServices.Commands.UpdateCostoEnvioCommand;
+using API.Services.EnvioServices.Commands.UpdateEnvioCommand;
 
 using API.Services.StockServices.Queries.GetDetallesStockByIdQuery;
 using API.Services.StockServices.Commands.CreateDetalleStockCommand;
@@ -56,7 +56,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddSignalR();
 
 // Credenciales MercadoPago
-MercadoPagoConfig.AccessToken = "TEST-718354923242289-012400-c44c2ef741fc53df597d76a76ba62dbf-1070291733";
+MercadoPagoConfig.AccessToken = "APP_USR-2353346951556522-052620-9c8f370d4bf2f2eb5ad29b9258153a06-1831593012";
 
 // Add services to the container.
 
@@ -127,7 +127,7 @@ builder.Services.AddScoped<IValidator<GetProductosByQueryQuery>, GetProductosByQ
 builder.Services.AddScoped<IValidator<GetProductoByIdQuery>, GetProductoByIdQueryValidator>();
 
 // Validacion para el servicio de Envio
-builder.Services.AddScoped<IValidator<UpdateCostoEnvioCommand>, UpdateCostoEnvioCommandValidator>();
+builder.Services.AddScoped<IValidator<UpdateEnvioCommand>, UpdateEnvioCommandValidator>();
 
 // Validacion para el servicio de Detalles de stock
 builder.Services.AddScoped<IValidator<CreateDetalleStockCommand>, CreateDetalleStockCommandValidator>();

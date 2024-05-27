@@ -10,7 +10,7 @@ import {
   GetCategoriesMayorista,
 } from "../../../services/CategoryService";
 import { GetCotizacionDolarUnicamente } from "../../../services/DollarService";
-import { GetCostoEnvioUnicamente } from "../../../services/ShipmentService";
+import { GetInfoEnvio } from "../../../services/ShipmentService";
 import { GetUsersSellers } from "../../../services/UserService";
 import { SaveOrders } from "../../../services/OrderService";
 import {
@@ -31,6 +31,7 @@ import { ReactComponent as Back } from "../../../assets/svgs/cartBack.svg";
 import { ReactComponent as Delete } from "../../../assets/svgs/delete.svg";
 import { ReactComponent as Whatsapplogo } from "../../../assets/svgs/whatsapp.svg";
 import { ReactComponent as Close } from "../../../assets/svgs/closebtn.svg";
+import { ReactComponent as Save } from "../../../assets/svgs/save.svg";
 import { ReactComponent as Lupa } from "../../../assets/svgs/lupa.svg";
 import { ReactComponent as Location } from "../../../assets/svgs/location.svg";
 import { ReactComponent as Mercadopagologo } from "../../../assets/svgs/mercadopago.svg";
@@ -40,10 +41,6 @@ import Loader from "../../../components/Loaders/LoaderCircle";
 import "../CatalogueCart/CatalogueCart.css";
 
 const CatalogueCart = () => {
-  initMercadoPago("TEST-cbecc447-de65-4e40-af97-59564ce2947d", {
-    locale: "es-AR",
-  });
-
   //#region Constantes
   const [pedidoAprobado, setPedidoAprobado] = useState(false);
 
@@ -73,6 +70,8 @@ const CatalogueCart = () => {
   const [productNotes, setProductNotes] = useState({});
   const [cart, setCart] = useState({});
   const [totalQuantity, setTotalQuantity] = useState(0);
+  const [total, setTotal] = useState(0);
+  const [modalAbierto, setModalAbierto] = useState(false);
   const [showButton, setShowButton] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingProductByCategory, setIsLoadingProductByCategory] =
@@ -91,7 +90,8 @@ const CatalogueCart = () => {
   );
   const [telefonoEmpresa] = useState("3517476389");
   const [cbu] = useState("45300005445599555");
-  const [costoEnvioDomicilio, setCostoEnvioDomicilio] = useState(0);
+  const [costoEnvioDomicilio, setCostoEnvioDomicilio] = useState("");
+  const [habilitadoEnvioDomicilio, setHabilitadoEnvioDomicilio] = useState("");
 
   const [valorDolar, setvalorDolar] = useState(0);
 
@@ -112,6 +112,12 @@ const CatalogueCart = () => {
   //#endregion
 
   //#region UseEffect
+  useEffect(() => {
+    initMercadoPago("APP_USR-13e9d0f8-62f0-47f4-9e93-74dbc93351e3", {
+      locale: "es-AR",
+    });
+  }, []);
+
   useEffect(() => {
     const connection = new signalR.HubConnectionBuilder()
       .withUrl("https://localhost:7207/generalHub")
@@ -158,9 +164,15 @@ const CatalogueCart = () => {
       }
     });
 
-    connection.on("MensajeUpdateCostoEnvio", async () => {
+    connection.on("MensajeUpdateEnvio", async () => {
       try {
-        await GetCostoEnvioUnicamente(setCostoEnvioDomicilio);
+        const response = await GetInfoEnvio();
+        setCostoEnvioDomicilio(response.precio);
+        setHabilitadoEnvioDomicilio(response.habilitado);
+
+        if (response.habilitado === false) {
+          setEnvio("");
+        }
       } catch (error) {
         console.error("Error al obtener el costo de envío: " + error);
       }
@@ -183,7 +195,10 @@ const CatalogueCart = () => {
     // Funciónes asincronas
     (async () => {
       try {
-        await GetCostoEnvioUnicamente(setCostoEnvioDomicilio);
+        const response = await GetInfoEnvio();
+        setCostoEnvioDomicilio(response.precio);
+        setHabilitadoEnvioDomicilio(response.habilitado);
+
         await GetCotizacionDolarUnicamente(setvalorDolar);
         await GetUsersSellers(setListaNombresVendedores);
       } catch (error) {
@@ -195,37 +210,66 @@ const CatalogueCart = () => {
   }, []);
 
   useEffect(() => {
+    calculateTotal();
+  }, [
+    totalQuantity,
+    envio,
+    modalAbierto,
+    costoEnvioDomicilio,
+    habilitadoEnvioDomicilio,
+  ]);
+
+  useEffect(() => {
     // Mostrar u ocultar el botón de WhatsApp en función de totalQuantity (Si es mayor o igual a 1 se mostrara, por lo contrario se escondera)
-    setShowButton(totalQuantity >= 1);
-  }, [totalQuantity]);
+    if (totalQuantity >= 1 && modalAbierto === false) {
+      setShowButton(true);
+    } else {
+      setShowButton(false);
+    }
+  }, [totalQuantity, modalAbierto]);
 
   useEffect(() => {
     const fetchData = async () => {
-      if (pathname.includes("mayorista")) {
+      const isMayorista = pathname.includes("mayorista");
+      const isMinorista = pathname.includes("minorista");
+
+      if (isMayorista) {
         setClientType("Mayorista");
-        GetCategoriesMayorista(setCategories);
-      } else if (pathname.includes("minorista")) {
+        await GetCategoriesMayorista(setCategories);
+      } else if (isMinorista) {
         setClientType("Minorista");
-        GetCategoriesMinorista(setCategories);
+        await GetCategoriesMinorista(setCategories);
       }
 
-      const storedCart =
-        clientType === "Mayorista"
-          ? localStorage.getItem("shoppingCartMayorista")
-          : clientType === "Minorista"
-          ? localStorage.getItem("shoppingCartMinorista")
-          : null;
+      const storedCartKey = isMayorista
+        ? "shoppingCartMayorista"
+        : "shoppingCartMinorista";
+      const storedCart = localStorage.getItem(storedCartKey);
 
       const urlParams = new URLSearchParams(window.location.search);
       const paymentId = urlParams.get("payment_id");
+      const collectionStatus = urlParams.get("collection_status");
 
       if (!paymentId) {
+        const storedFormData = localStorage.getItem("userData");
+
+        if (storedFormData && storedFormData !== "{}") {
+          const parsedFormData = JSON.parse(storedFormData);
+
+          setNombre(parsedFormData.nombre || "");
+          setDni(parsedFormData.dni || "");
+          setDireccion(parsedFormData.direccion || "");
+          setCalles(parsedFormData.calles || "");
+          setTelefono(parsedFormData.telefono || "");
+          setAbono(parsedFormData.abono || "");
+          setVendedor(parsedFormData.vendedor || "");
+          setEnvio(parsedFormData.envio || "");
+        }
+
         if (storedCart && storedCart !== "{}") {
           const parsedCart = JSON.parse(storedCart);
-
           setCart(parsedCart);
 
-          // Extraer cantidades basadas en 'idProducto'
           const productQuantities = Object.values(parsedCart).reduce(
             (quantities, product) => {
               quantities[product.idProducto] = product.cantidad;
@@ -236,12 +280,13 @@ const CatalogueCart = () => {
 
           setProductQuantities(productQuantities);
 
-          // Calcular y establecer la cantidad total
           const totalQuantitySum = Object.values(productQuantities).reduce(
             (sum, quantity) => sum + quantity,
             0
           );
           setTotalQuantity(totalQuantitySum);
+
+          setModalAbierto(true);
 
           Swal.fire({
             title: "Carrito encontrado!",
@@ -255,25 +300,29 @@ const CatalogueCart = () => {
             cancelButtonColor: "#dc3545",
           }).then((result) => {
             if (result.isConfirmed) {
+              setModalAbierto(false);
+              // No hacer nada, continuar comprando
             } else if (result.isDismissed) {
-              // Mostrar confirmación adicional antes de vaciar el carrito
               Swal.fire({
                 title: "¿Estás seguro de vaciar el carrito?",
                 text: "Al hacer esto, no podrás recuperar los productos de este carrito.",
                 icon: "warning",
                 showCancelButton: true,
+                allowOutsideClick: false,
                 confirmButtonText: "Sí, vaciar carrito",
                 cancelButtonText: "Cancelar",
                 confirmButtonColor: "#f8bb86",
               }).then((confirmationResult) => {
                 if (confirmationResult.isConfirmed) {
                   clearCart();
+                  setModalAbierto(false);
                 }
               });
             }
           });
         }
-      } else if (paymentId && paymentId === "null") {
+      } else if (paymentId === "null" || collectionStatus === "rejected") {
+        setModalAbierto(true);
         Swal.fire({
           title: "Pago rechazado",
           text: "inténtelo de nuevo o cambie el método de pago.",
@@ -281,6 +330,10 @@ const CatalogueCart = () => {
           confirmButtonText: "Aceptar",
           confirmButtonColor: "#dc3545",
           allowOutsideClick: false,
+        }).then((confirmationResult) => {
+          if (confirmationResult.isConfirmed) {
+            setModalAbierto(false);
+          }
         });
 
         const storedFormData = localStorage.getItem("userData");
@@ -288,7 +341,6 @@ const CatalogueCart = () => {
         if (storedFormData) {
           const parsedFormData = JSON.parse(storedFormData);
 
-          // Populate form fields with retrieved data
           setNombre(parsedFormData.nombre || "");
           setDni(parsedFormData.dni || "");
           setDireccion(parsedFormData.direccion || "");
@@ -301,10 +353,8 @@ const CatalogueCart = () => {
 
         if (storedCart && storedCart !== "{}") {
           const parsedCart = JSON.parse(storedCart);
-
           setCart(parsedCart);
 
-          // Extraer cantidades basadas en 'idProducto'
           const productQuantities = Object.values(parsedCart).reduce(
             (quantities, product) => {
               quantities[product.idProducto] = product.cantidad;
@@ -315,14 +365,13 @@ const CatalogueCart = () => {
 
           setProductQuantities(productQuantities);
 
-          // Calcular y establecer la cantidad total
           const totalQuantitySum = Object.values(productQuantities).reduce(
             (sum, quantity) => sum + quantity,
             0
           );
           setTotalQuantity(totalQuantitySum);
         }
-      } else if (paymentId && paymentId !== "null") {
+      } else if (paymentId) {
         await GetUsersSellers(setListaNombresVendedores);
 
         const storedFormData = localStorage.getItem("userData");
@@ -330,7 +379,6 @@ const CatalogueCart = () => {
         if (storedFormData) {
           const parsedFormData = JSON.parse(storedFormData);
 
-          // Populate form fields with retrieved data
           setNombre(parsedFormData.nombre || "");
           setDni(parsedFormData.dni || "");
           setDireccion(parsedFormData.direccion || "");
@@ -343,10 +391,8 @@ const CatalogueCart = () => {
 
         if (storedCart && storedCart !== "{}") {
           const parsedCart = JSON.parse(storedCart);
-
           setCart(parsedCart);
 
-          // Extraer cantidades basadas en 'idProducto'
           const productQuantities = Object.values(parsedCart).reduce(
             (quantities, product) => {
               quantities[product.idProducto] = product.cantidad;
@@ -371,7 +417,9 @@ const CatalogueCart = () => {
     };
 
     fetchData();
-  }, [pathname, clientType, pedidoAprobado]);
+    // The dependency array is kept minimal to avoid multiple triggers
+    // It's assumed that pathname will change when clientType changes, thus avoiding direct dependency on clientType
+  }, [pathname, pedidoAprobado]);
 
   useEffect(() => {
     if (pedidoAprobado) {
@@ -702,7 +750,13 @@ const CatalogueCart = () => {
       total += costoEnvioDomicilio;
     }
 
-    return total;
+    setTotal(total);
+  };
+  //#endregion
+
+  //#region Función para los datos del cliente del formulario
+  const ClearFormData = () => {
+    localStorage.removeItem("userData");
   };
   //#endregion
 
@@ -756,31 +810,40 @@ const CatalogueCart = () => {
     e.preventDefault();
 
     if (IsValid() === true) {
-      const response = await PayWithMercadoPago({
-        title: "Productos",
-        quantity: 1,
-        unitPrice: calculateTotal(),
-        url: "http://localhost:3000/catalogo-minorista",
-      });
+      try {
+        e.preventDefault();
 
-      if (response.preferenceId !== null) {
-        setPreferenceId(response.preferenceId);
-        setShowWallet(true);
+        const response = await PayWithMercadoPago({
+          title: "Productos",
+          quantity: 1,
+          unitPrice: total,
+          url: `http://localhost:3000/catalogo-${
+            clientType === "Mayorista" ? "mayorista" : "minorista"
+          }`,
+        });
 
-        // Create an object with the values you want to store
-        const userData = {
-          nombre,
-          dni,
-          direccion,
-          calles,
-          telefono,
-          abono,
-          vendedor,
-          envio,
-        };
+        if (response.preferenceId !== null) {
+          setPreferenceId(response.preferenceId);
+          setShowWallet(true);
 
-        // Convert the object to a JSON string and store it in localStorage
-        localStorage.setItem("userData", JSON.stringify(userData));
+          // Create an object with the values you want to store
+          const userData = {
+            nombre,
+            dni,
+            direccion,
+            calles,
+            telefono,
+            abono,
+            vendedor,
+            envio,
+          };
+
+          // Convert the object to a JSON string and store it in localStorage
+          localStorage.setItem("userData", JSON.stringify(userData));
+        }
+      } catch (error) {
+        console.error("Error durante PayWithMercadoPago:", error);
+        // Manejar el error apropiadamente (e.g., mostrar un mensaje al usuario)
       }
     }
   };
@@ -898,7 +961,7 @@ const CatalogueCart = () => {
       }
 
       if (envio == 2 && costoEnvioDomicilio > 0) {
-        mensaje += `*SUBTOTAL: $${(calculateTotal() - costoEnvioDomicilio)
+        mensaje += `*SUBTOTAL: $${(total - costoEnvioDomicilio)
           .toLocaleString("es-ES", {
             minimumFractionDigits: 0,
             maximumFractionDigits: 2,
@@ -907,7 +970,7 @@ const CatalogueCart = () => {
           .replace(/\B(?=(\d{3})+(?!\d))/g, ".")}*\n`;
         mensaje += `*Costo de envío: $${costoEnvioDomicilio}*\n`;
       }
-      mensaje += `*TOTAL: $${calculateTotal()
+      mensaje += `*TOTAL: $${total
         .toLocaleString("es-ES", {
           minimumFractionDigits: 0,
           maximumFractionDigits: 2,
@@ -928,11 +991,8 @@ const CatalogueCart = () => {
       ClearClientInputs();
       CloseModal();
 
-      localStorage.removeItem(
-        clientType === "Mayorista"
-          ? "shoppingCartMayorista"
-          : "shoppingCartMinorista"
-      );
+      clearCart();
+      ClearFormData();
     }
   };
 
@@ -1046,7 +1106,7 @@ const CatalogueCart = () => {
           }
 
           if (envio == 2 && costoEnvioDomicilio > 0) {
-            mensaje += `*SUBTOTAL: $${(calculateTotal() - costoEnvioDomicilio)
+            mensaje += `*SUBTOTAL: $${(total - costoEnvioDomicilio)
               .toLocaleString("es-ES", {
                 minimumFractionDigits: 0,
                 maximumFractionDigits: 2,
@@ -1055,7 +1115,7 @@ const CatalogueCart = () => {
               .replace(/\B(?=(\d{3})+(?!\d))/g, ".")}*\n`;
             mensaje += `*Costo de envío: $${costoEnvioDomicilio}*\n`;
           }
-          mensaje += `*TOTAL: $${calculateTotal()
+          mensaje += `*TOTAL: $${total
             .toLocaleString("es-ES", {
               minimumFractionDigits: 0,
               maximumFractionDigits: 2,
@@ -1076,11 +1136,8 @@ const CatalogueCart = () => {
           ClearClientInputs();
           CloseModal();
 
-          localStorage.removeItem(
-            clientType === "Mayorista"
-              ? "shoppingCartMayorista"
-              : "shoppingCartMinorista"
-          );
+          clearCart();
+          ClearFormData();
         })
         .catch((error) => {
           // Manejar el error si algo sale mal en el POST
@@ -1539,7 +1596,7 @@ const CatalogueCart = () => {
                       Total:{" "}
                       <b className="product-price">
                         $
-                        {calculateTotal()
+                        {total
                           .toLocaleString("es-ES", {
                             minimumFractionDigits: 0,
                             maximumFractionDigits: 2,
@@ -2239,7 +2296,7 @@ const CatalogueCart = () => {
                   Enviar pedido por WhatsApp{" "}
                   <b>
                     $
-                    {calculateTotal()
+                    {total
                       .toLocaleString("es-ES", {
                         minimumFractionDigits: 0,
                         maximumFractionDigits: 2,
@@ -2340,13 +2397,15 @@ const CatalogueCart = () => {
                         <option className="btn-option" value="1">
                           Lo retiro por el local ($0)
                         </option>
-                        <option
-                          className="btn-option"
-                          hidden={costoEnvioDomicilio === 0}
-                          value="2"
-                        >
-                          Envío a domicilio (${costoEnvioDomicilio})
-                        </option>
+                        {habilitadoEnvioDomicilio && (
+                          <option
+                            className="btn-option"
+                            hidden={costoEnvioDomicilio === 0}
+                            value="2"
+                          >
+                            Envío a domicilio (${costoEnvioDomicilio})
+                          </option>
+                        )}
                       </select>
                     </div>
 
@@ -2517,28 +2576,30 @@ const CatalogueCart = () => {
                     <b>Cantidad total de productos: {totalQuantity}</b>
 
                     {/* Mostrar el costo de envío solo si la opción es "Envío a domicilio" */}
-                    {envio == 2 && costoEnvioDomicilio > 0 && (
-                      <>
-                        <b>
-                          Subtotal: $
-                          {(calculateTotal() - costoEnvioDomicilio)
-                            .toLocaleString("es-ES", {
-                              minimumFractionDigits: 0,
-                              maximumFractionDigits: 2,
-                            })
-                            .replace(",", ".")
-                            .replace(/\B(?=(\d{3})+(?!\d))/g, ".")}
-                        </b>
+                    {envio == 2 &&
+                      costoEnvioDomicilio > 0 &&
+                      habilitadoEnvioDomicilio === true && (
+                        <>
+                          <b>
+                            Subtotal: $
+                            {(total - costoEnvioDomicilio)
+                              .toLocaleString("es-ES", {
+                                minimumFractionDigits: 0,
+                                maximumFractionDigits: 2,
+                              })
+                              .replace(",", ".")
+                              .replace(/\B(?=(\d{3})+(?!\d))/g, ".")}
+                          </b>
 
-                        <b className="costo-envio">
-                          Costo de envío: ${costoEnvioDomicilio}
-                        </b>
-                      </>
-                    )}
+                          <b className="costo-envio">
+                            Costo de envío: ${costoEnvioDomicilio}
+                          </b>
+                        </>
+                      )}
 
                     <b>
                       Total: $
-                      {calculateTotal()
+                      {total
                         .toLocaleString("es-ES", {
                           minimumFractionDigits: 0,
                           maximumFractionDigits: 2,
@@ -2547,52 +2608,74 @@ const CatalogueCart = () => {
                         .replace(/\B(?=(\d{3})+(?!\d))/g, ".")}
                     </b>
                   </div>
-
-                  {abono == 5 ? (
-                    <div>
-                      {showWallet ? (
-                        <Wallet
-                          initialization={{
-                            preferenceId: preferenceId,
-                            // redirectMode: "modal",
-                          }}
-                        />
-                      ) : (
-                        // Display "Pagar y enviar pedido" button
-                        <div id="div-btn-save">
-                          <button
-                            className="btnmeli"
-                            id="btn-save"
-                            onClick={handleSubmitPedidoMercadoPago}
-                          >
-                            <div className="btn-save-update-close">
-                              <Mercadopagologo className="meli-btn" />
-                              <p className="p-save-update-close">
-                                Pagar y enviar pedido
-                              </p>
-                            </div>
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <div id="div-btn-save">
-                      <button
-                        className="btnadd2"
-                        id="btn-save"
-                        onClick={handleSubmitPedido}
-                      >
-                        <div className="btn-save-update-close">
-                          <Whatsapplogo className="save-btn" />
-                          <p className="p-save-update-close">Enviar Pedido</p>
-                        </div>
-                      </button>
-                    </div>
-                  )}
                 </form>
+
+                {abono == 5 ? (
+                  <div>
+                    {showWallet ? (
+                      <Wallet initialization={{ preferenceId }} />
+                    ) : (
+                      // Display "Pagar y enviar pedido" button
+                      <div id="div-btn-save">
+                        <button
+                          className="btnmeli"
+                          id="btn-save"
+                          onClick={handleSubmitPedidoMercadoPago}
+                        >
+                          <div className="btn-save-update-close">
+                            <Mercadopagologo className="meli-btn" />
+                            <p className="p-save-update-close">
+                              Pagar y enviar pedido
+                            </p>
+                          </div>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div id="div-btn-save">
+                    <button
+                      className="btnadd2"
+                      id="btn-save"
+                      onClick={handleSubmitPedido}
+                    >
+                      <div className="btn-save-update-close">
+                        <Whatsapplogo className="save-btn" />
+                        <p className="p-save-update-close">Enviar Pedido</p>
+                      </div>
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
             <div className="modal-footer">
+              <button
+                type="button"
+                className="btn btn-success"
+                onClick={() => {
+                  CloseModal();
+
+                  const userData = {
+                    nombre,
+                    dni,
+                    direccion,
+                    calles,
+                    telefono,
+                    abono,
+                    vendedor,
+                    envio,
+                  };
+
+                  // Convert the object to a JSON string and store it in localStorage
+                  localStorage.setItem("userData", JSON.stringify(userData));
+                }}
+              >
+                <div className="btn-save-update-close">
+                  <Save className="close-btn" />
+                  <p className="p-save-update-close">Cerrar y guardar</p>
+                </div>
+              </button>
+
               <button
                 type="button"
                 className="btn btn-secondary"
@@ -2614,6 +2697,7 @@ const CatalogueCart = () => {
                       if (result.isConfirmed) {
                         ClearClientInputs();
                         CloseModal();
+                        ClearFormData();
                       }
                     });
                   }

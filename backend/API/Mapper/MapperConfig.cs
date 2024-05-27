@@ -27,7 +27,7 @@ using API.Services.ProductoServices.Commands.DeleteProductoCommand;
 using API.Services.ProductoServices.Commands.UpdateStockProductoCommand;
 
 using API.Dtos.EnvioDto;
-using API.Services.EnvioServices.Commands.UpdateCostoEnvioCommand;
+using API.Services.EnvioServices.Commands.UpdateEnvioCommand;
 
 using API.Dtos.StockDtos;
 using API.Services.StockServices.Commands.CreateDetalleStockCommand;
@@ -80,7 +80,7 @@ namespace API.Mapper
 
       // Mapper para Envios
       CreateMap<EnvioDto, Envio>().ReverseMap();
-      CreateMap<Envio, UpdateCostoEnvioCommand>().ReverseMap();
+      CreateMap<Envio, UpdateEnvioCommand>().ReverseMap();
 
       // Mapper para Detalles de stock
       CreateMap<DetallesStock, StockDto>()

@@ -5,6 +5,8 @@ using AutoMapper;
 using FluentValidation;
 using MediatR;
 
+using MercadoPago.Client;
+using MercadoPago.Http;
 using MercadoPago.Config;
 using MercadoPago.Client.Preference;
 using MercadoPago.Resource.Preference;
@@ -83,9 +85,13 @@ namespace API.Services.PagoServices.Commands.CreatePagoCommand
             }
           };
 
-          // Crea la preferencia usando el cliente de MercadoPago
+          // Create RequestOptions with custom headers or different access token
+          var requestOptions = new RequestOptions();
+          requestOptions.CustomHeaders.Add(Headers.IDEMPOTENCY_KEY, Guid.NewGuid().ToString());
+
+           // Crea la preferencia usando el cliente de MercadoPago
           var client = new PreferenceClient();
-          var preference = await client.CreateAsync(preferenceRequest);
+          Preference preference = await client.CreateAsync(preferenceRequest, requestOptions);
 
           pagoDto.StatusCode = StatusCodes.Status200OK;
           pagoDto.IsSuccess = true;

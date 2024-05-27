@@ -248,6 +248,7 @@ ALTER SEQUENCE public.divisas_id_divisa_seq OWNED BY public.divisas.id_divisa;
 
 CREATE TABLE public.envios (
     id_envio integer NOT NULL,
+    habilitado boolean DEFAULT false NOT NULL,
     precio real DEFAULT 0 NOT NULL,
     fecha_modificacion timestamp with time zone NOT NULL,
     ultimo_modificador text NOT NULL
@@ -666,8 +667,8 @@ COPY public.divisas (id_divisa, nombre) FROM stdin;
 -- Data for Name: envios; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.envios (id_envio, precio, fecha_modificacion, ultimo_modificador) FROM stdin;
-2	0	2024-03-25 14:00:00-03	SuperAdmin
+COPY public.envios (id_envio, habilitado, precio, fecha_modificacion, ultimo_modificador) FROM stdin;
+2	f	0	2024-03-25 14:00:00-03	SuperAdmin
 \.
 
 

@@ -15,7 +15,7 @@ async function PayWithMercadoPago(data) {
 async function GetPaymentInfo(paymentId) {
   const headers = {
     Authorization:
-      "Bearer TEST-718354923242289-012400-c44c2ef741fc53df597d76a76ba62dbf-1070291733",
+      "Bearer APP_USR-2353346951556522-052620-9c8f370d4bf2f2eb5ad29b9258153a06-1831593012",
   };
 
   const response = await axios.get(
