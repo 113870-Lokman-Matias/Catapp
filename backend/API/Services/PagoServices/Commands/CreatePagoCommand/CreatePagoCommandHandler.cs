@@ -68,6 +68,7 @@ namespace API.Services.PagoServices.Commands.CreatePagoCommand
               Failure = request.Url,
               Pending = request.Url,
             },
+            BinaryMode = true,
             AutoReturn = "approved",
             PaymentMethods = new PreferencePaymentMethodsRequest
             {

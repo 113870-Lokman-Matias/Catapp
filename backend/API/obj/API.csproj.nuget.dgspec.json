@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\mati_\\OneDrive\\Escritorio\\Catapp\\backend\\API\\API.csproj": {}
+    "c:\\Users\\mati_\\OneDrive\\Escritorio\\Catapp\\backend\\API\\API.csproj": {}
   },
   "projects": {
-    "C:\\Users\\mati_\\OneDrive\\Escritorio\\Catapp\\backend\\API\\API.csproj": {
+    "c:\\Users\\mati_\\OneDrive\\Escritorio\\Catapp\\backend\\API\\API.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\mati_\\OneDrive\\Escritorio\\Catapp\\backend\\API\\API.csproj",
+        "projectUniqueName": "c:\\Users\\mati_\\OneDrive\\Escritorio\\Catapp\\backend\\API\\API.csproj",
         "projectName": "API",
-        "projectPath": "C:\\Users\\mati_\\OneDrive\\Escritorio\\Catapp\\backend\\API\\API.csproj",
+        "projectPath": "c:\\Users\\mati_\\OneDrive\\Escritorio\\Catapp\\backend\\API\\API.csproj",
         "packagesPath": "C:\\Users\\mati_\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\mati_\\OneDrive\\Escritorio\\Catapp\\backend\\API\\obj\\",
+        "outputPath": "c:\\Users\\mati_\\OneDrive\\Escritorio\\Catapp\\backend\\API\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\mati_\\AppData\\Roaming\\NuGet\\NuGet.Config",
