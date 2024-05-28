@@ -140,12 +140,19 @@ function OrderReports() {
 
   const [title, setTitle] = useState("Reportes de Pedidos");
 
-  const tableRef = useRef(null);
+  const tableRef1 = useRef(null);
+  const tableRef2 = useRef(null);
 
-  const { onDownload } = useDownloadExcel({
-    currentTableRef: tableRef.current,
+  const { onDownload: onDownload1 } = useDownloadExcel({
+    currentTableRef: tableRef1.current,
     filename: `${title}`,
     sheet: `${title}`,
+  });
+
+  const { onDownload: onDownload2 } = useDownloadExcel({
+    currentTableRef: tableRef2.current,
+    filename: `${"Detalles de " + title}`,
+    sheet: `${"Detalles de " + title}`,
   });
 
   //#region Constantes de la paginacion
@@ -673,9 +680,10 @@ function OrderReports() {
               </button>
 
               <button
-                onClick={onDownload}
+                onClick={onDownload1}
                 type="button"
                 className="btn btn-success btn-excel"
+                title="Descargar reportes"
               >
                 <div className="btn-add-content">
                   <Excel className="excel" />
@@ -692,6 +700,17 @@ function OrderReports() {
                 }}
               >
                 <ShowOrders className="show-orders" />
+              </button>
+
+              <button
+                onClick={onDownload2}
+                type="button"
+                className="btn btn-success btn-show-orders"
+                title="Descargar detalles"
+              >
+                <div className="show-orders">
+                  <Excel />
+                </div>
               </button>
             </div>
           )}
@@ -1755,8 +1774,112 @@ function OrderReports() {
             </table>
           )}
 
+          {/* tabla de detalles de reportes de pedidos para Excel */}
+          <table ref={tableRef2} hidden align="center">
+            <thead>
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">ID</th>
+                <th scope="col">Tipo</th>
+                <th scope="col">Cliente</th>
+                <th scope="col">Entrega</th>
+                <th scope="col">Vendedor</th>
+                <th scope="col">Cantidad de productos</th>
+                <th scope="col">Subtotal</th>
+                <th scope="col">Costo de envio</th>
+                <th scope="col">Total</th>
+                <th scope="col">Abono</th>
+                <th scope="col">Detalle</th>
+                <th scope="col">Fecha</th>
+                <th scope="col">Status</th>
+              </tr>
+            </thead>
+
+            {orders.length > 0 ? (
+              orders.map(function fn(order, index) {
+                return (
+                  <tbody key={1 + order.idPedido}>
+                    <tr>
+                      <th scope="row">{index + 1}</th>
+                      <td>{order.idPedido} </td>
+                      <td>{order.tipo}</td>
+                      <td>{order.cliente}</td>
+                      <td
+                        className={`table-name table-name-orders ${
+                          order.entrega.includes("domicilio")
+                            ? "domicilio"
+                            : order.entrega.includes("retiro por el local")
+                            ? "retiro-local"
+                            : "domicilio"
+                        }`}
+                      >
+                        {order.entrega}
+                      </td>
+                      <td
+                        className={`table-name table-name-orders ${
+                          order.vendedor === null ? "predeterminado" : ""
+                        }`}
+                      >
+                        {order.vendedor === null ? "-" : order.vendedor}
+                      </td>
+                      <td>{order.cantidadProductos}</td>
+                      <td>${order.subtotal.toLocaleString()}</td>
+                      <td
+                        className={`table-name table-name-orders ${
+                          order.costoEnvio > 0
+                            ? "domicilio"
+                            : order.entrega.includes("retiro por el local")
+                            ? "retiro-local"
+                            : "domicilio"
+                        }`}
+                      >
+                        ${order.costoEnvio.toLocaleString()}
+                      </td>
+                      <td>${order.total.toLocaleString()}</td>
+                      <td
+                        className={`table-name table-name-orders ${
+                          order.abono === "Mercado Pago"
+                            ? "mercado-pago"
+                            : "table-name table-name-orders"
+                        }`}
+                      >
+                        {order.abono}
+                      </td>
+                      <td className="table-name table-name-orders table-overflow">
+                        <pre>{order.detalle.split("|").join("\n")}</pre>
+                      </td>
+                      <td>{formatDate(order.fecha)}</td>
+
+                      {order.verificado ? (
+                        <td>
+                          <div className="status-btns">
+                            <div className="circulo-verificado"></div>
+                            <p className="status-name">Verificado</p>
+                          </div>
+                        </td>
+                      ) : (
+                        <td>
+                          <div className="status-btns">
+                            <div className="circulo-pendiente"></div>
+                            <p className="status-name">Pendiente</p>
+                          </div>
+                        </td>
+                      )}
+                    </tr>
+                  </tbody>
+                );
+              })
+            ) : (
+              <tbody>
+                <tr>
+                  <td colSpan={14}>Sin registros</td>
+                </tr>
+              </tbody>
+            )}
+          </table>
+
           {/* tabla de reportes de pedidos para Excel */}
-          <table hidden ref={tableRef} align="center">
+          <table hidden ref={tableRef1} align="center">
             <thead>
               <tr>
                 <th scope="col">Fecha de inicio</th>

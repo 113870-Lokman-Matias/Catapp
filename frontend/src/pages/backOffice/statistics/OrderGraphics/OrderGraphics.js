@@ -752,9 +752,9 @@ function OrderGraphics() {
                         Seleccione una variable
                       </option>
 
-                      <option value="1">Facturación</option>
+                      <option value="1">Importe de facturación</option>
 
-                      <option value="2">Ventas</option>
+                      <option value="2">Cantidad de ventas</option>
                     </select>
                   </div>
 
