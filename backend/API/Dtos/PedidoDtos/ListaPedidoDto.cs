@@ -19,7 +19,7 @@ namespace API.Dtos.PedidoDtos
     public float CostoEnvio { get; set; }
 
     public float Total { get; set; }
-    
+
     public string Abono { get; set; } = null!;
 
     public string Detalle { get; set; } = null!;
@@ -27,6 +27,10 @@ namespace API.Dtos.PedidoDtos
     public DateTimeOffset Fecha { get; set; }
 
     public bool Verificado { get; set; }
+
+    public string? Direccion { get; set; }
+    
+    public string? EntreCalles { get; set; }
     public List<API.Dtos.DetallePedidoDto.DetallePedidoDto> Detalles { get; set; } = new List<API.Dtos.DetallePedidoDto.DetallePedidoDto>();
   }
 }

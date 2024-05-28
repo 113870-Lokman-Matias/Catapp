@@ -134,6 +134,9 @@ namespace API.Services.PedidoServices.Commands.CreatePedidoCommand
                 pedidoToCreate.Verificado = false;
             }
 
+            pedidoToCreate.Direccion = request.Direccion;
+            pedidoToCreate.EntreCalles = request.EntreCalles;
+
             pedidoToCreate.IdCliente = cliente.IdCliente;
 
             await _context.AddAsync(pedidoToCreate);
@@ -171,7 +174,8 @@ namespace API.Services.PedidoServices.Commands.CreatePedidoCommand
                 _context.DetallesStocks.Add(detalleStock);
 
 
-                if (request.IdMetodoPago == 5){
+                if (request.IdMetodoPago == 5)
+                {
                     // Actualizar el stock transitorio y normal del producto restando la cantidad del detalle
                     var producto = await _context.Productos.FindAsync(detalleDto.IdProducto);
                     if (producto != null)
@@ -181,7 +185,8 @@ namespace API.Services.PedidoServices.Commands.CreatePedidoCommand
                         _context.Productos.Update(producto);
                     }
                 }
-                else {
+                else
+                {
                     // Actualizar el stock transitorio del producto restando la cantidad del detalle
                     var producto = await _context.Productos.FindAsync(detalleDto.IdProducto);
                     if (producto != null)

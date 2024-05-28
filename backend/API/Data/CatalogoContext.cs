@@ -246,6 +246,10 @@ namespace API.Data
 
                 entity.Property(e => e.Verificado).HasColumnName("verificado");
 
+                entity.Property(e => e.Direccion).HasColumnName("direccion");
+
+                entity.Property(e => e.EntreCalles).HasColumnName("entre_calles");
+
                 entity.HasOne(d => d.IdClienteNavigation)
                     .WithMany(p => p.Pedidos)
                     .HasForeignKey(d => d.IdCliente)

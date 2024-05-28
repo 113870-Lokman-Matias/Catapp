@@ -10,6 +10,8 @@ namespace API.Services.PedidoServices.Commands.CreatePedidoCommand
     public string NombreCompleto { get; set; } = null!;
     public long Dni { get; set; }
     public long Telefono { get; set; }
+
+    // Tambien requeridos para el pedido
     public string? Direccion { get; set; }
     public string? EntreCalles { get; set; }
 
