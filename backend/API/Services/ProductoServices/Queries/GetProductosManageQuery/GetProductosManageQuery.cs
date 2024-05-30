@@ -3,7 +3,5 @@ using MediatR;
 
 namespace API.Services.ProductoServices.Queries.GetProductosManageQuery
 {
-  public class GetProductosManageQuery : IRequest<ListaProductosManageDto>
-  {
-  }
+  public record GetProductosManageQuery(string? Query = null, string? Category = null, bool? Hidden = null) : IRequest<ListaProductosManageDto>;
 }

@@ -140,6 +140,7 @@ function ProductManager() {
   const [imageSelected, setImageSelected] = useState();
 
   const [query, setQuery] = useState("");
+  const [searchValue, setSearchValue] = useState("");
 
   const [hidden, setHidden] = useState(false);
 
@@ -178,11 +179,11 @@ function ProductManager() {
       setIsLoading(true);
 
       try {
-        await Promise.all([
-          GetProductsManage(setProducts),
-          GetProductsManage(setOriginalProductsList),
-          GetCotizacionDolarUnicamente(setvalorDolar),
-        ]);
+        const resultProducts = await GetProductsManage();
+        setProducts(resultProducts);
+        setOriginalProductsList(resultProducts);
+
+        await GetCotizacionDolarUnicamente(setvalorDolar);
 
         const result = await GetCategoriesManage();
         setCategories(result);
@@ -253,8 +254,9 @@ function ProductManager() {
 
     connection.on("MensajeCreateDetalleStock", async () => {
       try {
-        GetProductsManage(setProducts);
-        GetProductsManage(setOriginalProductsList);
+        const resultProducts = await GetProductsManage();
+        setProducts(resultProducts);
+        setOriginalProductsList(resultProducts);
       } catch (error) {
         console.error("Error al obtener la cotización: " + error);
       }
@@ -262,8 +264,9 @@ function ProductManager() {
 
     connection.on("MensajeCrudPedido", async () => {
       try {
-        GetProductsManage(setProducts);
-        GetProductsManage(setOriginalProductsList);
+        const resultProducts = await GetProductsManage();
+        setProducts(resultProducts);
+        setOriginalProductsList(resultProducts);
       } catch (error) {
         console.error("Error al obtener la cotización: " + error);
       }
@@ -378,79 +381,120 @@ function ProductManager() {
     ClearBold();
     setCurrentPage(1);
     window.scrollTo(0, 0);
+
+    if (query !== "") {
+      setSearchValue("");
+    }
+
+    if (hidden === true) {
+      setHidden(false);
+    }
   };
   //#endregion
 
   //#region Funciónes de los filtros
-  const filterResultCategory = (category) => {
-    setProducts(originalProductsList);
-    const result = originalProductsList.filter((originalProductsList) => {
-      return originalProductsList.nombreCategoria === category;
-    });
-    setTitle(`Detalles de Productos de ${category}`);
-    setProducts(result);
-    setQuery("");
-    document.getElementById("clear-filter").style.display = "flex";
-    document.getElementById("clear-filter2").style.display = "flex";
-    setFilterName(category);
-    setFilterType("category");
-    ClearBold();
-    setCurrentPage(1);
-    window.scrollTo(0, 0);
-  };
+  const filterResultCategory = async (category) => {
+    setIsLoading(true);
 
-  const filterResultHidden = (hidden) => {
-    if (hidden === false) {
-      setProducts(originalProductsList);
-      const result = originalProductsList.filter((originalProductsList) => {
-        return originalProductsList.ocultar === true;
-      });
-      setTitle("Detalles de Productos ocultos");
-      setProducts(result);
+    try {
+      const categoryProducts = await GetProductsManage("", category);
+      setProducts(categoryProducts);
+
+      setTitle(`Detalles de Productos de ${category}`);
       setQuery("");
       document.getElementById("clear-filter").style.display = "flex";
       document.getElementById("clear-filter2").style.display = "flex";
-      setFilterName("Oculto");
-      setFilterType("hidden");
-      ClearBold();
+      setFilterName(category);
+      setFilterType("category");
       setCurrentPage(1);
       window.scrollTo(0, 0);
-    } else {
-      ClearFilter();
+
+      setIsLoading(false);
+    } catch {
+      setIsLoading(false);
+    }
+  };
+
+  const filterResultHidden = async (hidden) => {
+    setIsLoading(true);
+
+    try {
+      if (hidden === false) {
+        const hiddenProducts = await GetProductsManage("", "", true);
+        setProducts(hiddenProducts);
+        setTitle("Detalles de Productos ocultos");
+        setQuery("");
+        document.getElementById("clear-filter").style.display = "flex";
+        document.getElementById("clear-filter2").style.display = "flex";
+        setFilterName("Oculto");
+        setFilterType("hidden");
+        ClearBold();
+        setCurrentPage(1);
+        window.scrollTo(0, 0);
+      } else {
+        ClearFilter();
+      }
+      setIsLoading(false);
+    } catch {
+      setIsLoading(false);
     }
   };
   //#endregion
 
   //#region Función para filtrar producto mediante una consulta personalizada
-  const search = () => {
-    setProducts(originalProductsList);
-    const result = originalProductsList.filter(
-      (product) =>
-        product.nombre.toLowerCase().includes(query.toLowerCase()) ||
-        product.idProducto
-          .toString()
-          .toLowerCase()
-          .includes(query.toLowerCase())
-    );
-    setProducts(result);
-    document.getElementById("clear-filter").style.display = "flex";
-    document.getElementById("clear-filter2").style.display = "flex";
-    setTitle(
-      `Detalles de Productos con: "${
-        query.charAt(0).toUpperCase() + query.slice(1)
-      }"`
-    );
-    setFilterName(query.charAt(0).toUpperCase() + query.slice(1));
-    setFilterType("search");
-    ClearBold();
-    setCurrentPage(1);
-    window.scrollTo(0, 0);
-    if (query === "") {
-      document.getElementById("clear-filter").style.display = "none";
-      document.getElementById("clear-filter2").style.display = "none";
-      setFilterType("");
-      setTitle("Detalles de Productos");
-      window.scrollTo(0, 0);
+  const search = async () => {
+    setIsLoading(true);
+
+    try {
+      if (searchValue === "") {
+        Swal.fire({
+          icon: "warning",
+          title: "Consulta vacía",
+          text: "Ingrese un término de búsqueda.",
+          confirmButtonText: "Aceptar",
+          showCancelButton: false,
+          confirmButtonColor: "#f8bb86",
+        });
+      } else if (searchValue === query) {
+        Swal.fire({
+          icon: "warning",
+          title: "Término de búsqueda no cambiado",
+          text: "El término de búsqueda es el mismo que la última consulta. Intente con un término diferente.",
+          confirmButtonText: "Aceptar",
+          showCancelButton: false,
+          confirmButtonColor: "#f8bb86",
+        });
+      } else {
+        setQuery(searchValue);
+
+        const queryProducts = await GetProductsManage(searchValue, "");
+        setProducts(queryProducts);
+
+        document.getElementById("clear-filter").style.display = "flex";
+        document.getElementById("clear-filter2").style.display = "flex";
+        setTitle(
+          `Detalles de Productos con: "${
+            searchValue.charAt(0).toUpperCase() + searchValue.slice(1)
+          }"`
+        );
+        setFilterName(
+          searchValue.charAt(0).toUpperCase() + searchValue.slice(1)
+        );
+        setFilterType("search");
+        ClearBold();
+        setCurrentPage(1);
+        window.scrollTo(0, 0);
+        if (searchValue === "") {
+          document.getElementById("clear-filter").style.display = "none";
+          document.getElementById("clear-filter2").style.display = "none";
+          setFilterType("");
+          setTitle("Detalles de Productos");
+          window.scrollTo(0, 0);
+        }
+      }
+      setIsLoading(false);
+    } catch {
+      setIsLoading(false);
     }
   };
   //#endregion
@@ -569,8 +613,9 @@ function ProductManager() {
   //#region Función para volver el formulario a su estado inicial, borrando los valores de los inputs, cargando los selects y refrezcando la lista de productos
   async function InitialState() {
     ClearProductInputs();
-    GetProductsManage(setProducts);
-    GetProductsManage(setOriginalProductsList);
+    const resultProducts = await GetProductsManage();
+    setProducts(resultProducts);
+    setOriginalProductsList(resultProducts);
   }
   //#endregion
 
@@ -1075,8 +1120,11 @@ function ProductManager() {
           CloseModal();
           ShowSaveButton();
           InitialState();
-          await GetProductsManage(setProducts);
-          await GetProductsManage(setOriginalProductsList);
+
+          const resultProducts = await GetProductsManage();
+          setProducts(resultProducts);
+          setOriginalProductsList(resultProducts);
+
           setTitle("Detalles de Productos");
           setQuery("");
           document.getElementById("clear-filter").style.display = "none";
@@ -1173,7 +1221,8 @@ function ProductManager() {
 
         // InitialState();
         ClearProductInputs();
-        await GetProductsManage(setProducts);
+        const resultProducts = await GetProductsManage();
+        setProducts(resultProducts);
 
         setProducts((prevProducts) => {
           setOriginalProductsList(prevProducts);
@@ -1190,7 +1239,6 @@ function ProductManager() {
             document.getElementById("clear-filter2").style.display = "flex";
             setFilterName(filterName);
             setFilterType("category");
-            ClearBold();
             setCurrentPage(1);
           }
 
@@ -1322,8 +1370,9 @@ function ProductManager() {
         ClearProductInputs();
         CloseModalQuitar();
         CloseModalAgregar();
-        GetProductsManage(setProducts);
-        GetProductsManage(setOriginalProductsList);
+        const resultProducts = await GetProductsManage();
+        setProducts(resultProducts);
+        setOriginalProductsList(resultProducts);
       } catch (error) {
         Swal.fire({
           title: error,
@@ -2384,6 +2433,19 @@ function ProductManager() {
                     <div className="collapse" id="collapseCategory">
                       <div className="card-collapse">
                         {categories.map((category, index) => {
+                          const handleClick = () => {
+                            if (!category.isActive) {
+                              filterResultCategory(category.nombre);
+                              setCategories((prevState) =>
+                                prevState.map((cat) =>
+                                  cat.nombre === category.nombre
+                                    ? { ...cat, isActive: true }
+                                    : { ...cat, isActive: false }
+                                )
+                              );
+                            }
+                          };
+
                           return (
                             <p
                               key={index}
@@ -2391,18 +2453,11 @@ function ProductManager() {
                               className={`items-collapse ${
                                 category.isActive ? "active" : ""
                               }`}
-                              onClick={() => {
-                                filterResultCategory(category.nombre);
-                                setCategories((prevState) =>
-                                  prevState.map((cat) =>
-                                    cat.nombre === category.nombre
-                                      ? { ...cat, isActive: !cat.isActive }
-                                      : cat.nombre !== category.nombre &&
-                                        cat.isActive
-                                      ? { ...cat, isActive: false }
-                                      : cat
-                                  )
-                                );
+                              onClick={handleClick}
+                              style={{
+                                cursor: category.isActive
+                                  ? "not-allowed"
+                                  : "pointer",
                               }}
                             >
                               {category.nombre}
@@ -2461,15 +2516,14 @@ function ProductManager() {
               <div className="pagination-count3">
                 <div className="search-container">
                   <div className="form-group-input-search2">
-                    <span className="input-group-text3">
-                      <Lupa className="input-group-svg" />
+                    <span className="input-group-text3" onClick={search}>
+                      <Lupa className="input-group-svg lupa-catalogo" />
                     </span>
                     <input
                       className="search-input2"
                       type="text"
-                      value={query}
-                      onChange={(e) => setQuery(e.target.value)}
-                      onKeyUp={search}
+                      value={searchValue}
+                      onChange={(e) => setSearchValue(e.target.value)}
                       placeholder="Buscar..."
                     />
                   </div>
@@ -2503,18 +2557,20 @@ function ProductManager() {
                 </button>
               </div>
 
-              <div className="header-excel">
-                <button
-                  onClick={onDownload}
-                  type="button"
-                  className="btn btn-success btn-excel"
-                >
-                  <div className="btn-add-content">
-                    <Excel className="excel" />
-                    <p className="p-add">Descargar</p>
-                  </div>
-                </button>
-              </div>
+              {products.length > 0 && (
+                <div className="header-excel">
+                  <button
+                    onClick={onDownload}
+                    type="button"
+                    className="btn btn-success btn-excel"
+                  >
+                    <div className="btn-add-content">
+                      <Excel className="excel" />
+                      <p className="p-add">Descargar</p>
+                    </div>
+                  </button>
+                </div>
+              )}
             </div>
           )}
 
@@ -3405,93 +3461,95 @@ function ProductManager() {
             )}
           </table>
 
-          <div className="pagination-count-container2">
-            <div className="pagination-count">
-              {products.length > 0 ? (
-                products.length === 1 ? (
-                  <p className="total">
-                    Producto {firstIndex + 1} de {products.length}
-                  </p>
+          {isLoading === false && (
+            <div className="pagination-count-container2">
+              <div className="pagination-count">
+                {products.length > 0 ? (
+                  products.length === 1 ? (
+                    <p className="total">
+                      Producto {firstIndex + 1} de {products.length}
+                    </p>
+                  ) : (
+                    <p className="total">
+                      Productos {firstIndex + 1} a{" "}
+                      {productsTable.length + firstIndex} de {products.length}
+                    </p>
+                  )
                 ) : (
-                  <p className="total">
-                    Productos {firstIndex + 1} a{" "}
-                    {productsTable.length + firstIndex} de {products.length}
-                  </p>
-                )
+                  <></>
+                )}
+              </div>
+
+              {products.length > 0 ? (
+                <ul className="pagination-manager">
+                  <li className="page-item">
+                    <div className="page-link" onClick={prePage}>
+                      {"<"}
+                    </div>
+                  </li>
+
+                  <li className="numbers">
+                    {numbers.map((n, i) => {
+                      if (n === currentPage) {
+                        return (
+                          <ul className="page-item-container" key={i}>
+                            <li className="page-item active" key={i}>
+                              <div className="page-link">{n}</div>
+                            </li>
+                          </ul>
+                        );
+                      } else if (
+                        n === 1 ||
+                        n === npage ||
+                        (n >= currentPage - maxPageNumbersToShow &&
+                          n <= currentPage + maxPageNumbersToShow)
+                      ) {
+                        return (
+                          <ul className="page-item-container" key={i}>
+                            <li className="page-item" key={i}>
+                              <div
+                                className="page-link"
+                                onClick={() => changeCPage(n)}
+                              >
+                                {n}
+                              </div>
+                            </li>
+                          </ul>
+                        );
+                      } else if (
+                        (n === currentPage - maxPageNumbersToShow - 1 &&
+                          currentPage - maxPageNumbersToShow >
+                            minPageNumbersToShow) ||
+                        (n === currentPage + maxPageNumbersToShow + 1 &&
+                          currentPage + maxPageNumbersToShow <
+                            npage - minPageNumbersToShow)
+                      ) {
+                        return (
+                          <ul className="page-item-container" key={i}>
+                            <li className="page-item" key={i}>
+                              <div className="page-link">...</div>
+                            </li>
+                          </ul>
+                        );
+                      } else {
+                        return null;
+                      }
+                    })}
+                  </li>
+
+                  <li className="page-item">
+                    <div className="page-link" onClick={nextPage}>
+                      {">"}
+                    </div>
+                  </li>
+                </ul>
               ) : (
                 <></>
               )}
+
+              <div className="pagination-count"></div>
             </div>
-
-            {products.length > 0 ? (
-              <ul className="pagination-manager">
-                <li className="page-item">
-                  <div className="page-link" onClick={prePage}>
-                    {"<"}
-                  </div>
-                </li>
-
-                <li className="numbers">
-                  {numbers.map((n, i) => {
-                    if (n === currentPage) {
-                      return (
-                        <ul className="page-item-container" key={i}>
-                          <li className="page-item active" key={i}>
-                            <div className="page-link">{n}</div>
-                          </li>
-                        </ul>
-                      );
-                    } else if (
-                      n === 1 ||
-                      n === npage ||
-                      (n >= currentPage - maxPageNumbersToShow &&
-                        n <= currentPage + maxPageNumbersToShow)
-                    ) {
-                      return (
-                        <ul className="page-item-container" key={i}>
-                          <li className="page-item" key={i}>
-                            <div
-                              className="page-link"
-                              onClick={() => changeCPage(n)}
-                            >
-                              {n}
-                            </div>
-                          </li>
-                        </ul>
-                      );
-                    } else if (
-                      (n === currentPage - maxPageNumbersToShow - 1 &&
-                        currentPage - maxPageNumbersToShow >
-                          minPageNumbersToShow) ||
-                      (n === currentPage + maxPageNumbersToShow + 1 &&
-                        currentPage + maxPageNumbersToShow <
-                          npage - minPageNumbersToShow)
-                    ) {
-                      return (
-                        <ul className="page-item-container" key={i}>
-                          <li className="page-item" key={i}>
-                            <div className="page-link">...</div>
-                          </li>
-                        </ul>
-                      );
-                    } else {
-                      return null;
-                    }
-                  })}
-                </li>
-
-                <li className="page-item">
-                  <div className="page-link" onClick={nextPage}>
-                    {">"}
-                  </div>
-                </li>
-              </ul>
-            ) : (
-              <></>
-            )}
-
-            <div className="pagination-count"></div>
-          </div>
+          )}
         </div>
       </section>
     </div>

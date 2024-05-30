@@ -1,25 +1,28 @@
 import axios from "axios";
 
-//#region Función para obtener los productos para la lista administrativa
-async function GetProductsManage(state) {
+//#region Función para obtener los productos para la lista administrativa con filtros opcionales de Query, Category y Hidden
+async function GetProductsManage(Query = null, Category = null, Hidden = null) {
   const token = localStorage.getItem("token"); // Obtener el token almacenado en el localStorage
   const headers = {
     Authorization: `Bearer ${token}`, // Agregar el encabezado Authorization con el valor del token
   };
 
-  const result = await axios.get("https://localhost:7207/producto/manage", {
-    headers,
-  });
-  const productos = result.data.productos || [];
-  state(productos);
-}
-//#endregion
+  let url = "https://localhost:7207/producto/manage";
 
-//#region Función para obtener todos los productos
-async function GetProducts(state) {
-  const result = await axios.get("https://localhost:7207/producto");
+  // Agregar los parámetros de los filtros opcionales a la URL si están presentes
+  if (Query !== null) {
+    url += `?Query=${Query}`;
+  }
+  if (Category !== null) {
+    url += `&Category=${Category}`;
+  }
+  if (Hidden !== null) {
+    url += `&Hidden=${Hidden}`;
+  }
+
+  const result = await axios.get(url, { headers });
   const productos = result.data.productos || [];
-  state(productos);
+  return productos;
 }
 //#endregion
 
@@ -108,7 +111,6 @@ const UploadImages = async (imageSelected) => {
 //#region Export
 export {
   GetProductsManage,
-  GetProducts,
   GetProductsByCategory,
   GetProductsByQuery,
   GetProductById,

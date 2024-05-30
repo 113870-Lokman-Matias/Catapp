@@ -1,6 +1,7 @@
 ﻿using API.Data;
 using API.Dtos.CategoriaDtos;
 using API.Dtos.ProductoDtos;
+using API.Models;
 using AutoMapper;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -22,7 +23,25 @@ namespace API.Services.ProductoServices.Queries.GetProductosManageQuery
     {
       try
       {
-        var productosManage = await _context.Productos
+        IQueryable<Producto> query = _context.Productos;
+
+        // Apply filters based on the request parameters
+        if (!string.IsNullOrEmpty(request.Query))
+        {
+          query = query.Where(x => x.Nombre.ToLower().Contains(request.Query.ToLower()) || x.Descripcion.ToLower().Contains(request.Query.ToLower()));
+        }
+
+        if (!string.IsNullOrEmpty(request.Category))
+        {
+          query = query.Where(x => x.IdCategoriaNavigation.Nombre == request.Category);
+        }
+
+        if (request.Hidden.HasValue)
+        {
+          query = query.Where(x => x.Ocultar == request.Hidden.Value);
+        }
+
+        var productosManage = await query
             .Select(x => new ProductoManageDto
             {
               IdProducto = x.IdProducto,

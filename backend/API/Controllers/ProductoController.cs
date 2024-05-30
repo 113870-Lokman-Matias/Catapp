@@ -6,7 +6,6 @@ using API.Dtos.ProductoDtos;
 using API.Services.ProductoServices.Queries.GetProductosByCategoryQuery;
 using API.Services.ProductoServices.Queries.GetProductosByQueryQuery;
 using API.Services.ProductoServices.Queries.GetProductoByIdQuery;
-using API.Services.ProductoServices.Queries.GetProductosQuery;
 using API.Services.ProductoServices.Commands.CreateProductoCommand;
 using API.Services.ProductoServices.Commands.UpdateProductoCommand;
 using API.Services.ProductoServices.Commands.DeleteProductoCommand;
@@ -33,11 +32,13 @@ public class ProductoController : ControllerBase
   [HttpGet]
   [Route("manage")]
   [Authorize(Roles = "SuperAdmin, Supervisor, Vendedor")]
-  public Task<ListaProductosManageDto> GetProductosManage()
+  public async Task<ListaProductosManageDto> GetProductosManage(string? Query = null, string? Category = null, bool? Hidden = null)
   {
-    var productosManage = _mediator.Send(new GetProductosManageQuery());
+    var query = new GetProductosManageQuery(Query, Category, Hidden);
+    var productosManage = await _mediator.Send(query);
     return productosManage;
   }
+
 
   [HttpGet("categoria/{category}")]
   public Task<ListaProductosDto> GetProductosByCategory(string category)
@@ -51,13 +52,6 @@ public class ProductoController : ControllerBase
   {
     var productosByQuery = _mediator.Send(new GetProductosByQueryQuery(query));
     return productosByQuery;
-  }
-
-  [HttpGet]
-  public Task<ListaProductosDto> GetProductos()
-  {
-    var productos = _mediator.Send(new GetProductosQuery());
-    return productos;
   }
 
   [HttpGet("{id}")]
