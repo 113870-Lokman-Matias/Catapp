@@ -11,6 +11,7 @@ using API.Services.ProductoServices.Commands.CreateProductoCommand;
 using API.Services.ProductoServices.Commands.UpdateProductoCommand;
 using API.Services.ProductoServices.Commands.DeleteProductoCommand;
 using API.Services.ProductoServices.Commands.UpdateStockProductoCommand;
+using Microsoft.AspNetCore.SignalR;
 
 namespace API.Controllers;
 
@@ -20,9 +21,12 @@ public class ProductoController : ControllerBase
 {
   private readonly IMediator _mediator;
 
-  public ProductoController(IMediator mediator)
+  private readonly IHubContext<GeneralHub> _hubContext;
+
+  public ProductoController(IMediator mediator, IHubContext<GeneralHub> hubContext)
   {
     _mediator = mediator;
+    _hubContext = hubContext;
   }
 
 
@@ -70,6 +74,9 @@ public class ProductoController : ControllerBase
   public async Task<ProductoDto> CreateProducto(CreateProductoCommand command)
   {
     var productoCreado = await _mediator.Send(command);
+
+    await _hubContext.Clients.All.SendAsync("MensajeCrudProducto", "Se ha creado un nuevo producto");
+
     return productoCreado;
   }
 
@@ -80,6 +87,9 @@ public class ProductoController : ControllerBase
   {
     command.IdProducto = id;
     var productoActualizado = await _mediator.Send(command);
+
+    await _hubContext.Clients.All.SendAsync("MensajeCrudProducto", "Se ha actualizado un producto existente");
+
     return productoActualizado;
   }
 
@@ -90,6 +100,9 @@ public class ProductoController : ControllerBase
   {
     command.IdProducto = id;
     var productoConStockActualizado = await _mediator.Send(command);
+
+    await _hubContext.Clients.All.SendAsync("MensajeCrudProducto", "Se ha actualizado el stock de un producto existente");
+
     return productoConStockActualizado;
   }
 
@@ -98,6 +111,9 @@ public class ProductoController : ControllerBase
   public async Task<ProductoDto> DeleteProducto(int id)
   {
     var productoEliminado = await _mediator.Send(new DeleteProductoCommand { IdProducto = id });
+
+    await _hubContext.Clients.All.SendAsync("MensajeCrudProducto", "Se ha eliminado un producto existente");
+
     return productoEliminado;
   }
 

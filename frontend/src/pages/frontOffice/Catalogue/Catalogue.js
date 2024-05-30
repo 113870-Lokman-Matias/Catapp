@@ -34,6 +34,7 @@ const Catalogue = () => {
   const [categories, setCategories] = useState([]);
   const [categorySign, setCategorySign] = useState({});
   const [categoryProducts, setCategoryProducts] = useState({});
+  const [openCategories, setOpenCategories] = useState([]);
 
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingProductByCategory, setIsLoadingProductByCategory] =
@@ -82,22 +83,61 @@ const Catalogue = () => {
       }
     });
 
-    // connection.on("MensajeCrudProducto", async () => {
-    //   try {
-    //      GetCategories(setCategories);
-    //   } catch (error) {
-    //     console.error("Error al obtener los productos: " + error);
-    //   }
-    // });
+    connection.on("MensajeCrudProducto", async () => {
+      try {
+        if (query !== "") {
+          const products = await GetProductsByQuery(query);
+          setProducts(products);
+        } else {
+          // Iterar sobre las categorías abiertas en openCategories
+          for (const category of openCategories) {
+            let products;
+
+            try {
+              products = await GetProductsByCategory(category);
+            } catch (error) {
+              console.log(
+                "Error al obtener productos para la categoría",
+                category,
+                error
+              );
+            } finally {
+              setIsLoadingProductByCategory(false);
+            }
+
+            // Actualizar los productos para la categoría en categoryProducts
+            setCategoryProducts((prevProducts) => ({
+              ...prevProducts,
+              [category]: products,
+            }));
+          }
+        }
+      } catch (error) {
+        console.error("Error al obtener los productos: " + error);
+      }
+    });
 
     return () => {
       connection.stop();
     };
-  }, []);
+  }, [openCategories, query]);
+  //#endregion
+
+  //#region Función para quitar los signos "-" de las categorias que quedaron abiertas cuando se ejecuta la función de search()
+  const closeAllCategories = () => {
+    const updatedSigns = {};
+    for (const index in categorySign) {
+      updatedSigns[index] = "+";
+    }
+    setCategorySign(updatedSigns);
+    setOpenCategories([]);
+  };
   //#endregion
 
   //#region Funcion para filtrar los productos por query
   const search = async () => {
+    closeAllCategories();
+
     if (searchValue === "") {
       Swal.fire({
         icon: "warning",
@@ -146,12 +186,24 @@ const Catalogue = () => {
       [index]: prevSigns[index] === "-" ? "+" : "-",
     }));
 
+    const category = categories[index].nombre;
+
+    // Verificamos si la categoría está abierta
     if (categorySign[index] === "-") {
+      // La categoría está cerrada, la eliminamos de openCategories
+      setOpenCategories((prevOpenCategories) =>
+        prevOpenCategories.filter((cat) => cat !== category)
+      );
       setIsLoadingProductByCategory(false);
       return; // No hacer la petición de productos
     }
 
-    const category = categories[index].nombre;
+    // La categoría está abierta, la agregamos a openCategories
+    setOpenCategories((prevOpenCategories) => [
+      ...prevOpenCategories,
+      category,
+    ]);
+
     let products;
 
     try {

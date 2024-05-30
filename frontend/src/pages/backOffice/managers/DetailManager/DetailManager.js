@@ -180,13 +180,13 @@ function DetailManager() {
       }
     });
 
-    //  connection.on("MensajeActualizacionProducto", async () => {
-    //   try {
-    //     fetchProduct();
-    //   } catch (error) {
-    //     console.error("Error al obtener los productos: " + error);
-    //   }
-    // });
+    connection.on("MensajeCrudProducto", async () => {
+      try {
+        fetchProduct();
+      } catch (error) {
+        console.error("Error al obtener el producto: " + error);
+      }
+    });
 
     connection.on("MensajeCrudPedido", async () => {
       try {

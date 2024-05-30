@@ -39,8 +39,8 @@ public class GeneralHub : Hub
     }
 
     // Mensaje de Producto
-    // public async Task EnviarMensajeCrudProducto(string mensaje)
-    // {
-    //     await Clients.All.SendAsync("MensajeCrudProducto", mensaje);
-    // }
+    public async Task EnviarMensajeCrudProducto(string mensaje)
+    {
+        await Clients.All.SendAsync("MensajeCrudProducto", mensaje);
+    }
 }
