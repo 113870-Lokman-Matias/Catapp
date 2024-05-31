@@ -31,11 +31,13 @@ public class PedidoController : ControllerBase
 
   [HttpGet]
   [Authorize(Roles = "SuperAdmin, Supervisor, Vendedor")]
-  public Task<ListaPedidosDto> GetPedidos()
+  public async Task<ListaPedidosDto> GetPedidos(string? Type = null, bool? Status = null)
   {
-    var pedidos = _mediator.Send(new GetPedidosQuery());
+    var query = new GetPedidosQuery(Type, Status);
+    var pedidos = await _mediator.Send(query);
     return pedidos;
   }
+
 
   [HttpGet("{fechaDesde}/{fechaHasta}")]
   [Authorize(Roles = "SuperAdmin, Gerente")]

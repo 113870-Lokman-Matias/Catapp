@@ -3,7 +3,5 @@ using MediatR;
 
 namespace API.Services.PedidoServices.Queries.GetPedidosQuery
 {
-  public class GetPedidosQuery : IRequest<ListaPedidosDto>
-  {
-  }
+  public record GetPedidosQuery(string? Type = null, bool? Status = null) : IRequest<ListaPedidosDto>;
 }

@@ -2557,7 +2557,7 @@ function ProductManager() {
                 </button>
               </div>
 
-              {products.length > 0 && (
+              {products.length > 0 && isLoading === false &&  (
                 <div className="header-excel">
                   <button
                     onClick={onDownload}

@@ -1,15 +1,25 @@
 import axios from "axios";
 
-//#region Función para obtener los pedidos para la lista administrativa
-async function GetOrders(state) {
+//#region Función para obtener los pedidos para la lista administrativa con filtros opcionales de Type y Pending
+async function GetOrders(Type = null, Status = null) {
   const token = localStorage.getItem("token"); // Obtener el token almacenado en el localStorage
   const headers = {
     Authorization: `Bearer ${token}`, // Agregar el encabezado Authorization con el valor del token
   };
 
-  const result = await axios.get("https://localhost:7207/pedido", { headers });
+  let url = "https://localhost:7207/pedido";
+
+  // Agregar los parámetros de los filtros opcionales a la URL si están presentes
+  if (Type !== null) {
+    url += `?Type=${Type}`;
+  }
+  if (Status !== null) {
+    url += `&Status=${Status}`;
+  }
+
+  const result = await axios.get(url, { headers });
   const pedidos = result.data.pedidos || [];
-  state(pedidos);
+  return pedidos;
 }
 //#endregion
 

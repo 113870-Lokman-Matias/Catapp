@@ -1,5 +1,6 @@
 ﻿using API.Data;
 using API.Dtos.PedidoDtos;
+using API.Models;
 using AutoMapper;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -21,7 +22,20 @@ namespace API.Services.PedidoServices.Queries.GetPedidosQuery
     {
       try
       {
-        var pedidos = await _context.Pedidos
+        IQueryable<Pedido> query = _context.Pedidos;
+
+        // Apply filters based on the request parameters
+        if (!string.IsNullOrEmpty(request.Type))
+        {
+          query = query.Where(x => x.IdTipoPedidoNavigation.Nombre == request.Type);
+        }
+
+        if (request.Status.HasValue)
+        {
+          query = query.Where(x => x.Verificado == request.Status.Value);
+        }
+
+        var pedidos = await query
             .Include(x => x.IdMetodoEntregaNavigation) // Incluir la relación de método de entrega
             .Include(x => x.IdTipoPedidoNavigation) // Incluir la relación de tipo de pedido
             .Include(x => x.IdVendedorNavigation) // Incluir la relación de vendedor

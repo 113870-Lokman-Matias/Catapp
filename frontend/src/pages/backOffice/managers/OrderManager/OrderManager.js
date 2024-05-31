@@ -115,11 +115,11 @@ function OrderManager() {
       setIsLoading(true);
 
       try {
-        await Promise.all([
-          GetOrders(setOrders),
-          GetOrders(setOriginalOrdersList),
-          GetUsersSellers(setListaNombresVendedores),
-        ]);
+        const resultOrders = await GetOrders();
+        setOrders(resultOrders);
+        setOriginalOrdersList(resultOrders);
+
+        await GetUsersSellers(setListaNombresVendedores);
 
         const response = await GetInfoEnvio();
         setCostoEnvioDomicilio(response.precio);
@@ -177,15 +177,6 @@ function OrderManager() {
         // console.log("Conexión establecida con el servidor SignalR");
       })
       .catch((err) => console.error(err.toString()));
-
-    connection.on("MensajeCrudPedido", async () => {
-      try {
-        GetOrders(setOrders);
-        GetOrders(setOriginalOrdersList);
-      } catch (error) {
-        console.error("Error al obtener el costo de envío: " + error);
-      }
-    });
 
     connection.on("MensajeUpdateCostoEnvio", async () => {
       try {
@@ -257,7 +248,8 @@ function OrderManager() {
             timer: 2000,
           });
 
-          await GetOrders(setOriginalOrdersList);
+          const resultOrders = await GetOrders();
+          setOriginalOrdersList(resultOrders);
 
           if (filterType === "search") {
             const orderData = await GetOrderById(query);
@@ -283,7 +275,8 @@ function OrderManager() {
               setTitle("Detalles de Pedidos");
             }
           } else {
-            await GetOrders(setOrders);
+            const resultOrders = await GetOrders();
+            setOrders(resultOrders);
 
             setOrders((prevOrders) => {
               setOriginalOrdersList(prevOrders);
@@ -296,7 +289,6 @@ function OrderManager() {
                 setTitle(`Detalles de Pedidos de ${filterName}`);
                 setOrders(result);
                 setQuery("");
-                setSelectedQuery("");
                 document.getElementById("clear-filter").style.display = "flex";
                 document.getElementById("clear-filter2").style.display = "flex";
                 setFilterName(filterName);
@@ -312,7 +304,6 @@ function OrderManager() {
                 setTitle("Detalles de Pedidos pendientes");
                 setOrders(result);
                 setQuery("");
-                setSelectedQuery("");
                 document.getElementById("clear-filter").style.display = "flex";
                 document.getElementById("clear-filter2").style.display = "flex";
                 setFilterName("Pendiente");
@@ -364,6 +355,7 @@ function OrderManager() {
             },
             headers
           );
+
           Swal.fire({
             icon: "success",
             title: "Estado del pedido actualizado exitosamente!",
@@ -371,7 +363,8 @@ function OrderManager() {
             timer: 2000,
           });
 
-          await GetOrders(setOriginalOrdersList);
+          const resultOrders = await GetOrders();
+          setOriginalOrdersList(resultOrders);
 
           if (filterType === "search") {
             const fetchOrderData = async () => {
@@ -408,7 +401,8 @@ function OrderManager() {
 
             fetchOrderData();
           } else {
-            await GetOrders(setOrders);
+            const resultOrders = await GetOrders();
+            setOrders(resultOrders);
 
             setOrders((prevOrders) => {
               setOriginalOrdersList(prevOrders);
@@ -421,7 +415,6 @@ function OrderManager() {
                 setTitle(`Detalles de Pedidos de ${filterName}`);
                 setOrders(result);
                 setQuery("");
-                setSelectedQuery("");
                 document.getElementById("clear-filter").style.display = "flex";
                 document.getElementById("clear-filter2").style.display = "flex";
                 setFilterName(filterName);
@@ -437,7 +430,6 @@ function OrderManager() {
                 setTitle("Detalles de Pedidos pendientes");
                 setOrders(result);
                 setQuery("");
-                setSelectedQuery("");
                 document.getElementById("clear-filter").style.display = "flex";
                 document.getElementById("clear-filter2").style.display = "flex";
                 setFilterName("Pendiente");
@@ -478,7 +470,6 @@ function OrderManager() {
     setOrders(originalOrdersList); // trae la lista de pedidos original, sin ningun filtro
     setTipo("");
     setQuery("");
-    setSelectedQuery("");
     setFilterName("");
     setFilterType("");
     setTitle("Detalles de Pedidos");
@@ -487,124 +478,141 @@ function OrderManager() {
     setCurrentPage(1);
     ClearPending();
     window.scrollTo(0, 0);
+
+    if (query !== "") {
+      setSelectedQuery("");
+    }
   };
   //#endregion
 
   //#region Función para filtrar pedidos por tipo de pedido
-  const filterResultType = (type) => {
-    // Hacer una copia de la lista original
-    const originalOrdersCopy = [...originalOrdersList];
+  const filterResultType = async (type) => {
+    setIsLoading(true);
 
-    // Aplicar el filtro sobre la copia
-    const result = originalOrdersCopy.filter((order) => order.tipo === type);
+    try {
+      const ordersData = await GetOrders(type);
+      setOrders(ordersData);
 
-    setTitle(`Detalles de Pedidos ${type}`);
-    setOrders(result);
-    setQuery("");
-    setSelectedQuery("");
-    document.getElementById("clear-filter").style.display = "flex";
-    document.getElementById("clear-filter2").style.display = "flex";
-    setFilterName(type);
-    setFilterType("type");
-    setCurrentPage(1);
-    ClearPending();
-    window.scrollTo(0, 0);
+      setTitle(`Detalles de Pedidos ${type}`);
+      setQuery("");
+      document.getElementById("clear-filter").style.display = "flex";
+      document.getElementById("clear-filter2").style.display = "flex";
+      setFilterName(type);
+      setFilterType("type");
+      setCurrentPage(1);
+      ClearPending();
+      window.scrollTo(0, 0);
+
+      setIsLoading(false);
+    } catch {
+      setIsLoading(false);
+    }
   };
   //#endregion
 
   //#region Función para filtrar pedidos por estado pendiente
-  const filterResultPending = (pending) => {
-    if (pending === false) {
-      // Hacer una copia de la lista original
-      const originalOrdersCopy = [...originalOrdersList];
+  const filterResultPending = async (pending) => {
+    setIsLoading(true);
+    try {
+      if (pending === false) {
+        const ordersData = await GetOrders("", pending);
+        setOrders(ordersData);
+        // Hacer una copia de la lista original
 
-      // Aplicar el filtro sobre la copia
-      const result = originalOrdersCopy.filter((order) => !order.verificado);
+        setTitle("Detalles de Pedidos pendientes");
+        setQuery("");
+        document.getElementById("clear-filter").style.display = "flex";
+        document.getElementById("clear-filter2").style.display = "flex";
+        setFilterName("Pendiente");
+        setFilterType("pending");
+        setCurrentPage(1);
+        window.scrollTo(0, 0);
+        setTipo("");
+      } else {
+        ClearFilter();
+      }
 
-      setTitle("Detalles de Pedidos pendientes");
-      setOrders(result);
-      setQuery("");
-      setSelectedQuery("");
-      document.getElementById("clear-filter").style.display = "flex";
-      document.getElementById("clear-filter2").style.display = "flex";
-      setFilterName("Pendiente");
-      setFilterType("pending");
-      setCurrentPage(1);
-      window.scrollTo(0, 0);
-      setTipo("");
-    } else {
-      ClearFilter();
+      setIsLoading(false);
+    } catch {
+      setIsLoading(false);
     }
   };
   //#endregion
 
   //#region Función para filtrar pedido mediante una consulta personalizada por su ID
   const search = async () => {
-    setSelectedQuery(query);
+    setIsLoading(true);
 
     // setOrders(originalOrdersList);
-
-    if (query === "") {
-      Swal.fire({
-        icon: "warning",
-        title: "Consulta vacía",
-        text: "Ingrese un ID para realizar la búsqueda.",
-        confirmButtonText: "Aceptar",
-        showCancelButton: false,
-        confirmButtonColor: "#f8bb86",
-      });
-    } else if (query === selectedQuery) {
-      Swal.fire({
-        icon: "warning",
-        title: "ID de pedido no cambiado",
-        text: "El ID de pedido es el mismo que el de la última consulta. Intente con un ID diferente.",
-        confirmButtonText: "Aceptar",
-        showCancelButton: false,
-        confirmButtonColor: "#f8bb86",
-      });
-    } else {
-      try {
-        const orderData = await GetOrderById(query);
-        setOrders([orderData]);
-
-        document.getElementById("clear-filter").style.display = "flex";
-        document.getElementById("clear-filter2").style.display = "flex";
-        setTitle(`Detalle de Pedido con ID: "${query}"`);
-        setFilterName(query);
-        setFilterType("search");
-        ClearPending();
-        setCurrentPage(1);
-        window.scrollTo(0, 0);
-        if (query === "") {
-          document.getElementById("clear-filter").style.display = "none";
-          document.getElementById("clear-filter2").style.display = "none";
-          setFilterType("");
-          setTitle("Detalles de Pedidos");
-          window.scrollTo(0, 0);
-        }
-      } catch (error) {
+    try {
+      if (selectedQuery === "") {
         Swal.fire({
           icon: "warning",
-          title: "Pedido no encontrado",
-          text: "No se encontró ningún pedido con el ID: " + query,
+          title: "Consulta vacía",
+          text: "Ingrese un ID para realizar la búsqueda.",
           confirmButtonText: "Aceptar",
           showCancelButton: false,
           confirmButtonColor: "#f8bb86",
         });
+      } else if (selectedQuery === query) {
+        Swal.fire({
+          icon: "warning",
+          title: "ID de pedido no cambiado",
+          text: "El ID de pedido es el mismo que el de la última consulta. Intente con un ID diferente.",
+          confirmButtonText: "Aceptar",
+          showCancelButton: false,
+          confirmButtonColor: "#f8bb86",
+        });
+      } else {
+        setQuery(selectedQuery);
 
-        setOrders(originalOrdersList); // trae la lista de pedidos original, sin ningun filtro
-        setTipo("");
-        setFilterName("");
-        setFilterType("");
-        setTitle("Detalles de Pedidos");
-        document.getElementById("clear-filter").style.display = "none";
-        document.getElementById("clear-filter2").style.display = "none"; // esconde del DOM el boton de limpiar filtros
-        setCurrentPage(1);
-        ClearPending();
-        window.scrollTo(0, 0);
+        try {
+          const orderData = await GetOrderById(selectedQuery);
+          setOrders([orderData]);
 
-        console.error("Error al obtener el pedido:", error);
+          document.getElementById("clear-filter").style.display = "flex";
+          document.getElementById("clear-filter2").style.display = "flex";
+          setTitle(`Detalle de Pedido con ID: "${selectedQuery}"`);
+          setFilterName(selectedQuery);
+          setFilterType("search");
+          ClearPending();
+          setCurrentPage(1);
+          window.scrollTo(0, 0);
+          if (selectedQuery === "") {
+            document.getElementById("clear-filter").style.display = "none";
+            document.getElementById("clear-filter2").style.display = "none";
+            setFilterType("");
+            setTitle("Detalles de Pedidos");
+            window.scrollTo(0, 0);
+          }
+        } catch (error) {
+          Swal.fire({
+            icon: "warning",
+            title: "Pedido no encontrado",
+            text: "No se encontró ningún pedido con el ID: " + selectedQuery,
+            confirmButtonText: "Aceptar",
+            showCancelButton: false,
+            confirmButtonColor: "#f8bb86",
+          });
+
+          setOrders(originalOrdersList); // trae la lista de pedidos original, sin ningun filtro
+          setTipo("");
+          setFilterName("");
+          setFilterType("");
+          setTitle("Detalles de Pedidos");
+          document.getElementById("clear-filter").style.display = "none";
+          document.getElementById("clear-filter2").style.display = "none"; // esconde del DOM el boton de limpiar filtros
+          setCurrentPage(1);
+          ClearPending();
+          window.scrollTo(0, 0);
+
+          console.error("Error al obtener el pedido:", error);
+        }
       }
+
+      setIsLoading(false);
+    } catch {
+      setIsLoading(false);
     }
   };
   //#endregion
@@ -686,10 +694,12 @@ function OrderManager() {
   //#endregion
 
   //#region Función para volver el formulario a su estado inicial, borrando los valores de los inputs, cargando los selects y refrezcando la lista de pedidos
-  function InitialState() {
+  async function InitialState() {
     ClearOrderInputs();
-    GetOrders(setOrders);
-    GetOrders(setOriginalOrdersList);
+
+    const resultOrders = await GetOrders();
+    setOrders(resultOrders);
+    setOriginalOrdersList(resultOrders);
   }
   //#endregion
 
@@ -815,7 +825,8 @@ function OrderManager() {
           timer: 2000,
         });
 
-        await GetOrders(setOriginalOrdersList);
+        const resultOrders = await GetOrders();
+        setOriginalOrdersList(resultOrders);
 
         CloseModal();
 
@@ -845,7 +856,8 @@ function OrderManager() {
             setTitle("Detalles de Pedidos");
           }
         } else {
-          await GetOrders(setOrders);
+          const resultOrders = await GetOrders();
+          setOrders(resultOrders);
 
           setOrders((prevOrders) => {
             setOriginalOrdersList(prevOrders);
@@ -858,7 +870,6 @@ function OrderManager() {
               setTitle(`Detalles de Pedidos de ${filterName}`);
               setOrders(result);
               setQuery("");
-              setSelectedQuery("");
               document.getElementById("clear-filter").style.display = "flex";
               document.getElementById("clear-filter2").style.display = "flex";
               setFilterName(filterName);
@@ -874,7 +885,6 @@ function OrderManager() {
               setTitle("Detalles de Pedidos pendientes");
               setOrders(result);
               setQuery("");
-              setSelectedQuery("");
               document.getElementById("clear-filter").style.display = "flex";
               document.getElementById("clear-filter2").style.display = "flex";
               setFilterName("Pendiente");
@@ -946,7 +956,11 @@ function OrderManager() {
                 <button
                   type="button"
                   className="btn btn-warning btn-orders"
-                  title="Ver pedidos pendientes"
+                  title={`Ver ${
+                    cantidadPedidosPendientes === 1
+                      ? "pedido pendiente"
+                      : "pedidos pendientes"
+                  }`}
                   onClick={() => {
                     Swal.fire({
                       title: `Hay ${cantidadPedidosPendientes} ${
@@ -1331,8 +1345,8 @@ function OrderManager() {
                     <input
                       className="search-input2"
                       type="text"
-                      value={query}
-                      onChange={(e) => setQuery(e.target.value)}
+                      value={selectedQuery}
+                      onChange={(e) => setSelectedQuery(e.target.value)}
                       placeholder="Buscar por ID..."
                     />
                   </div>
@@ -1366,18 +1380,20 @@ function OrderManager() {
                 </button>
               </div>
 
-              <div className="header-excel">
-                <button
-                  onClick={onDownload}
-                  type="button"
-                  className="btn btn-success btn-excel"
-                >
-                  <div className="btn-add-content">
-                    <Excel className="excel" />
-                    <p className="p-add">Descargar</p>
-                  </div>
-                </button>
-              </div>
+              {orders.length > 0 && isLoading === false && (
+                <div className="header-excel">
+                  <button
+                    onClick={onDownload}
+                    type="button"
+                    className="btn btn-success btn-excel"
+                  >
+                    <div className="btn-add-content">
+                      <Excel className="excel" />
+                      <p className="p-add">Descargar</p>
+                    </div>
+                  </button>
+                </div>
+              )}
             </div>
           )}
 
@@ -1681,93 +1697,95 @@ function OrderManager() {
             )}
           </table>
 
-          <div className="pagination-count-container2">
-            <div className="pagination-count">
-              {orders.length > 0 ? (
-                orders.length === 1 ? (
-                  <p className="total">
-                    Pedido {firstIndex + 1} de {orders.length}
-                  </p>
+          {isLoading === false && (
+            <div className="pagination-count-container2">
+              <div className="pagination-count">
+                {orders.length > 0 ? (
+                  orders.length === 1 ? (
+                    <p className="total">
+                      Pedido {firstIndex + 1} de {orders.length}
+                    </p>
+                  ) : (
+                    <p className="total">
+                      Pedidos {firstIndex + 1} a{" "}
+                      {ordersTable.length + firstIndex} de {orders.length}
+                    </p>
+                  )
                 ) : (
-                  <p className="total">
-                    Pedidos {firstIndex + 1} a {ordersTable.length + firstIndex}{" "}
-                    de {orders.length}
-                  </p>
-                )
+                  <></>
+                )}
+              </div>
+
+              {orders.length > 0 ? (
+                <ul className="pagination-manager">
+                  <li className="page-item">
+                    <div className="page-link" onClick={prePage}>
+                      {"<"}
+                    </div>
+                  </li>
+
+                  <li className="numbers">
+                    {numbers.map((n, i) => {
+                      if (n === currentPage) {
+                        return (
+                          <ul className="page-item-container" key={i}>
+                            <li className="page-item active" key={i}>
+                              <div className="page-link">{n}</div>
+                            </li>
+                          </ul>
+                        );
+                      } else if (
+                        n === 1 ||
+                        n === npage ||
+                        (n >= currentPage - maxPageNumbersToShow &&
+                          n <= currentPage + maxPageNumbersToShow)
+                      ) {
+                        return (
+                          <ul className="page-item-container" key={i}>
+                            <li className="page-item" key={i}>
+                              <div
+                                className="page-link"
+                                onClick={() => changeCPage(n)}
+                              >
+                                {n}
+                              </div>
+                            </li>
+                          </ul>
+                        );
+                      } else if (
+                        (n === currentPage - maxPageNumbersToShow - 1 &&
+                          currentPage - maxPageNumbersToShow >
+                            minPageNumbersToShow) ||
+                        (n === currentPage + maxPageNumbersToShow + 1 &&
+                          currentPage + maxPageNumbersToShow <
+                            npage - minPageNumbersToShow)
+                      ) {
+                        return (
+                          <ul className="page-item-container" key={i}>
+                            <li className="page-item" key={i}>
+                              <div className="page-link">...</div>
+                            </li>
+                          </ul>
+                        );
+                      } else {
+                        return null;
+                      }
+                    })}
+                  </li>
+
+                  <li className="page-item">
+                    <div className="page-link" onClick={nextPage}>
+                      {">"}
+                    </div>
+                  </li>
+                </ul>
               ) : (
                 <></>
               )}
+
+              <div className="pagination-count"></div>
             </div>
-
-            {orders.length > 0 ? (
-              <ul className="pagination-manager">
-                <li className="page-item">
-                  <div className="page-link" onClick={prePage}>
-                    {"<"}
-                  </div>
-                </li>
-
-                <li className="numbers">
-                  {numbers.map((n, i) => {
-                    if (n === currentPage) {
-                      return (
-                        <ul className="page-item-container" key={i}>
-                          <li className="page-item active" key={i}>
-                            <div className="page-link">{n}</div>
-                          </li>
-                        </ul>
-                      );
-                    } else if (
-                      n === 1 ||
-                      n === npage ||
-                      (n >= currentPage - maxPageNumbersToShow &&
-                        n <= currentPage + maxPageNumbersToShow)
-                    ) {
-                      return (
-                        <ul className="page-item-container" key={i}>
-                          <li className="page-item" key={i}>
-                            <div
-                              className="page-link"
-                              onClick={() => changeCPage(n)}
-                            >
-                              {n}
-                            </div>
-                          </li>
-                        </ul>
-                      );
-                    } else if (
-                      (n === currentPage - maxPageNumbersToShow - 1 &&
-                        currentPage - maxPageNumbersToShow >
-                          minPageNumbersToShow) ||
-                      (n === currentPage + maxPageNumbersToShow + 1 &&
-                        currentPage + maxPageNumbersToShow <
-                          npage - minPageNumbersToShow)
-                    ) {
-                      return (
-                        <ul className="page-item-container" key={i}>
-                          <li className="page-item" key={i}>
-                            <div className="page-link">...</div>
-                          </li>
-                        </ul>
-                      );
-                    } else {
-                      return null;
-                    }
-                  })}
-                </li>
-
-                <li className="page-item">
-                  <div className="page-link" onClick={nextPage}>
-                    {">"}
-                  </div>
-                </li>
-              </ul>
-            ) : (
-              <></>
-            )}
-
-            <div className="pagination-count"></div>
-          </div>
+          )}
         </div>
       </section>
     </div>
