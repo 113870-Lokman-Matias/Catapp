@@ -28,6 +28,7 @@ import Loader from "../../../../components/Loaders/LoaderCircle";
 
 import { GetVerifiedOrdersByDate } from "../../../../services/OrderService";
 import { GetUsersByRole } from "../../../../services/UserService";
+import { GetPaymentTypes } from "../../../../services/PaymentTypeService";
 import { formatDate } from "../../../../utils/DateFormat";
 
 function OrderReports() {
@@ -129,9 +130,11 @@ function OrderReports() {
   const [filtroAbonoSeleccionado, setFiltroAbonoSeleccionado] = useState("");
 
   const [isLoadingVendedores, setIsLoadingVendedores] = useState(true);
+  const [isLoadingAbonos, setIsLoadingAbonos] = useState(true);
   //#endregion
 
   const [listaVendedores, setListaVendedores] = useState({});
+  const [listaAbonos, setListaAbonos] = useState({});
 
   const [orders, setOrders] = useState([]);
 
@@ -195,9 +198,14 @@ function OrderReports() {
         const responseVendedores = await GetUsersByRole("Vendedor");
         setListaVendedores(responseVendedores);
         setIsLoadingVendedores(false);
+
+        const responseAbonos = await GetPaymentTypes();
+        setListaAbonos(responseAbonos);
+        setIsLoadingAbonos(false);
       } catch (error) {
         console.error("Hubo un error al obtener los vendedores:", error);
         setIsLoadingVendedores(false);
+        setIsLoadingAbonos(false);
       }
     };
 
@@ -251,6 +259,17 @@ function OrderReports() {
         setIsLoadingVendedores(false);
       } catch (error) {
         console.error("Error al obtener los vendedores: " + error);
+      }
+    });
+
+    connection.on("MensajeCrudMetodoPago", async () => {
+      setIsLoadingAbonos(true);
+      try {
+        const responseAbonos = await GetPaymentTypes();
+        setListaAbonos(responseAbonos);
+        setIsLoadingAbonos(false);
+      } catch (error) {
+        console.error("Error al obtener los medios de pago: " + error);
       }
     });
 
@@ -993,6 +1012,13 @@ function OrderReports() {
 
             {showFilters === true && (
               <div className="pagination-count-filter-date">
+                {isLoadingAbonos === true && (
+                  <div className="loading-sellers-div">
+                    <Loader />
+                    <p className="bold-loading">Cargando abonos...</p>
+                  </div>
+                )}
+
                 <p className="p-filter-date">Entrega:</p>
                 <div className="form-group-input nombre-input filter-report-div">
                   <select
@@ -1037,7 +1063,7 @@ function OrderReports() {
                   )}
                 </div>
 
-                <p className="p-filter-date">Abono:</p>
+                <p className="p-filter-date">Medio de pago:</p>
                 <div className="form-group-input nombre-input filter-report-div">
                   <select
                     className="input2"
@@ -1048,39 +1074,27 @@ function OrderReports() {
                     value={selectedAbono}
                     onChange={(e) => {
                       setSelectedAbono(e.target.value); // Asignar el tipo de abono seleccionado a selectedAbono
-                      const abonoNombre =
-                        e.target.value === "1"
-                          ? "Efectivo"
-                          : e.target.value === "2"
-                          ? "Transferencia"
-                          : e.target.value === "3"
-                          ? "Tarjeta de débito"
-                          : e.target.value === "4"
-                          ? "Tarjeta de crédito"
-                          : e.target.value === "5"
-                          ? "Mercado Pago"
-                          : ""; // Asignar el nombre del tipo de abono seleccionado
-                      setNombreSelectedAbono(abonoNombre); // Asignar el nombre del tipo de abono seleccionado a nombreSelectedAbono
+                      const selectedOption = listaAbonos.find(
+                        (opt) => opt.idMetodoPago === parseInt(e.target.value)
+                      ); // Encontrar la opción seleccionada en la lista de abonos
+                      setNombreSelectedAbono(
+                        selectedOption ? selectedOption.nombre : "-"
+                      ); // Asignar el nombre del vendedor seleccionado a nombreSelectedVendedor
                     }}
                   >
                     <option hidden key={0} value="">
-                      Seleccione un tipo de abono
+                      Seleccione un medio de pago
                     </option>
-                    <option className="btn-option" value="1">
-                      Efectivo
-                    </option>
-                    <option className="btn-option" value="2">
-                      Transferencia
-                    </option>
-                    <option className="btn-option" value="3">
-                      Tarjeta de débito
-                    </option>
-                    <option className="btn-option" value="4">
-                      Tarjeta de crédito
-                    </option>
-                    <option className="btn-option" value="5">
-                      Mercado Pago
-                    </option>
+                    {listaAbonos &&
+                      Array.from(listaAbonos).map((opts, i) => (
+                        <option
+                          className="btn-option"
+                          key={i}
+                          value={opts.idMetodoPago}
+                        >
+                          {opts.nombre}
+                        </option>
+                      ))}
                   </select>
                   {selectedAbono !== "" && (
                     <button
@@ -1655,7 +1669,7 @@ function OrderReports() {
                     Total
                   </th>
                   <th className="table-title table-title-orders" scope="col">
-                    Abono
+                    Medio de pago
                   </th>
                   <th className="table-title table-title-orders" scope="col">
                     Detalle
@@ -1788,7 +1802,7 @@ function OrderReports() {
                 <th scope="col">Subtotal</th>
                 <th scope="col">Costo de envio</th>
                 <th scope="col">Total</th>
-                <th scope="col">Abono</th>
+                <th scope="col">Medio de pago</th>
                 <th scope="col">Detalle</th>
                 <th scope="col">Fecha</th>
                 <th scope="col">Status</th>

@@ -48,6 +48,10 @@ using API.Services.PedidoServices.Commands.DeletePedidoCommand;
 
 using API.Services.PagoServices.Commands.CreatePagoCommand;
 
+using API.Services.MetodoPagoServices.Commands.CreateMetodoPagoCommand;
+using API.Services.MetodoPagoServices.Commands.UpdateMetodoPagoCommand;
+using API.Services.MetodoPagoServices.Commands.DeleteMetodoPagoCommand;
+
 using MercadoPago.Config;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -145,6 +149,11 @@ builder.Services.AddScoped<IValidator<DeletePedidoCommand>, DeletePedidoCommandV
 
 // Validacion para el servicio de Pago
 builder.Services.AddScoped<IValidator<CreatePagoCommand>, CreatePagoCommandValidator>();
+
+// Validaciones para los servicios de Metodos de pago
+builder.Services.AddScoped<IValidator<CreateMetodoPagoCommand>, CreateMetodoPagoCommandValidator>();
+builder.Services.AddScoped<IValidator<UpdateMetodoPagoCommand>, UpdateMetodoPagoCommandValidator>();
+builder.Services.AddScoped<IValidator<DeleteMetodoPagoCommand>, DeleteMetodoPagoCommandValidator>();
 
 builder.Services.AddControllers();
 

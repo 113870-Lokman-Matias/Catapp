@@ -14,6 +14,7 @@ import { ReactComponent as Categories } from "../../../assets/svgs/category.svg"
 import { ReactComponent as Orders } from "../../../assets/svgs/orders.svg";
 import { ReactComponent as Seller } from "../../../assets/svgs/seller.svg";
 import { ReactComponent as Shipment } from "../../../assets/svgs/shipment.svg";
+import { ReactComponent as Payment } from "../../../assets/svgs/paymentInput.svg";
 import { ReactComponent as Dolar } from "../../../assets/svgs/dolar.svg";
 import { ReactComponent as Logout } from "../../../assets/svgs/logout.svg";
 import { ReactComponent as Statistic } from "../../../assets/svgs/statistic.svg";
@@ -452,12 +453,25 @@ function AdminPanel() {
                   <p className="category-title">Dólar</p>
                 </Link>
               )}
+
+              {(rolUsuario === "Supervisor" || rolUsuario === "SuperAdmin") && (
+                <Link
+                  to="/administrar-medios-pago"
+                  className="btn btn-dark category-btn"
+                >
+                  <Payment className="category-svg" />
+                  <p className="category-title">Medios de pago</p>
+                </Link>
+              )}
             </div>
           </div>
 
           <div className="social-media">
             <div className="faqs-terms-container">
-              <Link to="/terminos-y-condiciones" aria-label="Términos y condiciones">
+              <Link
+                to="/terminos-y-condiciones"
+                aria-label="Términos y condiciones"
+              >
                 <Terms className="faqs-term-svg" />
               </Link>
               <Link to="/terminos-y-condiciones" className="term-faq-title">
@@ -465,7 +479,10 @@ function AdminPanel() {
               </Link>
             </div>
             <div className="faqs-terms-container">
-              <Link to="/preguntas-frecuentes" aria-label="Preguntas frecuentes"> 
+              <Link
+                to="/preguntas-frecuentes"
+                aria-label="Preguntas frecuentes"
+              >
                 <Faqs className="faqs-term-svg" />
               </Link>
               <Link to="/preguntas-frecuentes" className="term-faq-title">

@@ -35,8 +35,9 @@ import {
   DeleteOrders,
   UpdateOrdersVerified,
 } from "../../../../services/OrderService";
-import { GetUsersSellers } from "../../../../services/UserService";
+import { GetUsersByRole } from "../../../../services/UserService";
 import { GetInfoEnvio } from "../../../../services/ShipmentService";
+import { GetPaymentTypes } from "../../../../services/PaymentTypeService";
 import { formatDate } from "../../../../utils/DateFormat";
 
 function OrderManager() {
@@ -60,6 +61,8 @@ function OrderManager() {
   const [prevAbono, setPrevAbono] = useState("");
 
   const [listaNombresVendedores, setListaNombresVendedores] = useState(true);
+  const [listaNombresAbonos, setListaNombresAbonos] = useState(true);
+
   const [costoEnvioDomicilio, setCostoEnvioDomicilio] = useState("");
   const [habilitadoEnvioDomicilio, setHabilitadoEnvioDomicilio] = useState("");
 
@@ -119,7 +122,11 @@ function OrderManager() {
         setOrders(resultOrders);
         setOriginalOrdersList(resultOrders);
 
-        await GetUsersSellers(setListaNombresVendedores);
+        const responseSellers = await GetUsersByRole("Vendedor");
+        setListaNombresVendedores(responseSellers);
+
+        const responsePaymentTypes = await GetPaymentTypes();
+        setListaNombresAbonos(responsePaymentTypes);
 
         const response = await GetInfoEnvio();
         setCostoEnvioDomicilio(response.precio);
@@ -190,9 +197,19 @@ function OrderManager() {
 
     connection.on("MensajeCrudVendedor", async () => {
       try {
-        await GetUsersSellers(setListaNombresVendedores);
+        const responseSellers = await GetUsersByRole("Vendedor");
+        setListaNombresVendedores(responseSellers);
       } catch (error) {
         console.error("Error al obtener los vendedores: " + error);
+      }
+    });
+
+    connection.on("MensajeCrudMetodoPago", async () => {
+      try {
+        const responsePaymentTypes = await GetPaymentTypes();
+        setListaNombresAbonos(responsePaymentTypes);
+      } catch (error) {
+        console.error("Error al obtener los medios de pago: " + error);
       }
     });
 
@@ -658,18 +675,7 @@ function OrderManager() {
 
     setVendedor(getIdVendedor(order.vendedor));
     setCostoEnvio(order.costoEnvio);
-
-    if (order.abono === "Efectivo") {
-      setAbono(1);
-    } else if (order.abono === "Transferencia") {
-      setAbono(2);
-    } else if (order.abono === "Tarjeta de débito") {
-      setAbono(3);
-    } else if (order.abono === "Tarjeta de crédito") {
-      setAbono(4);
-    } else if (order.abono === "Mercado Pago") {
-      setAbono(5);
-    }
+    setAbono(getIdAbono(order.abono));
 
     if (order.entrega === "Lo retiro por el local") {
       setPrevEntrega(1);
@@ -678,18 +684,7 @@ function OrderManager() {
     }
     setPrevVendedor(getIdVendedor(order.vendedor));
     setPrevCostoEnvio(order.costoEnvio);
-
-    if (order.abono === "Efectivo") {
-      setPrevAbono(1);
-    } else if (order.abono === "Transferencia") {
-      setPrevAbono(2);
-    } else if (order.abono === "Tarjeta de débito") {
-      setPrevAbono(3);
-    } else if (order.abono === "Tarjeta de crédito") {
-      setPrevAbono(4);
-    } else if (order.abono === "Mercado Pago") {
-      setPrevAbono(5);
-    }
+    setPrevAbono(getIdAbono(order.abono));
   }
   //#endregion
 
@@ -932,6 +927,13 @@ function OrderManager() {
   };
   //#endregion
 
+  //#region Función para obtener el id del medio de pago de un pedido
+  const getIdAbono = (nombre) => {
+    const abono = listaNombresAbonos.find((a) => a.nombre === nombre);
+    return abono.idMetodoPago;
+  };
+  //#endregion
+
   //#region Return
   return (
     <div>
@@ -1090,6 +1092,7 @@ function OrderManager() {
                                     className="btn-option"
                                     key={i}
                                     value={opts.idUsuario}
+                                    disabled={!opts.activo}
                                   >
                                     {opts.nombre}
                                   </option>
@@ -1140,23 +1143,19 @@ function OrderManager() {
                             onChange={(e) => setAbono(e.target.value)}
                           >
                             <option hidden key={0} value="0">
-                              Seleccione una opción
+                              Seleccione un medio de pago
                             </option>
-                            <option className="btn-option" value="1">
-                              Efectivo
-                            </option>
-                            <option className="btn-option" value="2">
-                              Transferencia
-                            </option>
-                            <option className="btn-option" value="3">
-                              Tarjeta de débito
-                            </option>
-                            <option className="btn-option" value="4">
-                              Tarjeta de crédito
-                            </option>
-                            <option className="btn-option" value="5">
-                              Mercado Pago
-                            </option>
+                            {listaNombresAbonos &&
+                              Array.from(listaNombresAbonos).map((opts, i) => (
+                                <option
+                                  className="btn-option"
+                                  key={i}
+                                  value={opts.idMetodoPago}
+                                  disabled={!opts.habilitado}
+                                >
+                                  {opts.nombre}
+                                </option>
+                              ))}
                           </select>
                         </div>
                       </div>

@@ -43,4 +43,10 @@ public class GeneralHub : Hub
     {
         await Clients.All.SendAsync("MensajeCrudProducto", mensaje);
     }
+
+    // Mensaje de Metodo de pago
+    public async Task EnviarMensajeCrudMetodoPago(string mensaje)
+    {
+        await Clients.All.SendAsync("MensajeCrudMetodoPago", mensaje);
+    }
 }

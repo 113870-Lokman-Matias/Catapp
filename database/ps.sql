@@ -319,7 +319,9 @@ ALTER SEQUENCE public.metodos_entrega_id_metodo_entrega_seq OWNED BY public.meto
 
 CREATE TABLE public.metodos_pago (
     id_metodo_pago integer NOT NULL,
-    nombre text NOT NULL
+    nombre text NOT NULL,
+    habilitado boolean NOT NULL,
+    disponibilidad integer NOT NULL
 );
 
 
@@ -688,12 +690,12 @@ COPY public.metodos_entrega (id_metodo_entrega, nombre) FROM stdin;
 -- Data for Name: metodos_pago; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.metodos_pago (id_metodo_pago, nombre) FROM stdin;
-1	Efectivo
-2	Transferencia
-3	Tarjeta de débito
-4	Tarjeta de crédito
-5	Mercado Pago
+COPY public.metodos_pago (id_metodo_pago, nombre, habilitado, disponibilidad) FROM stdin;
+1	Efectivo	f	3
+2	Transferencia	f	3
+3	Tarjeta de débito	f	1
+4	Tarjeta de crédito	f	1
+5	Mercado Pago	f	3
 \.
 
 

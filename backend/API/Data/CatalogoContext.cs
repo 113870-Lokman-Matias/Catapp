@@ -207,6 +207,10 @@ namespace API.Data
                 entity.Property(e => e.IdMetodoPago).HasColumnName("id_metodo_pago");
 
                 entity.Property(e => e.Nombre).HasColumnName("nombre");
+
+                entity.Property(e => e.Habilitado).HasColumnName("habilitado");
+
+                entity.Property(e => e.Disponibilidad).HasColumnName("disponibilidad");
             });
 
             modelBuilder.Entity<Pedido>(entity =>

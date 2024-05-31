@@ -45,7 +45,14 @@ namespace API.Services.PedidoServices.Queries.GetPedidosByDateQuery
           // Aplicar filtros opcionales si se proporcionan en la consulta
           if (request.IdVendedor.HasValue)
           {
-            pedidosQuery = pedidosQuery.Where(x => x.IdVendedor == request.IdVendedor.Value);
+              if (request.IdVendedor.Value == -1)
+              {
+                  pedidosQuery = pedidosQuery.Where(x => x.IdVendedor == null);
+              }
+              else
+              {
+                  pedidosQuery = pedidosQuery.Where(x => x.IdVendedor == request.IdVendedor.Value);
+              }
           }
 
           if (request.IdTipoPedido.HasValue)

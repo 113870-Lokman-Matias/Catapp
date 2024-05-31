@@ -28,6 +28,7 @@ import ProductManager from "./pages/backOffice/managers/ProductManager/ProductMa
 import DetailManager from "./pages/backOffice/managers/DetailManager/DetailManager";
 import ShipmentManager from "./pages/backOffice/managers/ShipmentManager/ShipmentManager";
 import OrderManager from "./pages/backOffice/managers/OrderManager/OrderManager";
+import PaymentTypeManager from "./pages/backOffice/managers/PaymentTypeManager/PaymentTypeManager";
 
 import OrderStatistics from "./pages/backOffice/statistics/StatisticsOptions";
 import OrderReports from "./pages/backOffice/statistics/OrderReports/OrderReports";
@@ -58,19 +59,126 @@ function App() {
           <Route path="terminos-y-condiciones" element={<TermsConditions />} />
           <Route path="preguntas-frecuentes" element={<Faqs />} />
 
-          <Route path="administrar-usuarios" element={<RoleProtectedRoute allowedRoles={['SuperAdmin']}><UserManager /></RoleProtectedRoute>} />
-          <Route path="administrar-gerentes" element={<RoleProtectedRoute allowedRoles={['Admin']}><UserManager /></RoleProtectedRoute>} />
-          <Route path="administrar-supervisores" element={<RoleProtectedRoute allowedRoles={['Gerente']}><UserManager /></RoleProtectedRoute>} />
-          <Route path="administrar-vendedores" element={<RoleProtectedRoute allowedRoles={['Supervisor']}><UserManager /></RoleProtectedRoute>} />
-          <Route path="administrar-categorias" element={<RoleProtectedRoute allowedRoles={['SuperAdmin', 'Admin', 'Supervisor', 'Vendedor']}><CategoryManager /></RoleProtectedRoute>} />
-          <Route path="administrar-cotizacion" element={<RoleProtectedRoute allowedRoles={['Supervisor', 'SuperAdmin']}><DollarManager /></RoleProtectedRoute>} />
-          <Route path="administrar-productos" element={<RoleProtectedRoute allowedRoles={['SuperAdmin', 'Admin', 'Supervisor', 'Vendedor']}><ProductManager /></RoleProtectedRoute>} />
-          <Route path="detalles/:id" element={<RoleProtectedRoute allowedRoles={['SuperAdmin', 'Admin', 'Supervisor', 'Vendedor']}><DetailManager /></RoleProtectedRoute>} />
-          <Route path="administrar-envio" element={<RoleProtectedRoute allowedRoles={['Supervisor', 'SuperAdmin']}><ShipmentManager /></RoleProtectedRoute>} />
-          <Route path="administrar-pedidos" element={<RoleProtectedRoute allowedRoles={['SuperAdmin', 'Admin', 'Supervisor', 'Vendedor']}><OrderManager /></RoleProtectedRoute>} />
-          <Route path="estadisticas-pedidos" element={<RoleProtectedRoute allowedRoles={['Gerente', 'SuperAdmin']}><OrderStatistics /></RoleProtectedRoute>} />
-          <Route path="reportes-pedidos" element={<RoleProtectedRoute allowedRoles={['Gerente', 'SuperAdmin']}><OrderReports /></RoleProtectedRoute>} />
-          <Route path="graficos-pedidos" element={<RoleProtectedRoute allowedRoles={['Gerente', 'SuperAdmin']}><OrderGraphics /></RoleProtectedRoute>} />
+          <Route
+            path="administrar-usuarios"
+            element={
+              <RoleProtectedRoute allowedRoles={["SuperAdmin"]}>
+                <UserManager />
+              </RoleProtectedRoute>
+            }
+          />
+          <Route
+            path="administrar-gerentes"
+            element={
+              <RoleProtectedRoute allowedRoles={["Admin"]}>
+                <UserManager />
+              </RoleProtectedRoute>
+            }
+          />
+          <Route
+            path="administrar-supervisores"
+            element={
+              <RoleProtectedRoute allowedRoles={["Gerente"]}>
+                <UserManager />
+              </RoleProtectedRoute>
+            }
+          />
+          <Route
+            path="administrar-vendedores"
+            element={
+              <RoleProtectedRoute allowedRoles={["Supervisor"]}>
+                <UserManager />
+              </RoleProtectedRoute>
+            }
+          />
+          <Route
+            path="administrar-categorias"
+            element={
+              <RoleProtectedRoute
+                allowedRoles={["SuperAdmin", "Admin", "Supervisor", "Vendedor"]}
+              >
+                <CategoryManager />
+              </RoleProtectedRoute>
+            }
+          />
+          <Route
+            path="administrar-cotizacion"
+            element={
+              <RoleProtectedRoute allowedRoles={["Supervisor", "SuperAdmin"]}>
+                <DollarManager />
+              </RoleProtectedRoute>
+            }
+          />
+          <Route
+            path="administrar-productos"
+            element={
+              <RoleProtectedRoute
+                allowedRoles={["SuperAdmin", "Admin", "Supervisor", "Vendedor"]}
+              >
+                <ProductManager />
+              </RoleProtectedRoute>
+            }
+          />
+          <Route
+            path="detalles/:id"
+            element={
+              <RoleProtectedRoute
+                allowedRoles={["SuperAdmin", "Admin", "Supervisor", "Vendedor"]}
+              >
+                <DetailManager />
+              </RoleProtectedRoute>
+            }
+          />
+          <Route
+            path="administrar-envio"
+            element={
+              <RoleProtectedRoute allowedRoles={["Supervisor", "SuperAdmin"]}>
+                <ShipmentManager />
+              </RoleProtectedRoute>
+            }
+          />
+          <Route
+            path="administrar-medios-pago"
+            element={
+              <RoleProtectedRoute allowedRoles={["Supervisor", "SuperAdmin"]}>
+                <PaymentTypeManager />
+              </RoleProtectedRoute>
+            }
+          />
+          <Route
+            path="administrar-pedidos"
+            element={
+              <RoleProtectedRoute
+                allowedRoles={["SuperAdmin", "Admin", "Supervisor", "Vendedor"]}
+              >
+                <OrderManager />
+              </RoleProtectedRoute>
+            }
+          />
+          <Route
+            path="estadisticas-pedidos"
+            element={
+              <RoleProtectedRoute allowedRoles={["Gerente", "SuperAdmin"]}>
+                <OrderStatistics />
+              </RoleProtectedRoute>
+            }
+          />
+          <Route
+            path="reportes-pedidos"
+            element={
+              <RoleProtectedRoute allowedRoles={["Gerente", "SuperAdmin"]}>
+                <OrderReports />
+              </RoleProtectedRoute>
+            }
+          />
+          <Route
+            path="graficos-pedidos"
+            element={
+              <RoleProtectedRoute allowedRoles={["Gerente", "SuperAdmin"]}>
+                <OrderGraphics />
+              </RoleProtectedRoute>
+            }
+          />
         </Route>
 
         <Route path="*" element={<NotFound />} />

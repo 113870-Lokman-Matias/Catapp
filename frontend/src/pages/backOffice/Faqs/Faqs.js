@@ -13,6 +13,7 @@ import Categorias from "../../../assets/images/categorias.png";
 import Dolar from "../../../assets/images/dolar.png";
 import Productos from "../../../assets/images/productos.png";
 import Envio from "../../../assets/images/envio.png";
+import Abonos from "../../../assets/images/abonos.png";
 import Usuarios from "../../../assets/images/usuarios.png";
 import Estadisticas from "../../../assets/images/estadisticas.png";
 import Buscador from "../../../assets/images/buscadorPedido.png";
@@ -139,11 +140,12 @@ function Faqs() {
                     />
                     <li>
                       <span className="ref-nohover">
-                        Establecer Costo de Envío
+                        Ofrecer Envío a domicilio
                       </span>
-                      : Si aplicas cargos por envíos a domicilio, configura el
-                      costo de envío en la plataforma para que se refleje de
-                      manera clara en los pedidos.
+                      : Si ofreces envíos a domicilio, configura el costo de
+                      envío en la plataforma para que se refleje de manera clara
+                      en los pedidos. En caso contrario, puedes deshabilitar
+                      esta opción.
                     </li>
                     <img
                       className="img"
@@ -151,6 +153,22 @@ function Faqs() {
                       src={Envio}
                       alt="Gestion de envios"
                     />
+
+                    <li>
+                      <span className="ref-nohover">Crear Medios de Pago</span>:
+                      Establece los medios de pago que los futuros clientes
+                      podrán seleccionar durante el proceso de compra. Esta
+                      configuración te permite ofrecer una variedad de opciones
+                      de pago, incluyendo la posibilidad de crear nuevos medios
+                      según sea necesario.
+                    </li>
+                    <img
+                      className="img"
+                      width={150}
+                      src={Abonos}
+                      alt="Gestion de medios de pago"
+                    />
+
                     <li>
                       <span className="ref-nohover">
                         Crear Usuarios de Tipo Vendedor
@@ -166,6 +184,7 @@ function Faqs() {
                       src={Usuarios}
                       alt="Gestion de usuarios"
                     />
+
                     <li>
                       <span className="ref-nohover">Gestión de Pedidos</span>:
                       Cuando un cliente genera un pedido, Catapp actualiza
@@ -374,8 +393,9 @@ function Faqs() {
                 <div className="answer">
                   <p>
                     Únicamente se pueden exportar datos a Excel en las gestiones
-                    de productos, detalles de stock, pedidos y reportes. Para hacerlo, haz clic en el botón
-                    verde que dice "Descargar" en la parte superior derecha.
+                    de productos, detalles de stock, pedidos y reportes. Para
+                    hacerlo, haz clic en el botón verde que dice "Descargar" en
+                    la parte superior derecha.
                   </p>
                   <img
                     className="img"

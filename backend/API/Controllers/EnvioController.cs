@@ -1,5 +1,4 @@
 ﻿using API.Dtos.EnvioDto;
-using API.Services.CategoriaServices.Commands.UpdateCategoriaCommand;
 using API.Services.EnvioServices.Commands.UpdateEnvioCommand;
 using API.Services.EnvioServices.Queries.GetEnvioQuery;
 using MediatR;

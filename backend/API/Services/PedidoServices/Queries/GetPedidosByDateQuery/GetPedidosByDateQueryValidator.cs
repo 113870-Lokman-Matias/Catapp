@@ -26,7 +26,8 @@ namespace API.Services.PedidoServices.Queries.GetPedidosByDateQuery
             {
               RuleFor(p => p.IdVendedor)
                   .Must(id => _context.Usuarios.Any(v => v.IdUsuario == id))
-                  .WithMessage("El ID del vendedor especificado no es válido");
+                  .WithMessage("El ID del vendedor especificado no es válido")
+                  .Unless(p => p.IdVendedor == -1);
             });
 
       When(p => p.IdTipoPedido.HasValue, () =>
