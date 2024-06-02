@@ -1,6 +1,7 @@
 ﻿using API.Dtos.DetallePedidoDto;
 using API.Dtos.PedidoDtos;
 using MediatR;
+using System.Text.Json.Serialization;
 
 namespace API.Services.PedidoServices.Commands.CreatePedidoCommand
 {
@@ -14,6 +15,8 @@ namespace API.Services.PedidoServices.Commands.CreatePedidoCommand
     // Tambien requeridos para el pedido
     public string? Direccion { get; set; }
     public string? EntreCalles { get; set; }
+
+    [JsonIgnore]
     public string? PaymentId { get; set; }
 
     // 2. campos requeridos para crear el pedido

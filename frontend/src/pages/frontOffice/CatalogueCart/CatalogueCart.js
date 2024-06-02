@@ -1086,7 +1086,6 @@ const CatalogueCart = () => {
         telefono: telefono,
         direccion: `${direccion.charAt(0).toUpperCase() + direccion.slice(1)}`,
         entreCalles: `${calles.charAt(0).toUpperCase() + calles.slice(1)}`,
-        paymentId: "",
         costoEnvio:
           envio == 2 && costoEnvioDomicilio > 0 ? costoEnvioDomicilio : 0,
         idTipoPedido: clientType === "Minorista" ? 1 : 2,
