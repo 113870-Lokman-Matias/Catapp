@@ -82,7 +82,7 @@ public class PedidoController : ControllerBase
   {
     var pedidoCreado = await _mediator.Send(command);
 
-    await _hubContext.Clients.All.SendAsync("MensajeCrudPedido", "Se ha creado un nuevo pedido");
+    await _hubContext.Clients.All.SendAsync("MensajeCreatePedido", "Se ha creado un nuevo pedido");
 
     return pedidoCreado;
   }
@@ -105,7 +105,7 @@ public class PedidoController : ControllerBase
     command.IdPedido = id;
     var peridoVerificadoActualizado = await _mediator.Send(command);
 
-    await _hubContext.Clients.All.SendAsync("MensajeCrudPedido", "Se ha actualizado el estado de un pedido existente");
+    await _hubContext.Clients.All.SendAsync("MensajeUpdateDeletePedido", "Se ha actualizado el estado de un pedido existente");
 
     return peridoVerificadoActualizado;
   }
@@ -117,7 +117,7 @@ public class PedidoController : ControllerBase
   {
     var pedidoEliminado = await _mediator.Send(new DeletePedidoCommand { IdPedido = id });
 
-    await _hubContext.Clients.All.SendAsync("MensajeCrudPedido", "Se ha eliminado un pedido existente");
+    await _hubContext.Clients.All.SendAsync("MensajeUpdateDeletePedido", "Se ha eliminado un pedido existente");
 
     return pedidoEliminado;
   }

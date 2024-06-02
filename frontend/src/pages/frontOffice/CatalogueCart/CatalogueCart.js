@@ -463,7 +463,16 @@ const CatalogueCart = () => {
         allowOutsideClick: false,
       });
 
-      handleSubmitPedidoAprobado();
+      const isMayorista = pathname.includes("mayorista");
+
+      const storedCartKey = isMayorista
+        ? "shoppingCartMayorista"
+        : "shoppingCartMinorista";
+      const storedCart = localStorage.getItem(storedCartKey);
+
+      if (storedCart) {
+        handleSubmitPedidoAprobado();
+      }
     }
   }, [pedidoAprobado]);
   //#endregion

@@ -188,7 +188,16 @@ function DetailManager() {
       }
     });
 
-    connection.on("MensajeCrudPedido", async () => {
+    connection.on("MensajeUpdateDeletePedido", async () => {
+      try {
+        fetchDetails();
+        fetchProduct();
+      } catch (error) {
+        console.error("Error al obtener la cotización: " + error);
+      }
+    });
+
+    connection.on("MensajeCreatePedido", async () => {
       try {
         fetchDetails();
         fetchProduct();

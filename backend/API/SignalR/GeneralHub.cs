@@ -32,10 +32,15 @@ public class GeneralHub : Hub
         await Clients.All.SendAsync("MensajeCreateDetalleStock", mensaje);
     }
 
-    // Mensaje de Pedido
-    public async Task EnviarMensajeCrudPedido(string mensaje)
+    // Mensajes de Pedidos
+    public async Task EnviarMensajeCreatePedido(string mensaje)
     {
-        await Clients.All.SendAsync("MensajeCrudPedido", mensaje);
+        await Clients.All.SendAsync("MensajeCreatePedido", mensaje);
+    }
+
+    public async Task EnviarMensajeUpdateDeletePedido(string mensaje)
+    {
+        await Clients.All.SendAsync("MensajeUpdateDeletePedido", mensaje);
     }
 
     // Mensaje de Producto

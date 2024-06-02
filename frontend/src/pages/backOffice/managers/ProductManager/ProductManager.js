@@ -262,7 +262,17 @@ function ProductManager() {
       }
     });
 
-    connection.on("MensajeCrudPedido", async () => {
+    connection.on("MensajeUpdateDeletePedido", async () => {
+      try {
+        const resultProducts = await GetProductsManage();
+        setProducts(resultProducts);
+        setOriginalProductsList(resultProducts);
+      } catch (error) {
+        console.error("Error al obtener la cotización: " + error);
+      }
+    });
+
+    connection.on("MensajeCreatePedido", async () => {
       try {
         const resultProducts = await GetProductsManage();
         setProducts(resultProducts);

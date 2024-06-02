@@ -99,7 +99,7 @@ public class PagoController : ControllerBase
 
           // Enviar el comando para crear el pedido
           var pedidoCreado = await _mediator.Send(createPedidoCommand);
-          await _hubContext.Clients.All.SendAsync("MensajeCrudPedido", "Se ha creado un nuevo pedido");
+          await _hubContext.Clients.All.SendAsync("MensajeCreatePedido", "Se ha creado un nuevo pedido");
 
           if (pedidoCreado.IsSuccess)
           {

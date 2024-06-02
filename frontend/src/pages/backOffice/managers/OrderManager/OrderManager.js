@@ -204,7 +204,7 @@ function OrderManager() {
       }
     });
 
-    connection.on("MensajeCrudPedido", async () => {
+    connection.on("MensajeCreatePedido", async () => {
       try {
         const resultOrders = await GetOrders();
         setOrders(resultOrders);
