@@ -113,7 +113,7 @@ const CatalogueCart = () => {
 
   //#region UseEffect
   useEffect(() => {
-    initMercadoPago("APP_USR-13e9d0f8-62f0-47f4-9e93-74dbc93351e3", {
+    initMercadoPago(`${process.env.REACT_APP_MERCADOPAGO_PUBLIC_KEY}`, {
       locale: "es-AR",
     });
   }, []);
