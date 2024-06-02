@@ -16,6 +16,7 @@ namespace API.Models
         public bool Verificado { get; set; }
         public string? Direccion { get; set; }
         public string? EntreCalles { get; set; }
+        public string? PaymentId { get; set; }
         public int IdTipoPedido { get; set; }
         public int? IdVendedor { get; set; }
         public int IdMetodoPago { get; set; }

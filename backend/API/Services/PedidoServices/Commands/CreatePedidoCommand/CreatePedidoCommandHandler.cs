@@ -136,6 +136,7 @@ namespace API.Services.PedidoServices.Commands.CreatePedidoCommand
 
             pedidoToCreate.Direccion = request.Direccion;
             pedidoToCreate.EntreCalles = request.EntreCalles;
+            pedidoToCreate.PaymentId = request.PaymentId;
 
             pedidoToCreate.IdCliente = cliente.IdCliente;
 

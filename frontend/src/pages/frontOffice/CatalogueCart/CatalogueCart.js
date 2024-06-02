@@ -18,10 +18,7 @@ import {
   GetProductsByCategory,
   GetProductsByQuery,
 } from "../../../services/ProductService";
-import {
-  PayWithMercadoPago,
-  GetPaymentInfo,
-} from "../../../services/PaymentService";
+import { PayWithMercadoPago } from "../../../services/PaymentService";
 
 import { initMercadoPago, Wallet } from "@mercadopago/sdk-react";
 
@@ -413,7 +410,7 @@ const CatalogueCart = () => {
           );
           setTotalQuantity(totalQuantitySum);
         }
-      } else if (paymentId) {
+      } else if (paymentId && collectionStatus === "approved") {
         await GetUsersSellers(setListaNombresVendedores);
 
         const storedFormData = localStorage.getItem("userData");
@@ -446,15 +443,7 @@ const CatalogueCart = () => {
           setProductQuantities(productQuantities);
         }
 
-        GetPaymentInfo(paymentId)
-          .then((PaymentResponse) => {
-            if (PaymentResponse.status === "approved") {
-              setPedidoAprobado(true);
-            }
-          })
-          .catch((error) => {
-            console.error("Error al obtener la información de pago:", error);
-          });
+        setPedidoAprobado(true);
       }
     };
 
@@ -473,7 +462,8 @@ const CatalogueCart = () => {
         confirmButtonColor: "#a5dc86",
         allowOutsideClick: false,
       });
-      ClickBtnHandlePedidoAprobado();
+
+      handleSubmitPedidoAprobado();
     }
   }, [pedidoAprobado]);
   //#endregion
@@ -880,13 +870,59 @@ const CatalogueCart = () => {
       try {
         e.preventDefault();
 
+        const productosMp = Object.values(cart).map((producto) => {
+          let precio;
+
+          if (clientType === "Mayorista" && producto.precioMayorista > 0) {
+            precio = Math.ceil(producto.precioMayorista);
+          } else if (
+            clientType === "Minorista" &&
+            producto.precioMinorista > 0
+          ) {
+            precio = Math.ceil(producto.precioMinorista);
+          } else {
+            precio = Math.ceil(
+              Math.round(
+                ((producto.divisa === "Dólar"
+                  ? producto.precio * valorDolar
+                  : producto.precio) *
+                  (1 +
+                    (clientType === "Mayorista"
+                      ? producto.porcentajeMayorista
+                      : producto.porcentajeMinorista) /
+                      100)) /
+                  50
+              ) * 50
+            );
+          }
+
+          return {
+            IdProducto: producto.idProducto.toString(),
+            Nombre: producto.nombre,
+            Cantidad: producto.cantidad,
+            Precio: precio,
+            Aclaracion: producto.aclaraciones,
+          };
+        });
+
+        const clienteMp = {
+          nombreCompleto: nombre, // Reemplaza con el nombre real del cliente
+          dni: dni.toString(), // Reemplaza con el DNI real del cliente
+          telefono: telefono.toString(), // Reemplaza con el teléfono real del cliente
+          tipoCliente: clientType === "Minorista" ? 1 : 2, // 1 para minorista, 2 para mayorista
+          direccion: envio == 2 ? direccion : "",
+          entreCalles: envio == 2 ? calles : "",
+          idVendedor: vendedor,
+        };
+
         const response = await PayWithMercadoPago({
-          title: "Productos",
-          quantity: 1,
-          unitPrice: total,
           url: `http://localhost:3000/catalogo-${
             clientType === "Mayorista" ? "mayorista" : "minorista"
           }`,
+          productos: productosMp, // Enviar la lista de productos al backend
+          cliente: clienteMp,
+          costoEnvio:
+            envio == 2 && costoEnvioDomicilio > 0 ? costoEnvioDomicilio : 0,
         });
 
         if (response.preferenceId !== null) {
@@ -916,151 +952,98 @@ const CatalogueCart = () => {
   };
   //#endregion
 
-  function ClickBtnHandlePedidoAprobado() {
-    $(document).ready(function () {
-      $("#btn-handlepedido").click();
-    });
-  }
-
   const handleSubmitPedidoAprobado = async () => {
-    const detalles = Object.values(cart).map((producto) => {
-      return {
-        idProducto: producto.idProducto,
-        cantidad: productQuantities[producto.idProducto],
-        aclaracion: producto.aclaraciones,
-        precioUnitario:
-          clientType === "Mayorista" && producto.precioMayorista > 0
-            ? `${Math.ceil(producto.precioMayorista)}`
-            : clientType === "Minorista" && producto.precioMinorista > 0
-            ? `${Math.ceil(producto.precioMinorista)}`
-            : // producto.precioMayorista > 0
-              // ? `${Math.ceil(producto.precioMayorista)}`
-              `${Math.ceil(
-                Math.round(
-                  ((producto.divisa === "Dólar"
-                    ? producto.precio * valorDolar
-                    : producto.precio) *
-                    (1 +
-                      (clientType === "Mayorista"
-                        ? producto.porcentajeMayorista
-                        : producto.porcentajeMinorista) /
-                        100)) /
-                    50
-                ) * 50
-              )}`,
-      };
-    });
+    // Crear el mensaje con la información del pedido para Whatsapp
+    let mensaje = "```Datos del cliente:```\n\n";
 
-    const response = await SaveOrders({
-      nombreCompleto: `${nombre.charAt(0).toUpperCase() + nombre.slice(1)}`,
-      dni: dni,
-      telefono: telefono,
-      direccion: `${direccion.charAt(0).toUpperCase() + direccion.slice(1)}`,
-      entreCalles: `${calles.charAt(0).toUpperCase() + calles.slice(1)}`,
-      costoEnvio:
-        envio == 2 && costoEnvioDomicilio > 0 ? costoEnvioDomicilio : 0,
-      idTipoPedido: clientType === "Minorista" ? 1 : 2,
-      idVendedor: vendedor,
-      idMetodoPago: abono,
-      idMetodoEntrega: envio,
-      detalles: detalles, // Aquí se incluyen los detalles de los productos
-    });
+    mensaje += `*Nombre completo*:\n_${nombre}_\n\n`;
 
-    if (response.data.statusCode == 200) {
-      // Crear el mensaje con la información del pedido para Whatsapp
-      let mensaje = "```Datos del cliente:```\n\n";
+    mensaje += `*DNI*:\n_${dni}_\n\n`;
 
-      mensaje += `*Nombre completo*:\n_${nombre}_\n\n`;
+    mensaje += `*Entrega*:\n_${getTipoEnvio(envio)}_\n\n`;
 
-      mensaje += `*DNI*:\n_${dni}_\n\n`;
+    if (envio != 1) {
+      mensaje += `*Dirección*:\n_${direccion}_\n\n`;
+      mensaje += `*Entre calles*:\n_${calles}_\n\n`;
+    }
 
-      mensaje += `*Entrega*:\n_${getTipoEnvio(envio)}_\n\n`;
+    mensaje += `*Número de teléfono*:\n_${telefono}_\n\n`;
 
-      if (envio != 1) {
-        mensaje += `*Dirección*:\n_${direccion}_\n\n`;
-        mensaje += `*Entre calles*:\n_${calles}_\n\n`;
+    mensaje += `*Abona con*:\n_${getTipoAbono(abono)}_\n\n`;
+
+    mensaje += `*----------------------------------*\n\n`;
+    mensaje += "```Datos de la empresa:```\n\n";
+
+    if (envio == 1) {
+      mensaje += `*Dirección*:\n_${direccionAuto}_\n\n`;
+      mensaje += `*Horarios de atención:*\n_${horariosAtencion}_\n\n`;
+    }
+
+    mensaje += `*Número de teléfono*:\n_${telefonoEmpresa}_\n\n`;
+
+    if (abono == 2) {
+      mensaje += `*CBU*:\n_${cbu}_\n\n`;
+    }
+
+    mensaje += `*Vendedor*:\n_${getNombreVendedor(vendedor)}_\n\n`;
+
+    mensaje += `*----------------------------------*\n\n`;
+
+    mensaje +=
+      clientType === "Mayorista"
+        ? "```Pedido Mayorista:```\n\n"
+        : "```Pedido Minorista:```\n\n";
+
+    mensaje += `*Número de pedido*: ${"response.data.idPedido"}\n\n`;
+    for (const productId in cart) {
+      const product = cart[productId];
+      const quantity = productQuantities[product.idProducto];
+      mensaje += `*${quantity}* x *${product.nombre}*\n`;
+
+      if (productNotes[product.idProducto]) {
+        mensaje += `*Aclaración: ${productNotes[product.idProducto]}*\n`;
       }
 
-      mensaje += `*Número de teléfono*:\n_${telefono}_\n\n`;
-
-      mensaje += `*Abona con*:\n_${getTipoAbono(abono)}_\n\n`;
-
-      mensaje += `*----------------------------------*\n\n`;
-      mensaje += "```Datos de la empresa:```\n\n";
-
-      if (envio == 1) {
-        mensaje += `*Dirección*:\n_${direccionAuto}_\n\n`;
-        mensaje += `*Horarios de atención:*\n_${horariosAtencion}_\n\n`;
-      }
-
-      mensaje += `*Número de teléfono*:\n_${telefonoEmpresa}_\n\n`;
-
-      if (abono == 2) {
-        mensaje += `*CBU*:\n_${cbu}_\n\n`;
-      }
-
-      mensaje += `*Vendedor*:\n_${getNombreVendedor(vendedor)}_\n\n`;
-
-      mensaje += `*----------------------------------*\n\n`;
-
-      mensaje +=
-        clientType === "Mayorista"
-          ? "```Pedido Mayorista:```\n\n"
-          : "```Pedido Minorista:```\n\n";
-
-      mensaje += `*Número de pedido*: ${response.data.idPedido}\n\n`;
-      for (const productId in cart) {
-        const product = cart[productId];
-        const quantity = productQuantities[product.idProducto];
-        mensaje += `*${quantity}* x *${product.nombre}*\n`;
-
-        if (productNotes[product.idProducto]) {
-          mensaje += `*Aclaración: ${productNotes[product.idProducto]}*\n`;
-        }
-
-        mensaje += `_Subtotal = $${calculateSubtotal(product)
-          .toLocaleString("es-ES", {
-            minimumFractionDigits: 0,
-            maximumFractionDigits: 2,
-          })
-          .replace(",", ".")
-          .replace(/\B(?=(\d{3})+(?!\d))/g, ".")}_\n\n`;
-      }
-
-      if (envio == 2 && costoEnvioDomicilio > 0) {
-        mensaje += `*SUBTOTAL: $${(total - costoEnvioDomicilio)
-          .toLocaleString("es-ES", {
-            minimumFractionDigits: 0,
-            maximumFractionDigits: 2,
-          })
-          .replace(",", ".")
-          .replace(/\B(?=(\d{3})+(?!\d))/g, ".")}*\n`;
-        mensaje += `*Costo de envío: $${costoEnvioDomicilio}*\n`;
-      }
-      mensaje += `*TOTAL: $${total
+      mensaje += `_Subtotal = $${calculateSubtotal(product)
         .toLocaleString("es-ES", {
           minimumFractionDigits: 0,
           maximumFractionDigits: 2,
         })
         .replace(",", ".")
-        .replace(/\B(?=(\d{3})+(?!\d))/g, ".")}*`;
-
-      // El POST se realizó exitosamente, ahora redirigir a WhatsApp
-
-      // Crear el enlace para abrir WhatsApp con el mensaje
-      const encodedMensaje = encodeURIComponent(mensaje);
-      const whatsappURL = `https://api.whatsapp.com/send?phone=543517476389&text=${encodedMensaje}`;
-
-      // Redirigir directamente a la URL de WhatsApp
-      window.location.href = whatsappURL;
-
-      // Restablecer el formulario y ocultarlo
-      ClearClientInputs();
-      CloseModal();
-
-      clearCart();
-      ClearFormData();
+        .replace(/\B(?=(\d{3})+(?!\d))/g, ".")}_\n\n`;
     }
+
+    if (envio == 2 && costoEnvioDomicilio > 0) {
+      mensaje += `*SUBTOTAL: $${(total - costoEnvioDomicilio)
+        .toLocaleString("es-ES", {
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 2,
+        })
+        .replace(",", ".")
+        .replace(/\B(?=(\d{3})+(?!\d))/g, ".")}*\n`;
+      mensaje += `*Costo de envío: $${costoEnvioDomicilio}*\n`;
+    }
+    mensaje += `*TOTAL: $${total
+      .toLocaleString("es-ES", {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2,
+      })
+      .replace(",", ".")
+      .replace(/\B(?=(\d{3})+(?!\d))/g, ".")}*`;
+
+    // Crear el enlace para abrir WhatsApp con el mensaje
+    const encodedMensaje = encodeURIComponent(mensaje);
+    const whatsappURL = `https://api.whatsapp.com/send?phone=543517476389&text=${encodedMensaje}`;
+
+    // Redirigir directamente a la URL de WhatsApp
+    window.location.href = whatsappURL;
+
+    // Restablecer el formulario y ocultarlo
+    ClearClientInputs();
+    CloseModal();
+
+    clearCart();
+    ClearFormData();
   };
 
   //#region Función para crear el pedido y luego enviarlo por Whatsapp
@@ -1103,6 +1086,7 @@ const CatalogueCart = () => {
         telefono: telefono,
         direccion: `${direccion.charAt(0).toUpperCase() + direccion.slice(1)}`,
         entreCalles: `${calles.charAt(0).toUpperCase() + calles.slice(1)}`,
+        paymentId: "",
         costoEnvio:
           envio == 2 && costoEnvioDomicilio > 0 ? costoEnvioDomicilio : 0,
         idTipoPedido: clientType === "Minorista" ? 1 : 2,
@@ -1469,13 +1453,6 @@ const CatalogueCart = () => {
                 </button>
               )}
             </div>
-
-            <button
-              type="button"
-              className="btn-close-modal"
-              id="btn-handlepedido"
-              onClick={handleSubmitPedidoAprobado}
-            ></button>
 
             {/* Renderizar los productos agregados al carrito */}
             {Object.values(cart).map((product) => {

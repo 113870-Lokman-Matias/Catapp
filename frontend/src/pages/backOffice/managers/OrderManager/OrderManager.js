@@ -204,6 +204,16 @@ function OrderManager() {
       }
     });
 
+    connection.on("MensajeCrudPedido", async () => {
+      try {
+        const resultOrders = await GetOrders();
+        setOrders(resultOrders);
+        setOriginalOrdersList(resultOrders);
+      } catch (error) {
+        console.error("Error al obtener los pedidos: " + error);
+      }
+    });
+
     connection.on("MensajeCrudMetodoPago", async () => {
       try {
         const responsePaymentTypes = await GetPaymentTypes();

@@ -360,6 +360,7 @@ CREATE TABLE public.pedidos (
     verificado boolean DEFAULT false NOT NULL,
     direccion text,
     entre_calles text,
+    payment_id text,
     id_tipo_pedido integer NOT NULL,
     id_vendedor integer,
     id_metodo_pago integer NOT NULL,
@@ -703,7 +704,7 @@ COPY public.metodos_pago (id_metodo_pago, nombre, habilitado, disponibilidad) FR
 -- Data for Name: pedidos; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.pedidos (id_pedido, costo_envio, fecha, verificado, direccion, entre_calles, id_tipo_pedido, id_vendedor, id_metodo_pago, id_cliente, id_metodo_entrega) FROM stdin;
+COPY public.pedidos (id_pedido, costo_envio, fecha, verificado, direccion, entre_calles, payment_id, id_tipo_pedido, id_vendedor, id_metodo_pago, id_cliente, id_metodo_entrega) FROM stdin;
 \.
 
 

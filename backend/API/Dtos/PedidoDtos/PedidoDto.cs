@@ -34,5 +34,6 @@ namespace API.Dtos.PedidoDtos
 
     public string? EntreCalles { get; set; }
 
+    public string? PaymentId { get; set; }
   }
 }

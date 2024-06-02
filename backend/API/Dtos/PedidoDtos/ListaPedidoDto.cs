@@ -31,6 +31,9 @@ namespace API.Dtos.PedidoDtos
     public string? Direccion { get; set; }
     
     public string? EntreCalles { get; set; }
+    
+    public string? PaymentId { get; set; }
+
     public List<API.Dtos.DetallePedidoDto.DetallePedidoDto> Detalles { get; set; } = new List<API.Dtos.DetallePedidoDto.DetallePedidoDto>();
   }
 }

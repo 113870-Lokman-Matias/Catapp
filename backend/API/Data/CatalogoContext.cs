@@ -254,6 +254,8 @@ namespace API.Data
 
                 entity.Property(e => e.EntreCalles).HasColumnName("entre_calles");
 
+                entity.Property(e => e.PaymentId).HasColumnName("payment_id");
+
                 entity.HasOne(d => d.IdClienteNavigation)
                     .WithMany(p => p.Pedidos)
                     .HasForeignKey(d => d.IdCliente)

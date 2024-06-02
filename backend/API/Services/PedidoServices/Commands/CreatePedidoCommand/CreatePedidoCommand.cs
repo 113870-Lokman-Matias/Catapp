@@ -14,7 +14,7 @@ namespace API.Services.PedidoServices.Commands.CreatePedidoCommand
     // Tambien requeridos para el pedido
     public string? Direccion { get; set; }
     public string? EntreCalles { get; set; }
-
+    public string? PaymentId { get; set; }
 
     // 2. campos requeridos para crear el pedido
     public float CostoEnvio { get; set; }
