@@ -11,4 +11,4 @@ async function PayWithMercadoPago(data) {
 }
 //#endregion
 
-export { PayWithMercadoPago};
+export { PayWithMercadoPago };

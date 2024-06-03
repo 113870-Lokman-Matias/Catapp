@@ -19,6 +19,7 @@ import {
   GetProductsByQuery,
 } from "../../../services/ProductService";
 import { PayWithMercadoPago } from "../../../services/PaymentService";
+import { GetOrderIdByPaymentId } from "../../../services/OrderService";
 
 import { initMercadoPago, Wallet } from "@mercadopago/sdk-react";
 
@@ -962,97 +963,109 @@ const CatalogueCart = () => {
   //#endregion
 
   const handleSubmitPedidoAprobado = async () => {
-    // Crear el mensaje con la información del pedido para Whatsapp
-    let mensaje = "```Datos del cliente:```\n\n";
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const paymentId = urlParams.get("payment_id");
 
-    mensaje += `*Nombre completo*:\n_${nombre}_\n\n`;
+      const orderByPaymentId = await GetOrderIdByPaymentId(paymentId);
+      const orderId = orderByPaymentId.idPedido;
 
-    mensaje += `*DNI*:\n_${dni}_\n\n`;
+      // Crear el mensaje con la información del pedido para Whatsapp
+      if (paymentId) {
+        let mensaje = "```Datos del cliente:```\n\n";
 
-    mensaje += `*Entrega*:\n_${getTipoEnvio(envio)}_\n\n`;
+        mensaje += `*Nombre completo*:\n_${nombre}_\n\n`;
 
-    if (envio != 1) {
-      mensaje += `*Dirección*:\n_${direccion}_\n\n`;
-      mensaje += `*Entre calles*:\n_${calles}_\n\n`;
-    }
+        mensaje += `*DNI*:\n_${dni}_\n\n`;
 
-    mensaje += `*Número de teléfono*:\n_${telefono}_\n\n`;
+        mensaje += `*Entrega*:\n_${getTipoEnvio(envio)}_\n\n`;
 
-    mensaje += `*Abona con*:\n_${getTipoAbono(abono)}_\n\n`;
+        if (envio != 1) {
+          mensaje += `*Dirección*:\n_${direccion}_\n\n`;
+          mensaje += `*Entre calles*:\n_${calles}_\n\n`;
+        }
 
-    mensaje += `*----------------------------------*\n\n`;
-    mensaje += "```Datos de la empresa:```\n\n";
+        mensaje += `*Número de teléfono*:\n_${telefono}_\n\n`;
 
-    if (envio == 1) {
-      mensaje += `*Dirección*:\n_${direccionAuto}_\n\n`;
-      mensaje += `*Horarios de atención:*\n_${horariosAtencion}_\n\n`;
-    }
+        mensaje += `*Abona con*:\n_${getTipoAbono(abono)}_\n\n`;
 
-    mensaje += `*Número de teléfono*:\n_${telefonoEmpresa}_\n\n`;
+        mensaje += `*----------------------------------*\n\n`;
+        mensaje += "```Datos de la empresa:```\n\n";
 
-    if (abono == 2) {
-      mensaje += `*CBU*:\n_${cbu}_\n\n`;
-    }
+        if (envio == 1) {
+          mensaje += `*Dirección*:\n_${direccionAuto}_\n\n`;
+          mensaje += `*Horarios de atención:*\n_${horariosAtencion}_\n\n`;
+        }
 
-    mensaje += `*Vendedor*:\n_${getNombreVendedor(vendedor)}_\n\n`;
+        mensaje += `*Número de teléfono*:\n_${telefonoEmpresa}_\n\n`;
 
-    mensaje += `*----------------------------------*\n\n`;
+        if (abono == 2) {
+          mensaje += `*CBU*:\n_${cbu}_\n\n`;
+        }
 
-    mensaje +=
-      clientType === "Mayorista"
-        ? "```Pedido Mayorista:```\n\n"
-        : "```Pedido Minorista:```\n\n";
+        mensaje += `*Vendedor*:\n_${getNombreVendedor(vendedor)}_\n\n`;
 
-    mensaje += `*Número de pedido*: ${"response.data.idPedido"}\n\n`;
-    for (const productId in cart) {
-      const product = cart[productId];
-      const quantity = productQuantities[product.idProducto];
-      mensaje += `*${quantity}* x *${product.nombre}*\n`;
+        mensaje += `*----------------------------------*\n\n`;
 
-      if (productNotes[product.idProducto]) {
-        mensaje += `*Aclaración: ${productNotes[product.idProducto]}*\n`;
+        mensaje +=
+          clientType === "Mayorista"
+            ? "```Pedido Mayorista:```\n\n"
+            : "```Pedido Minorista:```\n\n";
+
+        mensaje += `*Número de pedido*: ${orderId}\n\n`;
+        for (const productId in cart) {
+          const product = cart[productId];
+          const quantity = productQuantities[product.idProducto];
+          mensaje += `*${quantity}* x *${product.nombre}*\n`;
+
+          if (productNotes[product.idProducto]) {
+            mensaje += `*Aclaración: ${productNotes[product.idProducto]}*\n`;
+          }
+
+          mensaje += `_Subtotal = $${calculateSubtotal(product)
+            .toLocaleString("es-ES", {
+              minimumFractionDigits: 0,
+              maximumFractionDigits: 2,
+            })
+            .replace(",", ".")
+            .replace(/\B(?=(\d{3})+(?!\d))/g, ".")}_\n\n`;
+        }
+
+        if (envio == 2 && costoEnvioDomicilio > 0) {
+          mensaje += `*SUBTOTAL: $${(total - costoEnvioDomicilio)
+            .toLocaleString("es-ES", {
+              minimumFractionDigits: 0,
+              maximumFractionDigits: 2,
+            })
+            .replace(",", ".")
+            .replace(/\B(?=(\d{3})+(?!\d))/g, ".")}*\n`;
+          mensaje += `*Costo de envío: $${costoEnvioDomicilio}*\n`;
+        }
+        mensaje += `*TOTAL: $${total
+          .toLocaleString("es-ES", {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 2,
+          })
+          .replace(",", ".")
+          .replace(/\B(?=(\d{3})+(?!\d))/g, ".")}*`;
+
+        // Crear el enlace para abrir WhatsApp con el mensaje
+        const encodedMensaje = encodeURIComponent(mensaje);
+        const whatsappURL = `https://api.whatsapp.com/send?phone=543517476389&text=${encodedMensaje}`;
+
+        // Redirigir directamente a la URL de WhatsApp
+        window.location.href = whatsappURL;
+
+        // Restablecer el formulario y ocultarlo
+        ClearClientInputs();
+        CloseModal();
+
+        clearCart();
+        ClearFormData();
       }
-
-      mensaje += `_Subtotal = $${calculateSubtotal(product)
-        .toLocaleString("es-ES", {
-          minimumFractionDigits: 0,
-          maximumFractionDigits: 2,
-        })
-        .replace(",", ".")
-        .replace(/\B(?=(\d{3})+(?!\d))/g, ".")}_\n\n`;
+    } catch (error) {
+      console.error("Ocurrió un error:", error);
     }
-
-    if (envio == 2 && costoEnvioDomicilio > 0) {
-      mensaje += `*SUBTOTAL: $${(total - costoEnvioDomicilio)
-        .toLocaleString("es-ES", {
-          minimumFractionDigits: 0,
-          maximumFractionDigits: 2,
-        })
-        .replace(",", ".")
-        .replace(/\B(?=(\d{3})+(?!\d))/g, ".")}*\n`;
-      mensaje += `*Costo de envío: $${costoEnvioDomicilio}*\n`;
-    }
-    mensaje += `*TOTAL: $${total
-      .toLocaleString("es-ES", {
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 2,
-      })
-      .replace(",", ".")
-      .replace(/\B(?=(\d{3})+(?!\d))/g, ".")}*`;
-
-    // Crear el enlace para abrir WhatsApp con el mensaje
-    const encodedMensaje = encodeURIComponent(mensaje);
-    const whatsappURL = `https://api.whatsapp.com/send?phone=543517476389&text=${encodedMensaje}`;
-
-    // Redirigir directamente a la URL de WhatsApp
-    window.location.href = whatsappURL;
-
-    // Restablecer el formulario y ocultarlo
-    ClearClientInputs();
-    CloseModal();
-
-    clearCart();
-    ClearFormData();
   };
 
   //#region Función para crear el pedido y luego enviarlo por Whatsapp

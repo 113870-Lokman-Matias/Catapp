@@ -23,7 +23,7 @@ async function GetOrders(Type = null, Status = null) {
 }
 //#endregion
 
-//#region Función para obtener un producto por su ID para la lista administrativa
+//#region Función para obtener un pedido por su ID para la lista administrativa
 async function GetOrderById(id) {
   const token = localStorage.getItem("token"); // Obtener el token almacenado en el localStorage
   const headers = {
@@ -33,6 +33,15 @@ async function GetOrderById(id) {
   const response = await axios.get(`https://localhost:7207/pedido/id/${id}`, {
     headers,
   });
+  return response.data;
+}
+//#endregion
+
+//#region Función para obtener el ID de un pedido por su Payment ID
+async function GetOrderIdByPaymentId(paymentId) {
+  const response = await axios.get(
+    `https://localhost:7207/pedido/paymentId/${paymentId}`
+  );
   return response.data;
 }
 //#endregion
@@ -134,6 +143,7 @@ async function DeleteOrders(id, headers) {
 export {
   GetOrders,
   GetOrderById,
+  GetOrderIdByPaymentId,
   GetVerifiedOrdersByDate,
   GetOrdersDataByYear,
   GetOrdersDataByMonthYear,

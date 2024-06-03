@@ -7,6 +7,7 @@ using API.Services.PedidoServices.Queries.GetPedidosByDateQuery;
 using API.Services.PedidoServices.Queries.GetPedidosDataByYearQuery;
 using API.Services.PedidoServices.Queries.GetPedidosDataByMonthYearQuery;
 using API.Services.PedidoServices.Queries.GetPedidoByIdQuery;
+using API.Services.PedidoServices.Queries.GetPedidoIdByPaymentIdQuery;
 using API.Services.PedidoServices.Commands.CreatePedidoCommand;
 using API.Services.PedidoServices.Commands.UpdatePedidoCommand;
 using API.Services.PedidoServices.Commands.DeletePedidoCommand;
@@ -74,6 +75,13 @@ public class PedidoController : ControllerBase
   public async Task<PedidoDto> GetPedidoById(Guid id)
   {
     var pedido = await _mediator.Send(new GetPedidoByIdQuery(id));
+    return pedido;
+  }
+
+  [HttpGet("paymentId/{paymentId}")]
+  public async Task<PedidoDto> GetPedidoIdByPaymentId(string paymentId)
+  {
+    var pedido = await _mediator.Send(new GetPedidoIdByPaymentIdQuery(paymentId));
     return pedido;
   }
 
