@@ -18,8 +18,12 @@ import {
   GetProductsByCategory,
   GetProductsByQuery,
 } from "../../../services/ProductService";
-import { PayWithMercadoPago } from "../../../services/PaymentService";
-import { GetOrderIdByPaymentId } from "../../../services/OrderService";
+import {
+  PayWithMercadoPago,
+} from "../../../services/PaymentService";
+import {
+GetOrderIdByPaymentId
+} from "../../../services/OrderService";
 
 import { initMercadoPago, Wallet } from "@mercadopago/sdk-react";
 
@@ -770,7 +774,6 @@ const CatalogueCart = () => {
     } else if (product.divisa === "Dólar") {
       // Si la divisa es Dólar, realiza el cálculo multiplicando por el valor del dólar
       return (
-        Math.ceil(
           Math.round(
             product.precio *
               valorDolar *
@@ -780,13 +783,11 @@ const CatalogueCart = () => {
                   : product.porcentajeMinorista) /
                   100) *
               quantity
-          ) / 50
-        ) * 50
+          )
       );
     } else if (product.divisa === "Peso") {
       // Si la divisa es Peso, realiza el cálculo sin multiplicar por el valor del dólar
       return (
-        Math.ceil(
           Math.round(
             product.precio *
               (1 +
@@ -795,8 +796,7 @@ const CatalogueCart = () => {
                   : product.porcentajeMinorista) /
                   100) *
               quantity
-          ) / 50
-        ) * 50
+          )
       );
     } else {
       return 0;
@@ -891,8 +891,7 @@ const CatalogueCart = () => {
           ) {
             precio = Math.ceil(producto.precioMinorista);
           } else {
-            precio = Math.ceil(
-              Math.round(
+            precio = Math.round(
                 ((producto.divisa === "Dólar"
                   ? producto.precio * valorDolar
                   : producto.precio) *
@@ -900,9 +899,7 @@ const CatalogueCart = () => {
                     (clientType === "Mayorista"
                       ? producto.porcentajeMayorista
                       : producto.porcentajeMinorista) /
-                      100)) /
-                  50
-              ) * 50
+                      100))
             );
           }
 
@@ -1064,7 +1061,7 @@ const CatalogueCart = () => {
         ClearFormData();
       }
     } catch (error) {
-      console.error("Ocurrió un error:", error);
+      console.error('Ocurrió un error:', error);
     }
   };
 
@@ -1086,8 +1083,7 @@ const CatalogueCart = () => {
               ? `${Math.ceil(producto.precioMinorista)}`
               : // producto.precioMayorista > 0
                 // ? `${Math.ceil(producto.precioMayorista)}`
-                `${Math.ceil(
-                  Math.round(
+                `${Math.round(
                     ((producto.divisa === "Dólar"
                       ? producto.precio * valorDolar
                       : producto.precio) *
@@ -1095,9 +1091,7 @@ const CatalogueCart = () => {
                         (clientType === "Mayorista"
                           ? producto.porcentajeMayorista
                           : producto.porcentajeMinorista) /
-                          100)) /
-                      50
-                  ) * 50
+                          100))
                 )}`,
         };
       });
@@ -1535,8 +1529,7 @@ const CatalogueCart = () => {
                                   })
                                   .replace(",", ".")
                                   .replace(/\B(?=(\d{3})+(?!\d))/g, ".")}`
-                              : `$${Math.ceil(
-                                  Math.round(
+                              : `$${Math.round(
                                     ((product.divisa === "Dólar"
                                       ? product.precio * valorDolar
                                       : product.precio) *
@@ -1544,9 +1537,7 @@ const CatalogueCart = () => {
                                         (clientType === "Minorista"
                                           ? product.porcentajeMinorista
                                           : product.porcentajeMayorista) /
-                                          100)) /
-                                      50
-                                  ) * 50
+                                          100))
                                 )
                                   .toLocaleString("es-ES", {
                                     minimumFractionDigits: 0,
@@ -1935,8 +1926,7 @@ const CatalogueCart = () => {
                                                 /\B(?=(\d{3})+(?!\d))/g,
                                                 "."
                                               )}`
-                                          : `$${Math.ceil(
-                                              Math.round(
+                                          : `$${Math.round(
                                                 ((product.divisa === "Dólar"
                                                   ? product.precio * valorDolar
                                                   : product.precio) *
@@ -1944,9 +1934,7 @@ const CatalogueCart = () => {
                                                     (clientType === "Minorista"
                                                       ? product.porcentajeMinorista
                                                       : product.porcentajeMayorista) /
-                                                      100)) /
-                                                  50
-                                              ) * 50
+                                                      100))
                                             )
                                               .toLocaleString("es-ES", {
                                                 minimumFractionDigits: 0,
@@ -2191,8 +2179,7 @@ const CatalogueCart = () => {
                                                     /\B(?=(\d{3})+(?!\d))/g,
                                                     "."
                                                   )}`
-                                              : `$${Math.ceil(
-                                                  Math.round(
+                                              : `$${Math.round(
                                                     ((product.divisa === "Dólar"
                                                       ? product.precio *
                                                         valorDolar
@@ -2202,9 +2189,7 @@ const CatalogueCart = () => {
                                                         "Minorista"
                                                           ? product.porcentajeMinorista
                                                           : product.porcentajeMayorista) /
-                                                          100)) /
-                                                      50
-                                                  ) * 50
+                                                          100))
                                                 )
                                                   .toLocaleString("es-ES", {
                                                     minimumFractionDigits: 0,

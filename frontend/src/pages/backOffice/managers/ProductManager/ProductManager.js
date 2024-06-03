@@ -2849,13 +2849,10 @@ function ProductManager() {
                                   >
                                     $
                                     {(
-                                      Math.round(
                                         (product.precio *
                                           (1 +
                                             product.porcentajeMinorista /
-                                              100)) /
-                                          50
-                                      ) * 50
+                                              100))
                                     )
                                       .toLocaleString("es-ES", {
                                         minimumFractionDigits: 0,
@@ -2885,13 +2882,10 @@ function ProductManager() {
                                   >
                                     $
                                     {(
-                                      Math.round(
                                         (product.precio *
                                           (1 +
                                             product.porcentajeMinorista / 100) *
-                                          valorDolar) /
-                                          50
-                                      ) * 50
+                                          valorDolar)
                                     )
                                       .toLocaleString("es-ES", {
                                         minimumFractionDigits: 0,
@@ -2972,13 +2966,10 @@ function ProductManager() {
                                   >
                                     $
                                     {(
-                                      Math.round(
                                         (product.precio *
                                           (1 +
                                             product.porcentajeMayorista /
-                                              100)) /
-                                          50
-                                      ) * 50
+                                              100))
                                     )
                                       .toLocaleString("es-ES", {
                                         minimumFractionDigits: 0,
@@ -3008,13 +2999,10 @@ function ProductManager() {
                                   >
                                     $
                                     {(
-                                      Math.round(
                                         (product.precio *
                                           (1 +
                                             product.porcentajeMayorista / 100) *
-                                          valorDolar) /
-                                          50
-                                      ) * 50
+                                          valorDolar)
                                     )
                                       .toLocaleString("es-ES", {
                                         minimumFractionDigits: 0,
@@ -3330,13 +3318,10 @@ function ProductManager() {
                                 <div>
                                   <p>
                                     {(
-                                      Math.round(
                                         (product.precio *
                                           (1 +
                                             product.porcentajeMinorista /
-                                              100)) /
-                                          50
-                                      ) * 50
+                                              100))
                                     )
                                       .toLocaleString("es-ES", {
                                         minimumFractionDigits: 0,
@@ -3350,13 +3335,10 @@ function ProductManager() {
                                 <div>
                                   <p>
                                     {(
-                                      Math.round(
                                         (product.precio *
                                           (1 +
                                             product.porcentajeMinorista / 100) *
-                                          valorDolar) /
-                                          50
-                                      ) * 50
+                                          valorDolar)
                                     )
                                       .toLocaleString("es-ES", {
                                         minimumFractionDigits: 0,
@@ -3388,13 +3370,10 @@ function ProductManager() {
                                 <div>
                                   <p>
                                     {(
-                                      Math.round(
                                         (product.precio *
                                           (1 +
                                             product.porcentajeMayorista /
-                                              100)) /
-                                          50
-                                      ) * 50
+                                              100))
                                     )
                                       .toLocaleString("es-ES", {
                                         minimumFractionDigits: 0,
@@ -3408,13 +3387,10 @@ function ProductManager() {
                                 <div>
                                   <p>
                                     {(
-                                      Math.round(
                                         (product.precio *
                                           (1 +
                                             product.porcentajeMayorista / 100) *
-                                          valorDolar) /
-                                          50
-                                      ) * 50
+                                          valorDolar)
                                     )
                                       .toLocaleString("es-ES", {
                                         minimumFractionDigits: 0,
