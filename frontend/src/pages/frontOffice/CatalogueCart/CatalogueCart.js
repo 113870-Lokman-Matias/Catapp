@@ -172,8 +172,20 @@ const CatalogueCart = () => {
         if (query !== "") {
           const products = await GetProductsByQuery(query);
           setProducts(products);
+
+          if (pathname.includes("mayorista")) {
+            GetCategoriesMayorista(setCategories);
+          } else if (pathname.includes("minorista")) {
+            GetCategoriesMinorista(setCategories);
+          }
         } else {
           // Iterar sobre las categorías abiertas en openCategories
+          if (pathname.includes("mayorista")) {
+            GetCategoriesMayorista(setCategories);
+          } else if (pathname.includes("minorista")) {
+            GetCategoriesMinorista(setCategories);
+          }
+
           for (const category of openCategories) {
             let products;
 

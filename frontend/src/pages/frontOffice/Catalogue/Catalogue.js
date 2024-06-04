@@ -88,6 +88,8 @@ const Catalogue = () => {
         if (query !== "") {
           const products = await GetProductsByQuery(query);
           setProducts(products);
+
+          GetCategories(setCategories);
         } else {
           // Iterar sobre las categorías abiertas en openCategories
           for (const category of openCategories) {
