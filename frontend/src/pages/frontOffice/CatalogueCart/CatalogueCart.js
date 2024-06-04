@@ -18,12 +18,8 @@ import {
   GetProductsByCategory,
   GetProductsByQuery,
 } from "../../../services/ProductService";
-import {
-  PayWithMercadoPago,
-} from "../../../services/PaymentService";
-import {
-GetOrderIdByPaymentId
-} from "../../../services/OrderService";
+import { PayWithMercadoPago } from "../../../services/PaymentService";
+import { GetOrderIdByPaymentId } from "../../../services/OrderService";
 
 import { initMercadoPago, Wallet } from "@mercadopago/sdk-react";
 
@@ -74,7 +70,6 @@ const CatalogueCart = () => {
   const [productNotes, setProductNotes] = useState({});
   const [cart, setCart] = useState({});
   const [totalQuantity, setTotalQuantity] = useState(0);
-  const [total, setTotal] = useState(0);
   const [modalAbierto, setModalAbierto] = useState(false);
   const [showButton, setShowButton] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -458,7 +453,27 @@ const CatalogueCart = () => {
   }, [pathname, pedidoAprobado]);
 
   useEffect(() => {
-    if (pedidoAprobado) {
+    const isMayorista = pathname.includes("mayorista");
+
+    const storedCartKey = isMayorista
+      ? "shoppingCartMayorista"
+      : "shoppingCartMinorista";
+    const storedCart = localStorage.getItem(storedCartKey);
+
+    if (pedidoAprobado && storedCart) {
+      Swal.fire({
+        title: "Pago aprobado",
+        text: "Su pago ha sido procesado correctamente.",
+        icon: "success",
+        confirmButtonText: "Aceptar y enviar pedido por WhatsApp",
+        confirmButtonColor: "#a5dc86",
+        allowOutsideClick: false,
+      }).then((result) => {
+        if (result.isConfirmed) {
+          handleSubmitPedidoAprobado();
+        }
+      });
+    } else if (pedidoAprobado === true && !storedCart) {
       Swal.fire({
         title: "Pago aprobado",
         text: "Su pago ha sido procesado correctamente.",
@@ -467,17 +482,6 @@ const CatalogueCart = () => {
         confirmButtonColor: "#a5dc86",
         allowOutsideClick: false,
       });
-
-      const isMayorista = pathname.includes("mayorista");
-
-      const storedCartKey = isMayorista
-        ? "shoppingCartMayorista"
-        : "shoppingCartMinorista";
-      const storedCart = localStorage.getItem(storedCartKey);
-
-      if (storedCart) {
-        handleSubmitPedidoAprobado();
-      }
     }
   }, [pedidoAprobado]);
   //#endregion
@@ -773,30 +777,26 @@ const CatalogueCart = () => {
       );
     } else if (product.divisa === "Dólar") {
       // Si la divisa es Dólar, realiza el cálculo multiplicando por el valor del dólar
-      return (
-          Math.round(
-            product.precio *
-              valorDolar *
-              (1 +
-                (clientType === "Mayorista"
-                  ? product.porcentajeMayorista
-                  : product.porcentajeMinorista) /
-                  100) *
-              quantity
-          )
+      return Math.round(
+        product.precio *
+          valorDolar *
+          (1 +
+            (clientType === "Mayorista"
+              ? product.porcentajeMayorista
+              : product.porcentajeMinorista) /
+              100) *
+          quantity
       );
     } else if (product.divisa === "Peso") {
       // Si la divisa es Peso, realiza el cálculo sin multiplicar por el valor del dólar
-      return (
-          Math.round(
-            product.precio *
-              (1 +
-                (clientType === "Mayorista"
-                  ? product.porcentajeMayorista
-                  : product.porcentajeMinorista) /
-                  100) *
-              quantity
-          )
+      return Math.round(
+        product.precio *
+          (1 +
+            (clientType === "Mayorista"
+              ? product.porcentajeMayorista
+              : product.porcentajeMinorista) /
+              100) *
+          quantity
       );
     } else {
       return 0;
@@ -817,7 +817,7 @@ const CatalogueCart = () => {
       total += costoEnvioDomicilio;
     }
 
-    setTotal(total);
+    return total;
   };
   //#endregion
 
@@ -892,14 +892,14 @@ const CatalogueCart = () => {
             precio = Math.ceil(producto.precioMinorista);
           } else {
             precio = Math.round(
-                ((producto.divisa === "Dólar"
-                  ? producto.precio * valorDolar
-                  : producto.precio) *
-                  (1 +
-                    (clientType === "Mayorista"
-                      ? producto.porcentajeMayorista
-                      : producto.porcentajeMinorista) /
-                      100))
+              (producto.divisa === "Dólar"
+                ? producto.precio * valorDolar
+                : producto.precio) *
+                (1 +
+                  (clientType === "Mayorista"
+                    ? producto.porcentajeMayorista
+                    : producto.porcentajeMinorista) /
+                    100)
             );
           }
 
@@ -1029,7 +1029,7 @@ const CatalogueCart = () => {
         }
 
         if (envio == 2 && costoEnvioDomicilio > 0) {
-          mensaje += `*SUBTOTAL: $${(total - costoEnvioDomicilio)
+          mensaje += `*SUBTOTAL: $${(calculateTotal() - costoEnvioDomicilio)
             .toLocaleString("es-ES", {
               minimumFractionDigits: 0,
               maximumFractionDigits: 2,
@@ -1038,7 +1038,7 @@ const CatalogueCart = () => {
             .replace(/\B(?=(\d{3})+(?!\d))/g, ".")}*\n`;
           mensaje += `*Costo de envío: $${costoEnvioDomicilio}*\n`;
         }
-        mensaje += `*TOTAL: $${total
+        mensaje += `*TOTAL: $${calculateTotal()
           .toLocaleString("es-ES", {
             minimumFractionDigits: 0,
             maximumFractionDigits: 2,
@@ -1061,7 +1061,7 @@ const CatalogueCart = () => {
         ClearFormData();
       }
     } catch (error) {
-      console.error('Ocurrió un error:', error);
+      console.error("Ocurrió un error:", error);
     }
   };
 
@@ -1084,14 +1084,14 @@ const CatalogueCart = () => {
               : // producto.precioMayorista > 0
                 // ? `${Math.ceil(producto.precioMayorista)}`
                 `${Math.round(
-                    ((producto.divisa === "Dólar"
-                      ? producto.precio * valorDolar
-                      : producto.precio) *
-                      (1 +
-                        (clientType === "Mayorista"
-                          ? producto.porcentajeMayorista
-                          : producto.porcentajeMinorista) /
-                          100))
+                  (producto.divisa === "Dólar"
+                    ? producto.precio * valorDolar
+                    : producto.precio) *
+                    (1 +
+                      (clientType === "Mayorista"
+                        ? producto.porcentajeMayorista
+                        : producto.porcentajeMinorista) /
+                        100)
                 )}`,
         };
       });
@@ -1172,7 +1172,7 @@ const CatalogueCart = () => {
           }
 
           if (envio == 2 && costoEnvioDomicilio > 0) {
-            mensaje += `*SUBTOTAL: $${(total - costoEnvioDomicilio)
+            mensaje += `*SUBTOTAL: $${(calculateTotal() - costoEnvioDomicilio)
               .toLocaleString("es-ES", {
                 minimumFractionDigits: 0,
                 maximumFractionDigits: 2,
@@ -1181,7 +1181,7 @@ const CatalogueCart = () => {
               .replace(/\B(?=(\d{3})+(?!\d))/g, ".")}*\n`;
             mensaje += `*Costo de envío: $${costoEnvioDomicilio}*\n`;
           }
-          mensaje += `*TOTAL: $${total
+          mensaje += `*TOTAL: $${calculateTotal()
             .toLocaleString("es-ES", {
               minimumFractionDigits: 0,
               maximumFractionDigits: 2,
@@ -1530,14 +1530,14 @@ const CatalogueCart = () => {
                                   .replace(",", ".")
                                   .replace(/\B(?=(\d{3})+(?!\d))/g, ".")}`
                               : `$${Math.round(
-                                    ((product.divisa === "Dólar"
-                                      ? product.precio * valorDolar
-                                      : product.precio) *
-                                      (1 +
-                                        (clientType === "Minorista"
-                                          ? product.porcentajeMinorista
-                                          : product.porcentajeMayorista) /
-                                          100))
+                                  (product.divisa === "Dólar"
+                                    ? product.precio * valorDolar
+                                    : product.precio) *
+                                    (1 +
+                                      (clientType === "Minorista"
+                                        ? product.porcentajeMinorista
+                                        : product.porcentajeMayorista) /
+                                        100)
                                 )
                                   .toLocaleString("es-ES", {
                                     minimumFractionDigits: 0,
@@ -1652,7 +1652,7 @@ const CatalogueCart = () => {
                       Total:{" "}
                       <b className="product-price">
                         $
-                        {total
+                        {calculateTotal()
                           .toLocaleString("es-ES", {
                             minimumFractionDigits: 0,
                             maximumFractionDigits: 2,
@@ -1927,14 +1927,14 @@ const CatalogueCart = () => {
                                                 "."
                                               )}`
                                           : `$${Math.round(
-                                                ((product.divisa === "Dólar"
-                                                  ? product.precio * valorDolar
-                                                  : product.precio) *
-                                                  (1 +
-                                                    (clientType === "Minorista"
-                                                      ? product.porcentajeMinorista
-                                                      : product.porcentajeMayorista) /
-                                                      100))
+                                              (product.divisa === "Dólar"
+                                                ? product.precio * valorDolar
+                                                : product.precio) *
+                                                (1 +
+                                                  (clientType === "Minorista"
+                                                    ? product.porcentajeMinorista
+                                                    : product.porcentajeMayorista) /
+                                                    100)
                                             )
                                               .toLocaleString("es-ES", {
                                                 minimumFractionDigits: 0,
@@ -2180,16 +2180,16 @@ const CatalogueCart = () => {
                                                     "."
                                                   )}`
                                               : `$${Math.round(
-                                                    ((product.divisa === "Dólar"
-                                                      ? product.precio *
-                                                        valorDolar
-                                                      : product.precio) *
-                                                      (1 +
-                                                        (clientType ===
-                                                        "Minorista"
-                                                          ? product.porcentajeMinorista
-                                                          : product.porcentajeMayorista) /
-                                                          100))
+                                                  (product.divisa === "Dólar"
+                                                    ? product.precio *
+                                                      valorDolar
+                                                    : product.precio) *
+                                                    (1 +
+                                                      (clientType ===
+                                                      "Minorista"
+                                                        ? product.porcentajeMinorista
+                                                        : product.porcentajeMayorista) /
+                                                        100)
                                                 )
                                                   .toLocaleString("es-ES", {
                                                     minimumFractionDigits: 0,
@@ -2346,7 +2346,7 @@ const CatalogueCart = () => {
                   Enviar pedido por WhatsApp{" "}
                   <b>
                     $
-                    {total
+                    {calculateTotal()
                       .toLocaleString("es-ES", {
                         minimumFractionDigits: 0,
                         maximumFractionDigits: 2,
@@ -2625,7 +2625,7 @@ const CatalogueCart = () => {
                         <>
                           <b>
                             Subtotal: $
-                            {(total - costoEnvioDomicilio)
+                            {(calculateTotal() - costoEnvioDomicilio)
                               .toLocaleString("es-ES", {
                                 minimumFractionDigits: 0,
                                 maximumFractionDigits: 2,
@@ -2642,7 +2642,7 @@ const CatalogueCart = () => {
 
                     <b>
                       Total: $
-                      {total
+                      {calculateTotal()
                         .toLocaleString("es-ES", {
                           minimumFractionDigits: 0,
                           maximumFractionDigits: 2,
