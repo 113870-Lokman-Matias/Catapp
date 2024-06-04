@@ -603,9 +603,10 @@ function OrderGraphics() {
       const height = isMaxWidth ? 240 : 170; // Ajusta la altura según el ancho de la ventana
 
       doc.addImage(imgData, "PNG", 10, 10, width, height);
-      doc.save("gráficos.pdf");
+      doc.save("Gráficos.pdf");
     });
   };
+  //#endregion
 
   //#region Return
   return (

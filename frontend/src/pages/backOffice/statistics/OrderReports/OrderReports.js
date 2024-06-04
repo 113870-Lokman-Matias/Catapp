@@ -5,6 +5,8 @@ import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet";
 import $ from "jquery";
 import * as signalR from "@microsoft/signalr";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 
 import { CountUp } from "countup.js";
 
@@ -22,6 +24,7 @@ import { ReactComponent as VendedorInput } from "../../../../assets/svgs/seller.
 import { ReactComponent as EntregaInput } from "../../../../assets/svgs/entregainput.svg";
 import { ReactComponent as AbonoInput } from "../../../../assets/svgs/paymentInput.svg";
 import { ReactComponent as TipoInput } from "../../../../assets/svgs/typepriceinput.svg";
+import { ReactComponent as Pdf } from "../../../../assets/svgs/pdf.svg";
 //#endregion
 
 import Loader from "../../../../components/Loaders/LoaderCircle";
@@ -301,6 +304,26 @@ function OrderReports() {
       $("#btn-close-modal-categorias").click();
     });
   }
+  //#endregion
+
+  //#region Función para descargar gráficos en PDF
+  const exportToPDF = () => {
+    const doc = new jsPDF();
+
+    const generalReports = document.getElementById("pdf");
+
+    const maxWidth = 1040;
+    const isMaxWidth = window.innerWidth <= maxWidth;
+
+    html2canvas(generalReports).then((canvas) => {
+      const imgData = canvas.toDataURL("image/png");
+      const width = isMaxWidth ? 140 : 190; // Ajusta la anchura según el ancho de la ventana
+      const height = isMaxWidth ? 190 : 135; // Ajusta la altura según el ancho de la ventana
+
+      doc.addImage(imgData, "PNG", 10, 10, width, height);
+      doc.save("Reportes.pdf");
+    });
+  };
   //#endregion
 
   //#region Función para buscar pedidos con los filtros
@@ -699,6 +722,17 @@ function OrderReports() {
               </button>
 
               <button
+                onClick={exportToPDF}
+                type="button"
+                className="btn btn-danger btn-show-orders"
+                title="Descargar reportes"
+              >
+                <div className="show-orders">
+                  <Pdf />
+                </div>
+              </button>
+
+              <button
                 onClick={onDownload1}
                 type="button"
                 className="btn btn-success btn-excel"
@@ -834,7 +868,7 @@ function OrderReports() {
 
           <br />
 
-          <div className="filters-left4">
+          <div className="filters-left4" id="pdf">
             {showFilters === true && (
               <div className="pagination-count-filter-date">
                 <p className="p-filter-date">Desde:</p>
