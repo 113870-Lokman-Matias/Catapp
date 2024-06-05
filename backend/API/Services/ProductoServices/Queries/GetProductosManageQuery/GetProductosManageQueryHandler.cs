@@ -33,7 +33,18 @@ namespace API.Services.ProductoServices.Queries.GetProductosManageQuery
 
         if (!string.IsNullOrEmpty(request.Category))
         {
-          query = query.Where(x => x.IdCategoriaNavigation.Nombre == request.Category);
+            if (request.Category.Equals("Promociones", StringComparison.OrdinalIgnoreCase))
+            {
+                query = query.Where(x => x.EnPromocion == true);
+            }
+            else if (request.Category.Equals("Destacados", StringComparison.OrdinalIgnoreCase))
+            {
+                query = query.Where(x => x.EnDestacado == true);
+            }
+            else
+            {
+                query = query.Where(x => x.IdCategoriaNavigation.Nombre == request.Category);
+            }
         }
 
         if (request.Hidden.HasValue)
@@ -59,6 +70,8 @@ namespace API.Services.ProductoServices.Queries.GetProductosManageQuery
               IdImagen = x.IdImagen,
               UrlImagen = x.UrlImagen,
               Ocultar = x.Ocultar,
+              EnPromocion = x.EnPromocion,
+              EnDestacado = x.EnDestacado,
               IdDivisa = x.IdDivisa,
               StockTransitorio = x.StockTransitorio
             })

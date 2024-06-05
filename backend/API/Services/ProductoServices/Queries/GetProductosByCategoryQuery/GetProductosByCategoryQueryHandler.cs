@@ -4,6 +4,7 @@ using AutoMapper;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using API.Models;
 
 namespace API.Services.ProductoServices.Queries.GetProductosByCategoryQuery
 {
@@ -38,8 +39,26 @@ namespace API.Services.ProductoServices.Queries.GetProductosByCategoryQuery
         }
         else
         {
-          var productos = await _context.Productos
-              .Where(x => x.IdCategoriaNavigation.Nombre == request.category && x.Ocultar == false)
+          IQueryable<Producto> productosQuery;
+
+          // Verificar si la categoría es "Promociones" o "Destacados"
+          if (request.category.Equals("Promociones", StringComparison.OrdinalIgnoreCase))
+          {
+              productosQuery = _context.Productos
+                  .Where(x => x.Ocultar == false && x.EnPromocion == true);
+          }
+          else if (request.category.Equals("Destacados", StringComparison.OrdinalIgnoreCase))
+          {
+              productosQuery = _context.Productos
+                  .Where(x => x.Ocultar == false && x.EnDestacado == true);
+          }
+          else
+          {
+              productosQuery = _context.Productos
+                  .Where(x => x.IdCategoriaNavigation.Nombre == request.category && x.Ocultar == false);
+          }
+
+          var productos = await productosQuery
               .Select(x => new ListaProductoDto
               {
                 IdProducto = x.IdProducto,

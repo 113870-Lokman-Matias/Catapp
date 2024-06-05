@@ -311,6 +311,10 @@ namespace API.Data
 
                 entity.Property(e => e.Ocultar).HasColumnName("ocultar");
 
+                entity.Property(e => e.EnPromocion).HasColumnName("en_promocion");
+
+                entity.Property(e => e.EnDestacado).HasColumnName("en_destacado");
+
                 entity.Property(e => e.PorcentajeMayorista).HasColumnName("porcentaje_mayorista");
 
                 entity.Property(e => e.PorcentajeMinorista).HasColumnName("porcentaje_minorista");

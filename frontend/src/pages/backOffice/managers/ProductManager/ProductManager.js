@@ -37,6 +37,8 @@ import { ReactComponent as StockInput } from "../../../../assets/svgs/stockinput
 import { ReactComponent as PercentageInput } from "../../../../assets/svgs/percentageinput.svg";
 import { ReactComponent as ImageInput } from "../../../../assets/svgs/imageinput.svg";
 import { ReactComponent as CategoryInput } from "../../../../assets/svgs/category.svg";
+import { ReactComponent as PromocionInput } from "../../../../assets/svgs/promocion.svg";
+import { ReactComponent as DestacadoInput } from "../../../../assets/svgs/destacado.svg";
 
 import { ReactComponent as MotivoInput } from "../../../../assets/svgs/motivo.svg";
 import { ReactComponent as OtroInput } from "../../../../assets/svgs/otro.svg";
@@ -111,6 +113,12 @@ function ProductManager() {
 
   const [ocultar, setOcultar] = useState("");
   const [prevOcultar, setPrevOcultar] = useState("");
+
+  const [promocion, setPromocion] = useState("");
+  const [prevPromocion, setPrevPromocion] = useState("");
+
+  const [destacado, setDestacado] = useState("");
+  const [prevDestacado, setPrevDestacado] = useState("");
 
   var checkbox = document.getElementById("ocultar");
 
@@ -236,6 +244,15 @@ function ProductManager() {
       .catch((err) => console.error(err.toString()));
 
     connection.on("MensajeCrudCategoria", async () => {
+      try {
+        const result = await GetCategoriesManage();
+        setCategories(result);
+      } catch (error) {
+        console.error("Error al obtener las categorias: " + error);
+      }
+    });
+
+    connection.on("MensajeCrudProducto", async () => {
       try {
         const result = await GetCategoriesManage();
         setCategories(result);
@@ -552,6 +569,8 @@ function ProductManager() {
     setPorcentajeMayorista("");
     setStock("");
     setOcultar("");
+    setPromocion("");
+    setDestacado("");
     setIdCategoria("");
     setIdImagen("");
     setUrlImagen("");
@@ -583,6 +602,8 @@ function ProductManager() {
     setPorcentajeMayorista(product.porcentajeMayorista);
     setStock(product.stockTransitorio);
     setOcultar(product.ocultar);
+    setPromocion(product.enPromocion);
+    setDestacado(product.enDestacado);
     setIdCategoria(product.idCategoria);
     setIdImagen(product.idImagen);
     setUrlImagen(product.urlImagen);
@@ -615,6 +636,8 @@ function ProductManager() {
     setPrevPorcentajeMayorista(product.porcentajeMayorista);
     setPrevStock(product.stockTransitorio);
     setPrevOcultar(product.ocultar);
+    setPrevPromocion(product.enPromocion);
+    setPrevDestacado(product.enDestacado);
     setPrevIdCategoria(product.idCategoria);
     setPrevUrlImagen(product.urlImagen);
   }
@@ -874,6 +897,30 @@ function ProductManager() {
         ShowSaveButton();
       }
       return false;
+    } else if (promocion === "") {
+      Swal.fire({
+        icon: "error",
+        title: "Debe indicar si se encuentra en promocion",
+        text: "Clickeé el botón en caso de que el mismo se encuentre en promocion",
+        confirmButtonText: "Aceptar",
+        confirmButtonColor: "#f27474",
+      });
+      if (modalTitle === "Registrar Producto") {
+        ShowSaveButton();
+      }
+      return false;
+    } else if (destacado === "") {
+      Swal.fire({
+        icon: "error",
+        title: "Debe indicar si se encuentra destacado",
+        text: "Clickeé el botón en caso de que el mismo se encuentre destacado",
+        confirmButtonText: "Aceptar",
+        confirmButtonColor: "#f27474",
+      });
+      if (modalTitle === "Registrar Producto") {
+        ShowSaveButton();
+      }
+      return false;
     } else if (ocultar === "") {
       Swal.fire({
         icon: "error",
@@ -1036,6 +1083,10 @@ function ProductManager() {
       return false;
     } else if (stock !== "") {
       return false;
+    } else if (promocion !== false) {
+      return false;
+    } else if (destacado !== false) {
+      return false;
     } else if (ocultar !== false) {
       return false;
     } else if (idCategoria !== "") {
@@ -1059,6 +1110,8 @@ function ProductManager() {
       prevPorcentajeMinorista !== porcentajeMinorista ||
       prevPorcentajeMayorista !== porcentajeMayorista ||
       prevStock !== stock ||
+      prevPromocion !== promocion ||
+      prevDestacado !== destacado ||
       prevOcultar !== ocultar ||
       prevIdCategoria !== idCategoria ||
       prevUrlImagen !== urlImagen
@@ -1103,6 +1156,8 @@ function ProductManager() {
               idImagen: imageId,
               urlImagen: imageUrl,
               ocultar: rolUsuario === "Vendedor" ? true : ocultar,
+              enPromocion: rolUsuario === "Vendedor" ? false : promocion,
+              enDestacado: rolUsuario === "Vendedor" ? false : destacado,
             },
             headers
           );
@@ -1218,6 +1273,8 @@ function ProductManager() {
             idImagen: updatedImageId,
             urlImagen: updatedImage,
             ocultar: ocultar,
+            enPromocion: promocion,
+            enDestacado: destacado,
           },
           headers
         );
@@ -1463,6 +1520,8 @@ function ProductManager() {
                       $("#nombre").focus();
                     }, 500);
                     setOcultar(false);
+                    setPromocion(false);
+                    setDestacado(false);
                     setTipoPrecioMinorista("");
                     setTipoPrecioMayorista("");
                   }}
@@ -1892,7 +1951,9 @@ function ProductManager() {
                             <option hidden key={0} value="0">
                               Seleccione una categoría
                             </option>
-                            {Array.from(categories).map((opts, i) => (
+                            {Array.from(categories)
+                            .filter((opts) => opts.nombre !== "Promociones" && opts.nombre !== "Destacados")
+                            .map((opts, i) => (
                               <option
                                 className="btn-option"
                                 key={i}
@@ -1908,7 +1969,60 @@ function ProductManager() {
                       {(rolUsuario === "Supervisor" ||
                         rolUsuario === "SuperAdmin") && (
                         <>
-                          <div className="form-group oculto">
+                          <div className="form-group ocultar2">
+                            <label
+                              className="label selects"
+                              htmlFor="promocion"
+                            >
+                              En promocion
+                            </label>
+
+                            <div className="checkbox-group">
+                              <div className="checkbox-cont">
+                                <input
+                                  className="checkbox-input"
+                                  type="checkbox"
+                                  id="promocion"
+                                  name="promocion"
+                                  checked={promocion}
+                                  onChange={(event) => {
+                                    setPromocion(event.target.checked);
+                                  }}
+                                />
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="form-group ocultar2">
+                            <label
+                              className="label selects"
+                              htmlFor="destacado"
+                            >
+                              Destacado
+                            </label>
+
+                            <div className="checkbox-group">
+                              <div className="checkbox-cont">
+                                <input
+                                  className="checkbox-input"
+                                  type="checkbox"
+                                  id="destacado"
+                                  name="destacado"
+                                  checked={destacado}
+                                  onChange={(event) => {
+                                    setDestacado(event.target.checked);
+                                  }}
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        </>
+                      )}
+
+                      {(rolUsuario === "Supervisor" ||
+                        rolUsuario === "SuperAdmin") && (
+                        <>
+                          <div className="form-group ocultar2">
                             <label className="label">Ocultar</label>
                             <input
                               type="checkbox"
@@ -2567,7 +2681,7 @@ function ProductManager() {
                 </button>
               </div>
 
-              {products.length > 0 && isLoading === false &&  (
+              {products.length > 0 && isLoading === false && (
                 <div className="header-excel">
                   <button
                     onClick={onDownload}
@@ -2709,15 +2823,40 @@ function ProductManager() {
                         <td
                           className={
                             product.ocultar && product.stockTransitorio === 0
-                              ? "zero-stock-hidden table-name"
+                              ? "zero-stock-hidden table-name table-name-prom-dest"
                               : product.ocultar
-                              ? "hidden-product table-name"
+                              ? "hidden-product table-name table-name-prom-dest"
                               : product.stockTransitorio === 0
-                              ? "zero-stock table-name"
-                              : "table-name"
+                              ? "zero-stock table-name table-name-prom-dest"
+                              : "table-name table-name-prom-dest"
                           }
                         >
                           {product.nombre}
+                          <div className="prom-dest">
+                            <PromocionInput
+                              className={`input-group-svg-prom-dest ${
+                                product.enPromocion
+                                  ? "input-group-svg-prom-activo"
+                                  : ""
+                              }`}
+                              title={
+                                product.enPromocion
+                                  ? "Producto en promoción"
+                                  : ""
+                              }
+                            />
+
+                            <DestacadoInput
+                              className={`input-group-svg-prom-dest ${
+                                product.enDestacado
+                                  ? "input-group-svg-dest-activo"
+                                  : ""
+                              }`}
+                              title={
+                                product.enDestacado ? "Producto destacado" : ""
+                              }
+                            />
+                          </div>
                         </td>
                         <td
                           className={
@@ -2849,10 +2988,8 @@ function ProductManager() {
                                   >
                                     $
                                     {(
-                                        (product.precio *
-                                          (1 +
-                                            product.porcentajeMinorista /
-                                              100))
+                                      product.precio *
+                                      (1 + product.porcentajeMinorista / 100)
                                     )
                                       .toLocaleString("es-ES", {
                                         minimumFractionDigits: 0,
@@ -2882,10 +3019,9 @@ function ProductManager() {
                                   >
                                     $
                                     {(
-                                        (product.precio *
-                                          (1 +
-                                            product.porcentajeMinorista / 100) *
-                                          valorDolar)
+                                      product.precio *
+                                      (1 + product.porcentajeMinorista / 100) *
+                                      valorDolar
                                     )
                                       .toLocaleString("es-ES", {
                                         minimumFractionDigits: 0,
@@ -2966,10 +3102,8 @@ function ProductManager() {
                                   >
                                     $
                                     {(
-                                        (product.precio *
-                                          (1 +
-                                            product.porcentajeMayorista /
-                                              100))
+                                      product.precio *
+                                      (1 + product.porcentajeMayorista / 100)
                                     )
                                       .toLocaleString("es-ES", {
                                         minimumFractionDigits: 0,
@@ -2999,10 +3133,9 @@ function ProductManager() {
                                   >
                                     $
                                     {(
-                                        (product.precio *
-                                          (1 +
-                                            product.porcentajeMayorista / 100) *
-                                          valorDolar)
+                                      product.precio *
+                                      (1 + product.porcentajeMayorista / 100) *
+                                      valorDolar
                                     )
                                       .toLocaleString("es-ES", {
                                         minimumFractionDigits: 0,
@@ -3318,10 +3451,8 @@ function ProductManager() {
                                 <div>
                                   <p>
                                     {(
-                                        (product.precio *
-                                          (1 +
-                                            product.porcentajeMinorista /
-                                              100))
+                                      product.precio *
+                                      (1 + product.porcentajeMinorista / 100)
                                     )
                                       .toLocaleString("es-ES", {
                                         minimumFractionDigits: 0,
@@ -3335,10 +3466,9 @@ function ProductManager() {
                                 <div>
                                   <p>
                                     {(
-                                        (product.precio *
-                                          (1 +
-                                            product.porcentajeMinorista / 100) *
-                                          valorDolar)
+                                      product.precio *
+                                      (1 + product.porcentajeMinorista / 100) *
+                                      valorDolar
                                     )
                                       .toLocaleString("es-ES", {
                                         minimumFractionDigits: 0,
@@ -3370,10 +3500,8 @@ function ProductManager() {
                                 <div>
                                   <p>
                                     {(
-                                        (product.precio *
-                                          (1 +
-                                            product.porcentajeMayorista /
-                                              100))
+                                      product.precio *
+                                      (1 + product.porcentajeMayorista / 100)
                                     )
                                       .toLocaleString("es-ES", {
                                         minimumFractionDigits: 0,
@@ -3387,10 +3515,9 @@ function ProductManager() {
                                 <div>
                                   <p>
                                     {(
-                                        (product.precio *
-                                          (1 +
-                                            product.porcentajeMayorista / 100) *
-                                          valorDolar)
+                                      product.precio *
+                                      (1 + product.porcentajeMayorista / 100) *
+                                      valorDolar
                                     )
                                       .toLocaleString("es-ES", {
                                         minimumFractionDigits: 0,

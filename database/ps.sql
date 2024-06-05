@@ -389,6 +389,8 @@ CREATE TABLE public.productos (
     id_imagen text NOT NULL,
     url_imagen text NOT NULL,
     ocultar boolean DEFAULT false NOT NULL,
+    en_promocion boolean DEFAULT false NOT NULL,
+    en_destacado boolean DEFAULT false NOT NULL,
     id_divisa integer NOT NULL,
     stock_transitorio integer NOT NULL
 );
@@ -712,7 +714,7 @@ COPY public.pedidos (id_pedido, costo_envio, fecha, verificado, direccion, entre
 -- Data for Name: productos; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.productos (id_producto, nombre, descripcion, precio, porcentaje_minorista, porcentaje_mayorista, precio_minorista, precio_mayorista, stock, id_categoria, id_imagen, url_imagen, ocultar, id_divisa, stock_transitorio) FROM stdin;
+COPY public.productos (id_producto, nombre, descripcion, precio, porcentaje_minorista, porcentaje_mayorista, precio_minorista, precio_mayorista, stock, id_categoria, id_imagen, url_imagen, ocultar, en_promocion, en_destacado, id_divisa, stock_transitorio) FROM stdin;
 \.
 
 

@@ -64,6 +64,8 @@ namespace API.Services.ProductoServices.Commands.UpdateProductoCommand
             ProductoToUpdate.IdImagen = request.UrlImagen;
             ProductoToUpdate.UrlImagen = request.UrlImagen;
             ProductoToUpdate.Ocultar = request.Ocultar;
+            ProductoToUpdate.EnPromocion = request.EnPromocion;
+            ProductoToUpdate.EnDestacado = request.EnDestacado;
 
             await _context.SaveChangesAsync();
 

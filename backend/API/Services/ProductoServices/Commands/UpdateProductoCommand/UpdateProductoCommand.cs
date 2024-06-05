@@ -20,5 +20,7 @@ namespace API.Services.ProductoServices.Commands.UpdateProductoCommand
     public string IdImagen { get; set; } = null!;
     public string UrlImagen { get; set; } = null!;
     public bool Ocultar { get; set; }
+    public bool EnPromocion { get; set; }
+    public bool EnDestacado { get; set; }
   }
 }

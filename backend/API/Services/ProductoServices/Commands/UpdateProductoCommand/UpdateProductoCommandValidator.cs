@@ -60,6 +60,12 @@ namespace API.Services.ProductoServices.Commands.UpdateProductoCommand
 
       RuleFor(p => p.Ocultar)
           .NotNull().WithMessage("Ocultar no puede ser nulo");
+
+      RuleFor(p => p.EnPromocion)
+          .NotNull().WithMessage("En promocion no puede ser nulo");
+
+      RuleFor(p => p.EnDestacado)
+          .NotNull().WithMessage("En destacado no puede ser nulo");
     }
 
     private async Task<bool> ProductoExiste(int id, CancellationToken token)
