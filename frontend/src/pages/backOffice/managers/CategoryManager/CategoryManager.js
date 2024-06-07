@@ -90,8 +90,13 @@ function CategoryManager() {
 
       try {
         const result = await GetCategoriesManage();
-        setCategories(result);
-        setOriginalCategoriesList(result);
+        const filteredCategories = result.filter(
+          (category) =>
+            category.nombre !== "Promociones" &&
+            category.nombre !== "Destacados"
+        );
+        setCategories(filteredCategories);
+        setOriginalCategoriesList(filteredCategories);
         setIsLoading(false);
       } catch (error) {
         // Manejar errores aquí si es necesario
@@ -223,9 +228,14 @@ function CategoryManager() {
   //#region Función para volver el formulario a su estado inicial, borrando los valores de los inputs, cargando los selects y refrezcando la lista de categorías
   async function InitialState() {
     ClearCategoryInputs();
+
     const result = await GetCategoriesManage();
-    setCategories(result);
-    setOriginalCategoriesList(result);
+    const filteredCategories = result.filter(
+      (category) =>
+        category.nombre !== "Promociones" && category.nombre !== "Destacados"
+    );
+    setCategories(filteredCategories);
+    setOriginalCategoriesList(filteredCategories);
   }
   //#endregion
 
@@ -463,8 +473,14 @@ function CategoryManager() {
 
         // InitialState();
         ClearCategoryInputs();
+
         const result = await GetCategoriesManage();
-        setCategories(result);
+        const filteredCategories = result.filter(
+          (category) =>
+            category.nombre !== "Promociones" &&
+            category.nombre !== "Destacados"
+        );
+        setCategories(filteredCategories);
 
         setCategories((prevCategories) => {
           setOriginalCategoriesList(prevCategories);

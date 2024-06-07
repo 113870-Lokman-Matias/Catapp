@@ -8,6 +8,7 @@ namespace API.Models
         public Producto()
         {
             DetallePedidos = new HashSet<DetallePedido>();
+            DetallesStocks = new HashSet<DetallesStock>();
         }
 
         public int IdProducto { get; set; }

@@ -46,6 +46,9 @@ using API.Services.MetodoPagoServices.Commands.CreateMetodoPagoCommand;
 using API.Services.MetodoPagoServices.Commands.UpdateMetodoPagoCommand;
 using API.Services.MetodoPagoServices.Commands.DeleteMetodoPagoCommand;
 
+using API.Dtos.ConfiguracionDto;
+using API.Services.ConfiguracionServices.Commands.UpdateConfiguracionCommand;
+
 namespace API.Mapper
 {
   public class MapperConfig : Profile
@@ -99,15 +102,15 @@ namespace API.Mapper
       CreateMap<Pedido, UpdateVerificadoPedidoCommand>().ReverseMap();
       CreateMap<Pedido, DeletePedidoCommand>().ReverseMap();
 
-      // Mapper para Pagos
-      CreateMap<PagoDto, Pago>().ReverseMap();
-      CreateMap<Pago, CreatePagoCommand>().ReverseMap();
-
       // Mapper para Metodos de pago
       CreateMap<MetodoPagoDto, MetodosPago>().ReverseMap();
       CreateMap<MetodosPago, CreateMetodoPagoCommand>().ReverseMap();
       CreateMap<MetodosPago, UpdateMetodoPagoCommand>().ReverseMap();
       CreateMap<MetodosPago, DeleteMetodoPagoCommand>().ReverseMap();
+
+      // Mapper para Configuraciones
+      CreateMap<ConfiguracionDto, Configuracion>().ReverseMap();
+      CreateMap<Configuracion, UpdateConfiguracionCommand>().ReverseMap();
     }
   }
 }

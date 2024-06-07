@@ -2,8 +2,8 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 15.1
--- Dumped by pg_dump version 15.1
+-- Dumped from database version 15.3
+-- Dumped by pg_dump version 15.3
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -93,6 +93,52 @@ ALTER TABLE public.clientes_id_cliente_seq OWNER TO postgres;
 --
 
 ALTER SEQUENCE public.clientes_id_cliente_seq OWNED BY public.clientes.id_cliente;
+
+
+--
+-- Name: configuraciones; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.configuraciones (
+    id_configuracion integer NOT NULL,
+    direccion text,
+    url_direccion text,
+    horarios text,
+    cbu text,
+    alias text,
+    whatsapp text DEFAULT 0 NOT NULL,
+    telefono text,
+    facebook text,
+    url_facebook text,
+    instagram text,
+    url_instagram text,
+    cantidad_mayorista integer DEFAULT 0 NOT NULL,
+    url_logo text
+);
+
+
+ALTER TABLE public.configuraciones OWNER TO postgres;
+
+--
+-- Name: configuraciones_id_configuracion_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.configuraciones_id_configuracion_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.configuraciones_id_configuracion_seq OWNER TO postgres;
+
+--
+-- Name: configuraciones_id_configuracion_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.configuraciones_id_configuracion_seq OWNED BY public.configuraciones.id_configuracion;
 
 
 --
@@ -543,6 +589,13 @@ ALTER TABLE ONLY public.clientes ALTER COLUMN id_cliente SET DEFAULT nextval('pu
 
 
 --
+-- Name: configuraciones id_configuracion; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.configuraciones ALTER COLUMN id_configuracion SET DEFAULT nextval('public.configuraciones_id_configuracion_seq'::regclass);
+
+
+--
 -- Name: cotizaciones id_cotizacion; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -632,6 +685,14 @@ COPY public.categorias (id_categoria, nombre, id_imagen, url_imagen, ocultar) FR
 --
 
 COPY public.clientes (id_cliente, nombre_completo, dni, telefono, direccion, entre_calles) FROM stdin;
+\.
+
+
+--
+-- Data for Name: configuraciones; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.configuraciones (id_configuracion, direccion, url_direccion, horarios, cbu, alias, whatsapp, telefono, facebook, url_facebook, instagram, url_instagram, cantidad_mayorista, url_logo) FROM stdin;
 \.
 
 
@@ -767,6 +828,13 @@ SELECT pg_catalog.setval('public.clientes_id_cliente_seq', 1, false);
 
 
 --
+-- Name: configuraciones_id_configuracion_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.configuraciones_id_configuracion_seq', 1, false);
+
+
+--
 -- Name: cotizaciones_id_cotizacion_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
@@ -857,6 +925,14 @@ ALTER TABLE ONLY public.categorias
 
 ALTER TABLE ONLY public.clientes
     ADD CONSTRAINT clientes_pkey PRIMARY KEY (id_cliente);
+
+
+--
+-- Name: configuraciones configuraciones_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.configuraciones
+    ADD CONSTRAINT configuraciones_pkey PRIMARY KEY (id_configuracion);
 
 
 --

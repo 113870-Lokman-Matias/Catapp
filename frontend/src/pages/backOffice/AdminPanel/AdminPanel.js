@@ -22,6 +22,7 @@ import { ReactComponent as Manager } from "../../../assets/svgs/manager2.svg";
 import { ReactComponent as Supervisor } from "../../../assets/svgs/supervisor.svg";
 import { ReactComponent as Users } from "../../../assets/svgs/users.svg";
 import { ReactComponent as ResetPassword } from "../../../assets/svgs/resetpassword.svg";
+import { ReactComponent as Settings } from "../../../assets/svgs/settings.svg";
 import { ReactComponent as PasswordInput } from "../../../assets/svgs/password.svg";
 import { ReactComponent as Update } from "../../../assets/svgs/update.svg";
 import { ReactComponent as Close } from "../../../assets/svgs/closebtn.svg";
@@ -216,6 +217,10 @@ function AdminPanel() {
               >
                 <ResetPassword className="logout" />
               </button>
+
+              <Link to="/administrar-configuraciones" className="btn-logout" aria-label="Configuraciones">
+                <Settings className="logout" />
+              </Link>
 
               <Link to="/login" className="btn-logout" aria-label="Logout">
                 <Logout className="logout" />

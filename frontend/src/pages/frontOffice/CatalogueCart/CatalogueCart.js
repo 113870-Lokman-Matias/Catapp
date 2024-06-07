@@ -20,6 +20,7 @@ import {
 } from "../../../services/ProductService";
 import { PayWithMercadoPago } from "../../../services/PaymentService";
 import { GetOrderIdByPaymentId } from "../../../services/OrderService";
+import { GetInfoConfiguracion } from "../../../services/SettingService";
 
 import { initMercadoPago, Wallet } from "@mercadopago/sdk-react";
 
@@ -84,12 +85,18 @@ const CatalogueCart = () => {
   const [dni, setDni] = useState("");
   const [direccion, setDireccion] = useState("");
 
-  const [direccionAuto] = useState("Maestro M. Lopez (Catapp)");
-  const [horariosAtencion] = useState(
-    "Lunes a Viernes de 09:30 a 18:00 hs y Sábados de 9:00 a 13:30 hs"
-  );
-  const [telefonoEmpresa] = useState("3517476389");
-  const [cbu] = useState("45300005445599555");
+  const [direccionAuto, setDireccionAuto] = useState(null);
+  const [urlDireccionAuto, setUrlDireccionAuto] = useState(null);
+
+  const [horariosAtencion, setHorariosAtencion] = useState(null);
+
+  const [telefonoEmpresa, setTelefonoEmpresa] = useState(null);
+
+  const [cbu, setCbu] = useState(null);
+  const [alias, setAlias] = useState(null);
+
+  const [cantidadMayorista, setCantidadMayorista] = useState(null);
+
   const [costoEnvioDomicilio, setCostoEnvioDomicilio] = useState("");
   const [habilitadoEnvioDomicilio, setHabilitadoEnvioDomicilio] = useState("");
 
@@ -103,6 +110,8 @@ const CatalogueCart = () => {
   const [vendedor, setVendedor] = useState("");
   const [envio, setEnvio] = useState("");
   //#endregion
+
+  const [whatsapp, setWhatsapp] = useState(null);
 
   //#region Constantes necesarias para el filtro por busqueda
   const [products, setProducts] = useState([]);
@@ -134,6 +143,21 @@ const CatalogueCart = () => {
           (abono) => abono.habilitado
         );
         setListaNombresAbonos(abonosHabilitados);
+
+        const responseConfig = await GetInfoConfiguracion();
+        setWhatsapp(responseConfig.whatsapp);
+
+        setDireccionAuto(responseConfig.direccion);
+        setUrlDireccionAuto(responseConfig.urlDireccion);
+
+        setHorariosAtencion(responseConfig.horarios);
+
+        setCbu(responseConfig.cbu);
+        setAlias(responseConfig.alias);
+
+        setTelefonoEmpresa(responseConfig.telefono);
+
+        setCantidadMayorista(responseConfig.cantidadMayorista);
       } catch (error) {
         console.log(error);
       } finally {
@@ -465,6 +489,25 @@ const CatalogueCart = () => {
   }, [pathname, pedidoAprobado]);
 
   useEffect(() => {
+    const fetchData = async () => {
+      const responseConfig = await GetInfoConfiguracion();
+      setWhatsapp(responseConfig.whatsapp);
+
+      setDireccionAuto(responseConfig.direccion);
+      setUrlDireccionAuto(responseConfig.urlDireccion);
+
+      setHorariosAtencion(responseConfig.horarios);
+
+      setCbu(responseConfig.cbu);
+      setAlias(responseConfig.alias);
+
+      setTelefonoEmpresa(responseConfig.telefono);
+
+      setCantidadMayorista(responseConfig.cantidadMayorista);
+    };
+
+    fetchData();
+
     const isMayorista = pathname.includes("mayorista");
 
     const storedCartKey = isMayorista
@@ -844,11 +887,12 @@ const CatalogueCart = () => {
     setCart({});
     // Actualizar el localStorage con el nuevo carrito
     // updateLocalStorage({});
-    localStorage.removeItem(
-      clientType === "Mayorista"
-        ? "shoppingCartMayorista"
-        : "shoppingCartMinorista"
-    );
+
+    if (pathname.includes("mayorista")) {
+      localStorage.removeItem("shoppingCartMayorista");
+    } else if (pathname.includes("minorista")) {
+      localStorage.removeItem("shoppingCartMinorista");
+    }
     setProductQuantities({});
     setProductNotes({});
     setTotalQuantity(0);
@@ -1002,14 +1046,25 @@ const CatalogueCart = () => {
         mensaje += "```Datos de la empresa:```\n\n";
 
         if (envio == 1) {
-          mensaje += `*Dirección*:\n_${direccionAuto}_\n\n`;
-          mensaje += `*Horarios de atención:*\n_${horariosAtencion}_\n\n`;
+          if (direccionAuto !== null && direccionAuto !== "") {
+            mensaje += `*Dirección*:\n_${direccionAuto}_\n\n`;
+          }
+          if (horariosAtencion !== null && horariosAtencion !== "") {
+            mensaje += `*Horarios de atención:*\n_${horariosAtencion}_\n\n`;
+          }
         }
 
-        mensaje += `*Número de teléfono*:\n_${telefonoEmpresa}_\n\n`;
+        if (telefonoEmpresa !== null && telefonoEmpresa !== "") {
+          mensaje += `*Número de teléfono*:\n_${telefonoEmpresa}_\n\n`;
+        }
 
         if (abono == 2) {
-          mensaje += `*CBU*:\n_${cbu}_\n\n`;
+          if (cbu !== null && cbu !== "") {
+            mensaje += `*CBU*:\n_${cbu}_\n\n`;
+          }
+          if (alias !== null && alias !== "") {
+            mensaje += `*ALIAS*:\n_${alias}_\n\n`;
+          }
         }
 
         mensaje += `*Vendedor*:\n_${getNombreVendedor(vendedor)}_\n\n`;
@@ -1060,7 +1115,7 @@ const CatalogueCart = () => {
 
         // Crear el enlace para abrir WhatsApp con el mensaje
         const encodedMensaje = encodeURIComponent(mensaje);
-        const whatsappURL = `https://api.whatsapp.com/send?phone=543517476389&text=${encodedMensaje}`;
+        const whatsappURL = `https://api.whatsapp.com/send?phone=${whatsapp}&text=${encodedMensaje}`;
 
         // Redirigir directamente a la URL de WhatsApp
         window.location.href = whatsappURL;
@@ -1081,146 +1136,163 @@ const CatalogueCart = () => {
   const handleSubmitPedido = async (e) => {
     e.preventDefault();
 
-    if (IsValid() === true) {
-      // Iterar sobre los elementos del carrito y crear los detalles
-      const detalles = Object.values(cart).map((producto) => {
-        return {
-          idProducto: producto.idProducto,
-          cantidad: productQuantities[producto.idProducto],
-          aclaracion: producto.aclaraciones,
-          precioUnitario:
-            clientType === "Mayorista" && producto.precioMayorista > 0
-              ? `${Math.ceil(producto.precioMayorista)}`
-              : clientType === "Minorista" && producto.precioMinorista > 0
-              ? `${Math.ceil(producto.precioMinorista)}`
-              : // producto.precioMayorista > 0
-                // ? `${Math.ceil(producto.precioMayorista)}`
-                `${Math.round(
-                  (producto.divisa === "Dólar"
-                    ? producto.precio * valorDolar
-                    : producto.precio) *
-                    (1 +
-                      (clientType === "Mayorista"
-                        ? producto.porcentajeMayorista
-                        : producto.porcentajeMinorista) /
-                        100)
-                )}`,
-        };
-      });
+    if (whatsapp && whatsapp !== "0") {
+      if (IsValid() === true) {
+        // Iterar sobre los elementos del carrito y crear los detalles
+        const detalles = Object.values(cart).map((producto) => {
+          return {
+            idProducto: producto.idProducto,
+            cantidad: productQuantities[producto.idProducto],
+            aclaracion: producto.aclaraciones,
+            precioUnitario:
+              clientType === "Mayorista" && producto.precioMayorista > 0
+                ? `${Math.ceil(producto.precioMayorista)}`
+                : clientType === "Minorista" && producto.precioMinorista > 0
+                ? `${Math.ceil(producto.precioMinorista)}`
+                : // producto.precioMayorista > 0
+                  // ? `${Math.ceil(producto.precioMayorista)}`
+                  `${Math.round(
+                    (producto.divisa === "Dólar"
+                      ? producto.precio * valorDolar
+                      : producto.precio) *
+                      (1 +
+                        (clientType === "Mayorista"
+                          ? producto.porcentajeMayorista
+                          : producto.porcentajeMinorista) /
+                          100)
+                  )}`,
+          };
+        });
 
-      await SaveOrders({
-        nombreCompleto: `${nombre.charAt(0).toUpperCase() + nombre.slice(1)}`,
-        dni: dni,
-        telefono: telefono,
-        direccion: `${direccion.charAt(0).toUpperCase() + direccion.slice(1)}`,
-        entreCalles: `${calles.charAt(0).toUpperCase() + calles.slice(1)}`,
-        costoEnvio:
-          envio == 2 && costoEnvioDomicilio > 0 ? costoEnvioDomicilio : 0,
-        idTipoPedido: clientType === "Minorista" ? 1 : 2,
-        idVendedor: vendedor,
-        idMetodoPago: abono,
-        idMetodoEntrega: envio,
-        detalles: detalles, // Aquí se incluyen los detalles de los productos
-      })
-        .then((response) => {
-          // Crear el mensaje con la información del pedido para Whatsapp
-          let mensaje = "```Datos del cliente:```\n\n";
+        await SaveOrders({
+          nombreCompleto: `${nombre.charAt(0).toUpperCase() + nombre.slice(1)}`,
+          dni: dni,
+          telefono: telefono,
+          direccion: `${
+            direccion.charAt(0).toUpperCase() + direccion.slice(1)
+          }`,
+          entreCalles: `${calles.charAt(0).toUpperCase() + calles.slice(1)}`,
+          costoEnvio:
+            envio == 2 && costoEnvioDomicilio > 0 ? costoEnvioDomicilio : 0,
+          idTipoPedido: clientType === "Minorista" ? 1 : 2,
+          idVendedor: vendedor,
+          idMetodoPago: abono,
+          idMetodoEntrega: envio,
+          detalles: detalles, // Aquí se incluyen los detalles de los productos
+        })
+          .then((response) => {
+            // Crear el mensaje con la información del pedido para Whatsapp
+            let mensaje = "```Datos del cliente:```\n\n";
 
-          mensaje += `*Nombre completo*:\n_${nombre}_\n\n`;
+            mensaje += `*Nombre completo*:\n_${nombre}_\n\n`;
 
-          mensaje += `*DNI*:\n_${dni}_\n\n`;
+            mensaje += `*DNI*:\n_${dni}_\n\n`;
 
-          mensaje += `*Entrega*:\n_${getTipoEnvio(envio)}_\n\n`;
+            mensaje += `*Entrega*:\n_${getTipoEnvio(envio)}_\n\n`;
 
-          if (envio != 1) {
-            mensaje += `*Dirección*:\n_${direccion}_\n\n`;
-            mensaje += `*Entre calles*:\n_${calles}_\n\n`;
-          }
-
-          mensaje += `*Número de teléfono*:\n_${telefono}_\n\n`;
-
-          mensaje += `*Abona con*:\n_${getTipoAbono(abono)}_\n\n`;
-
-          mensaje += `*----------------------------------*\n\n`;
-          mensaje += "```Datos de la empresa:```\n\n";
-
-          if (envio == 1) {
-            mensaje += `*Dirección*:\n_${direccionAuto}_\n\n`;
-            mensaje += `*Horarios de atención:*\n_${horariosAtencion}_\n\n`;
-          }
-
-          mensaje += `*Número de teléfono*:\n_${telefonoEmpresa}_\n\n`;
-
-          if (abono == 2) {
-            mensaje += `*CBU*:\n_${cbu}_\n\n`;
-          }
-
-          mensaje += `*Vendedor*:\n_${getNombreVendedor(vendedor)}_\n\n`;
-
-          mensaje += `*----------------------------------*\n\n`;
-
-          mensaje +=
-            clientType === "Mayorista"
-              ? "```Pedido Mayorista:```\n\n"
-              : "```Pedido Minorista:```\n\n";
-
-          mensaje += `*Número de pedido*: ${response.data.idPedido}\n\n`;
-          for (const productId in cart) {
-            const product = cart[productId];
-            const quantity = productQuantities[product.idProducto];
-            mensaje += `*${quantity}* x *${product.nombre}*\n`;
-
-            if (productNotes[product.idProducto]) {
-              mensaje += `*Aclaración: ${productNotes[product.idProducto]}*\n`;
+            if (envio != 1) {
+              mensaje += `*Dirección*:\n_${direccion}_\n\n`;
+              mensaje += `*Entre calles*:\n_${calles}_\n\n`;
             }
 
-            mensaje += `_Subtotal = $${calculateSubtotal(product)
+            mensaje += `*Número de teléfono*:\n_${telefono}_\n\n`;
+
+            mensaje += `*Abona con*:\n_${getTipoAbono(abono)}_\n\n`;
+
+            mensaje += `*----------------------------------*\n\n`;
+            mensaje += "```Datos de la empresa:```\n\n";
+
+            if (envio == 1) {
+              if (direccionAuto !== null && direccionAuto !== "") {
+                mensaje += `*Dirección*:\n_${direccionAuto}_\n\n`;
+              }
+              if (horariosAtencion !== null && horariosAtencion !== "") {
+                mensaje += `*Horarios de atención:*\n_${horariosAtencion}_\n\n`;
+              }
+            }
+
+            if (telefonoEmpresa !== null && telefonoEmpresa !== "") {
+              mensaje += `*Número de teléfono*:\n_${telefonoEmpresa}_\n\n`;
+            }
+
+            if (abono == 2) {
+              if (cbu !== null && cbu !== "") {
+                mensaje += `*CBU*:\n_${cbu}_\n\n`;
+              }
+              if (alias !== null && alias !== "") {
+                mensaje += `*ALIAS*:\n_${alias}_\n\n`;
+              }
+            }
+
+            mensaje += `*Vendedor*:\n_${getNombreVendedor(vendedor)}_\n\n`;
+
+            mensaje += `*----------------------------------*\n\n`;
+
+            mensaje +=
+              clientType === "Mayorista"
+                ? "```Pedido Mayorista:```\n\n"
+                : "```Pedido Minorista:```\n\n";
+
+            mensaje += `*Número de pedido*: ${response.data.idPedido}\n\n`;
+            for (const productId in cart) {
+              const product = cart[productId];
+              const quantity = productQuantities[product.idProducto];
+              mensaje += `*${quantity}* x *${product.nombre}*\n`;
+
+              if (productNotes[product.idProducto]) {
+                mensaje += `*Aclaración: ${
+                  productNotes[product.idProducto]
+                }*\n`;
+              }
+
+              mensaje += `_Subtotal = $${calculateSubtotal(product)
+                .toLocaleString("es-ES", {
+                  minimumFractionDigits: 0,
+                  maximumFractionDigits: 2,
+                })
+                .replace(",", ".")
+                .replace(/\B(?=(\d{3})+(?!\d))/g, ".")}_\n\n`;
+            }
+
+            if (envio == 2 && costoEnvioDomicilio > 0) {
+              mensaje += `*SUBTOTAL: $${(calculateTotal() - costoEnvioDomicilio)
+                .toLocaleString("es-ES", {
+                  minimumFractionDigits: 0,
+                  maximumFractionDigits: 2,
+                })
+                .replace(",", ".")
+                .replace(/\B(?=(\d{3})+(?!\d))/g, ".")}*\n`;
+              mensaje += `*Costo de envío: $${costoEnvioDomicilio}*\n`;
+            }
+            mensaje += `*TOTAL: $${calculateTotal()
               .toLocaleString("es-ES", {
                 minimumFractionDigits: 0,
                 maximumFractionDigits: 2,
               })
               .replace(",", ".")
-              .replace(/\B(?=(\d{3})+(?!\d))/g, ".")}_\n\n`;
-          }
+              .replace(/\B(?=(\d{3})+(?!\d))/g, ".")}*`;
 
-          if (envio == 2 && costoEnvioDomicilio > 0) {
-            mensaje += `*SUBTOTAL: $${(calculateTotal() - costoEnvioDomicilio)
-              .toLocaleString("es-ES", {
-                minimumFractionDigits: 0,
-                maximumFractionDigits: 2,
-              })
-              .replace(",", ".")
-              .replace(/\B(?=(\d{3})+(?!\d))/g, ".")}*\n`;
-            mensaje += `*Costo de envío: $${costoEnvioDomicilio}*\n`;
-          }
-          mensaje += `*TOTAL: $${calculateTotal()
-            .toLocaleString("es-ES", {
-              minimumFractionDigits: 0,
-              maximumFractionDigits: 2,
-            })
-            .replace(",", ".")
-            .replace(/\B(?=(\d{3})+(?!\d))/g, ".")}*`;
+            // El POST se realizó exitosamente, ahora redirigir a WhatsApp
 
-          // El POST se realizó exitosamente, ahora redirigir a WhatsApp
+            // Crear el enlace para abrir WhatsApp con el mensaje
+            const encodedMensaje = encodeURIComponent(mensaje);
+            const whatsappURL = `https://api.whatsapp.com/send?phone=${whatsapp}&text=${encodedMensaje}`;
 
-          // Crear el enlace para abrir WhatsApp con el mensaje
-          const encodedMensaje = encodeURIComponent(mensaje);
-          const whatsappURL = `https://api.whatsapp.com/send?phone=543517476389&text=${encodedMensaje}`;
+            // Redirigir directamente a la URL de WhatsApp
+            window.location.href = whatsappURL;
 
-          // Redirigir directamente a la URL de WhatsApp
-          window.location.href = whatsappURL;
+            // Restablecer el formulario y ocultarlo
+            ClearClientInputs();
+            CloseModal();
 
-          // Restablecer el formulario y ocultarlo
-          ClearClientInputs();
-          CloseModal();
-
-          clearCart();
-          ClearFormData();
-        })
-        .catch((error) => {
-          // Manejar el error si algo sale mal en el POST
-          console.error("Error al guardar el pedido:", error);
-        });
+            clearCart();
+            ClearFormData();
+          })
+          .catch((error) => {
+            // Manejar el error si algo sale mal en el POST
+            console.error("Error al guardar el pedido:", error);
+          });
+      }
     }
   };
   //#endregion
@@ -1683,8 +1755,12 @@ const CatalogueCart = () => {
                       //  data-bs-target="#exampleModal"
                       onClick={() => {
                         // Agregar verificación antes de abrir el modal
-                        if (clientType === "Mayorista" && totalQuantity < 5) {
-                          const faltanProductos = 5 - totalQuantity;
+                        if (
+                          clientType === "Mayorista" &&
+                          totalQuantity < cantidadMayorista
+                        ) {
+                          const faltanProductos =
+                            cantidadMayorista - totalQuantity;
 
                           Swal.fire({
                             icon: "warning",
@@ -1693,7 +1769,9 @@ const CatalogueCart = () => {
                             } ${faltanProductos} producto${
                               faltanProductos !== 1 ? "s" : ""
                             } para que puedas hacer tu pedido mayorista`,
-                            text: "Debes agregar al menos 5 productos al carrito para enviar el pedido.",
+                            text: `Debes agregar al menos ${cantidadMayorista} producto${
+                              cantidadMayorista !== 1 ? "s" : ""
+                            } al carrito para enviar el pedido.`,
                             confirmButtonText: "Aceptar",
                             showCancelButton: false,
                             confirmButtonColor: "#f8bb86",
@@ -2325,8 +2403,11 @@ const CatalogueCart = () => {
                   // data-bs-target="#exampleModal"
                   onClick={() => {
                     // Agregar verificación antes de abrir el modal
-                    if (clientType === "Mayorista" && totalQuantity < 5) {
-                      const faltanProductos = 5 - totalQuantity;
+                    if (
+                      clientType === "Mayorista" &&
+                      totalQuantity < cantidadMayorista
+                    ) {
+                      const faltanProductos = cantidadMayorista - totalQuantity;
 
                       Swal.fire({
                         icon: "warning",
@@ -2335,7 +2416,9 @@ const CatalogueCart = () => {
                         } ${faltanProductos} producto${
                           faltanProductos !== 1 ? "s" : ""
                         } para que puedas hacer tu pedido mayorista`,
-                        text: "Debes agregar al menos 5 productos al carrito para enviar el pedido.",
+                        text: `Debes agregar al menos ${cantidadMayorista} producto${
+                          cantidadMayorista !== 1 ? "s" : ""
+                        } al carrito para enviar el pedido.`,
                         confirmButtonText: "Aceptar",
                         showCancelButton: false,
                         confirmButtonColor: "#f8bb86",
@@ -2502,7 +2585,7 @@ const CatalogueCart = () => {
                       </>
                     )}
 
-                    {envio == 1 && (
+                    {envio == 1 && direccionAuto && direccionAuto !== "" && (
                       <>
                         <label className="label">Dirección:</label>
                         <div className="form-group-input desc-input">
@@ -2517,31 +2600,42 @@ const CatalogueCart = () => {
                             }}
                             readOnly
                           />
-                          <a
-                            href="https://www.google.com/maps/place/C%C3%B3rdoba/@-31.3994267,-64.2767842,12z/data=!3m1!4b1!4m6!3m5!1s0x9432985f478f5b69:0xb0a24f9a5366b092!8m2!3d-31.4200833!4d-64.1887761!16zL20vMDFrMDNy?entry=ttu"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            <Location className="location-btn" />
-                          </a>
-                        </div>
 
-                        <label className="label">Horarios de atención:</label>
-                        <div className="form-group-input desc-input">
-                          <input
-                            type="text"
-                            className="input2"
-                            id="horariosDeAtencion"
-                            value={horariosAtencion}
-                            style={{
-                              backgroundColor: "#d3d3d3",
-                              cursor: "default",
-                            }}
-                            readOnly
-                          />
+                          {urlDireccionAuto && urlDireccionAuto !== "" && (
+                            <a
+                              href={urlDireccionAuto ? urlDireccionAuto : "#"}
+                              target={urlDireccionAuto ? "_blank" : ""}
+                              rel={
+                                urlDireccionAuto ? "noopener noreferrer" : ""
+                              }
+                            >
+                              <Location className="location-btn" />
+                            </a>
+                          )}
                         </div>
                       </>
                     )}
+
+                    {envio == 1 &&
+                      horariosAtencion &&
+                      horariosAtencion !== "" && (
+                        <>
+                          <label className="label">Horarios de atención:</label>
+                          <div className="form-group-input desc-input">
+                            <input
+                              type="text"
+                              className="input2"
+                              id="horariosDeAtencion"
+                              value={horariosAtencion}
+                              style={{
+                                backgroundColor: "#d3d3d3",
+                                cursor: "default",
+                              }}
+                              readOnly
+                            />
+                          </div>
+                        </>
+                      )}
 
                     <label className="label selects" htmlFor="abono">
                       Medio de pago:
@@ -2578,7 +2672,7 @@ const CatalogueCart = () => {
                       </select>
                     </div>
 
-                    {abono == 2 && (
+                    {abono == 2 && cbu && cbu !== "" && (
                       <>
                         <label className="label">CBU:</label>
                         <div className="form-group-input desc-input">
@@ -2587,6 +2681,25 @@ const CatalogueCart = () => {
                             className="input2"
                             id="cbu"
                             value={cbu}
+                            style={{
+                              backgroundColor: "#d3d3d3",
+                              cursor: "default",
+                            }}
+                            readOnly
+                          />
+                        </div>
+                      </>
+                    )}
+
+                    {abono == 2 && alias && alias !== "" && (
+                      <>
+                        <label className="label">ALIAS:</label>
+                        <div className="form-group-input desc-input">
+                          <input
+                            type="text"
+                            className="input2"
+                            id="alias"
+                            value={alias}
                             style={{
                               backgroundColor: "#d3d3d3",
                               cursor: "default",
@@ -2690,13 +2803,31 @@ const CatalogueCart = () => {
                 ) : (
                   <div id="div-btn-save">
                     <button
-                      className="btnadd2"
+                      className={`btnadd2 ${
+                        !whatsapp || whatsapp === "0" ? "btnadd2-disabled" : ""
+                      }`}
                       id="btn-save"
                       onClick={handleSubmitPedido}
                     >
                       <div className="btn-save-update-close">
-                        <Whatsapplogo className="save-btn" />
-                        <p className="p-save-update-close">Enviar Pedido</p>
+                        <Whatsapplogo
+                          className={`save-btn ${
+                            !whatsapp || whatsapp === "0"
+                              ? "save-btn-disabled"
+                              : ""
+                          }`}
+                        />
+                        <p
+                          className={`p-save-update-close ${
+                            !whatsapp || whatsapp === "0"
+                              ? "p-save-update-close-disabled"
+                              : ""
+                          }`}
+                        >
+                          {!whatsapp || whatsapp === "0"
+                            ? "WhatsApp no disponible"
+                            : "Enviar Pedido"}
+                        </p>
                       </div>
                     </button>
                   </div>

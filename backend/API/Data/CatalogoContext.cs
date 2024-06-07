@@ -19,6 +19,7 @@ namespace API.Data
 
         public virtual DbSet<Categoria> Categorias { get; set; } = null!;
         public virtual DbSet<Cliente> Clientes { get; set; } = null!;
+        public virtual DbSet<Configuracion> Configuraciones { get; set; } = null!;
         public virtual DbSet<Cotizacion> Cotizaciones { get; set; } = null!;
         public virtual DbSet<DetallePedido> DetallePedidos { get; set; } = null!;
         public virtual DbSet<DetallesStock> DetallesStocks { get; set; } = null!;
@@ -73,6 +74,44 @@ namespace API.Data
                 entity.Property(e => e.NombreCompleto).HasColumnName("nombre_completo");
 
                 entity.Property(e => e.Telefono).HasColumnName("telefono");
+            });
+
+            modelBuilder.Entity<Configuracion>(entity =>
+            {
+                entity.HasKey(e => e.IdConfiguracion)
+                    .HasName("configuraciones_pkey");
+
+                entity.ToTable("configuraciones");
+
+                entity.Property(e => e.IdConfiguracion).HasColumnName("id_configuracion");
+
+                entity.Property(e => e.Alias).HasColumnName("alias");
+
+                entity.Property(e => e.CantidadMayorista).HasColumnName("cantidad_mayorista");
+
+                entity.Property(e => e.Cbu).HasColumnName("cbu");
+
+                entity.Property(e => e.Direccion).HasColumnName("direccion");
+
+                entity.Property(e => e.Facebook).HasColumnName("facebook");
+
+                entity.Property(e => e.Horarios).HasColumnName("horarios");
+
+                entity.Property(e => e.Instagram).HasColumnName("instagram");
+
+                entity.Property(e => e.Telefono).HasColumnName("telefono");
+
+                entity.Property(e => e.UrlDireccion).HasColumnName("url_direccion");
+
+                entity.Property(e => e.UrlFacebook).HasColumnName("url_facebook");
+
+                entity.Property(e => e.UrlInstagram).HasColumnName("url_instagram");
+
+                entity.Property(e => e.UrlLogo).HasColumnName("url_logo");
+
+                entity.Property(e => e.Whatsapp)
+                    .HasColumnName("whatsapp")
+                    .HasDefaultValueSql("0");
             });
 
             modelBuilder.Entity<Cotizacion>(entity =>
@@ -176,9 +215,9 @@ namespace API.Data
 
                 entity.Property(e => e.IdEnvio).HasColumnName("id_envio");
 
-                entity.Property(e => e.Habilitado).HasColumnName("habilitado");
-
                 entity.Property(e => e.FechaModificacion).HasColumnName("fecha_modificacion");
+
+                entity.Property(e => e.Habilitado).HasColumnName("habilitado");
 
                 entity.Property(e => e.Precio).HasColumnName("precio");
 
@@ -206,11 +245,11 @@ namespace API.Data
 
                 entity.Property(e => e.IdMetodoPago).HasColumnName("id_metodo_pago");
 
-                entity.Property(e => e.Nombre).HasColumnName("nombre");
+                entity.Property(e => e.Disponibilidad).HasColumnName("disponibilidad");
 
                 entity.Property(e => e.Habilitado).HasColumnName("habilitado");
 
-                entity.Property(e => e.Disponibilidad).HasColumnName("disponibilidad");
+                entity.Property(e => e.Nombre).HasColumnName("nombre");
             });
 
             modelBuilder.Entity<Pedido>(entity =>
@@ -236,6 +275,10 @@ namespace API.Data
 
                 entity.Property(e => e.CostoEnvio).HasColumnName("costo_envio");
 
+                entity.Property(e => e.Direccion).HasColumnName("direccion");
+
+                entity.Property(e => e.EntreCalles).HasColumnName("entre_calles");
+
                 entity.Property(e => e.Fecha).HasColumnName("fecha");
 
                 entity.Property(e => e.IdCliente).HasColumnName("id_cliente");
@@ -248,13 +291,9 @@ namespace API.Data
 
                 entity.Property(e => e.IdVendedor).HasColumnName("id_vendedor");
 
-                entity.Property(e => e.Verificado).HasColumnName("verificado");
-
-                entity.Property(e => e.Direccion).HasColumnName("direccion");
-
-                entity.Property(e => e.EntreCalles).HasColumnName("entre_calles");
-
                 entity.Property(e => e.PaymentId).HasColumnName("payment_id");
+
+                entity.Property(e => e.Verificado).HasColumnName("verificado");
 
                 entity.HasOne(d => d.IdClienteNavigation)
                     .WithMany(p => p.Pedidos)
@@ -301,6 +340,10 @@ namespace API.Data
 
                 entity.Property(e => e.Descripcion).HasColumnName("descripcion");
 
+                entity.Property(e => e.EnDestacado).HasColumnName("en_destacado");
+
+                entity.Property(e => e.EnPromocion).HasColumnName("en_promocion");
+
                 entity.Property(e => e.IdCategoria).HasColumnName("id_categoria");
 
                 entity.Property(e => e.IdDivisa).HasColumnName("id_divisa");
@@ -310,10 +353,6 @@ namespace API.Data
                 entity.Property(e => e.Nombre).HasColumnName("nombre");
 
                 entity.Property(e => e.Ocultar).HasColumnName("ocultar");
-
-                entity.Property(e => e.EnPromocion).HasColumnName("en_promocion");
-
-                entity.Property(e => e.EnDestacado).HasColumnName("en_destacado");
 
                 entity.Property(e => e.PorcentajeMayorista).HasColumnName("porcentaje_mayorista");
 

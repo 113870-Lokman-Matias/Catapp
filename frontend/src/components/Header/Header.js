@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 
 import "./Header.css";
 
-import logo from "../../assets/images/logo.png";
+import { GetInfoConfiguracion } from "../../services/SettingService";
 
 function Header() {
   const [color, setColor] = useState(false);
@@ -15,25 +15,39 @@ function Header() {
     }
   };
 
+  const [urlLogo, setUrlLogo] = useState(null);
+
   window.addEventListener("scroll", changeColor);
 
   useEffect(() => {
-    (async () => [])();
+    // Funciónes asincronas
+    (async () => {
+      try {
+        const response = await GetInfoConfiguracion();
+        setUrlLogo(response.urlLogo);
+      } catch (error) {
+        console.log(error);
+      }
+    })();
   }, []);
 
   return (
     <nav className={color ? "header-nav header-nav-bg" : "header-nav"}>
-      <Link
-        to="/"
-        className={color ? "header-a-logo  header-a-logo-bg " : "header-a-logo"}
-      >
-        <img
-          className={color ? "header-logo  header-logo-bg " : "header-logo"}
-          width={140}
-          src={logo}
-          alt="logo"
-        />
-      </Link>
+      {urlLogo && urlLogo !== "" && (
+        <Link
+          to="/"
+          className={
+            color ? "header-a-logo  header-a-logo-bg " : "header-a-logo"
+          }
+        >
+          <img
+            className={color ? "header-logo  header-logo-bg " : "header-logo"}
+            width={140}
+            src={urlLogo}
+            alt="logo"
+          />
+        </Link>
+      )}
     </nav>
   );
 }

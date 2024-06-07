@@ -14,7 +14,7 @@ public class GeneralHub : Hub
         await Clients.All.SendAsync("MensajeUpdateCotizacion", mensaje);
     }
 
-    // Mensaje de Costo Envio
+    // Mensaje de Envio
     public async Task EnviarMensajeUpdateEnvio(string mensaje)
     {
         await Clients.All.SendAsync("MensajeUpdateEnvio", mensaje);
@@ -53,5 +53,11 @@ public class GeneralHub : Hub
     public async Task EnviarMensajeCrudMetodoPago(string mensaje)
     {
         await Clients.All.SendAsync("MensajeCrudMetodoPago", mensaje);
+    }
+
+    // Mensaje de Configuracion
+    public async Task EnviarMensajeUpdateConfiguracion(string mensaje)
+    {
+        await Clients.All.SendAsync("MensajeUpdateConfiguracion", mensaje);
     }
 }

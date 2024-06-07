@@ -29,6 +29,7 @@ import DetailManager from "./pages/backOffice/managers/DetailManager/DetailManag
 import ShipmentManager from "./pages/backOffice/managers/ShipmentManager/ShipmentManager";
 import OrderManager from "./pages/backOffice/managers/OrderManager/OrderManager";
 import PaymentTypeManager from "./pages/backOffice/managers/PaymentTypeManager/PaymentTypeManager";
+import SettingManager from "./pages/backOffice/managers/SettingManager/SettingManager";
 
 import OrderStatistics from "./pages/backOffice/statistics/StatisticsOptions";
 import OrderReports from "./pages/backOffice/statistics/OrderReports/OrderReports";
@@ -134,6 +135,14 @@ function App() {
             element={
               <RoleProtectedRoute allowedRoles={["Supervisor", "SuperAdmin"]}>
                 <ShipmentManager />
+              </RoleProtectedRoute>
+            }
+          />
+          <Route
+            path="administrar-configuraciones"
+            element={
+              <RoleProtectedRoute allowedRoles={["Supervisor", "SuperAdmin"]}>
+                <SettingManager />
               </RoleProtectedRoute>
             }
           />

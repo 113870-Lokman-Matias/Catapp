@@ -110,6 +110,7 @@
   border-radius: 50%;
   margin: 5px;
   font-weight: 700;
+  transition: all 0.4s;
 }
 
 .show-orders {
@@ -117,6 +118,7 @@
   width: 20px;
   height: 20px;
   fill: #ffffff;
+  transition: all 0.4s;
 }
 
 .header-excel-report {
