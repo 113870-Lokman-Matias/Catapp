@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { Helmet } from "react-helmet";
 import $ from "jquery";
 import Swal from "sweetalert2";
+import { Context } from "../../../common/Context";
 
 import * as signalR from "@microsoft/signalr";
 
@@ -20,7 +21,6 @@ import {
 } from "../../../services/ProductService";
 import { PayWithMercadoPago } from "../../../services/PaymentService";
 import { GetOrderIdByPaymentId } from "../../../services/OrderService";
-import { GetInfoConfiguracion } from "../../../services/SettingService";
 
 import { initMercadoPago, Wallet } from "@mercadopago/sdk-react";
 
@@ -85,17 +85,18 @@ const CatalogueCart = () => {
   const [dni, setDni] = useState("");
   const [direccion, setDireccion] = useState("");
 
-  const [direccionAuto, setDireccionAuto] = useState(null);
-  const [urlDireccionAuto, setUrlDireccionAuto] = useState(null);
+  const { direccionAuto } = useContext(Context);
+  const { urlDireccionAuto } = useContext(Context);
 
-  const [horariosAtencion, setHorariosAtencion] = useState(null);
+  const { horariosAtencion } = useContext(Context);
 
-  const [telefonoEmpresa, setTelefonoEmpresa] = useState(null);
+  const { telefonoEmpresa } = useContext(Context);
+  const { whatsapp } = useContext(Context);
 
-  const [cbu, setCbu] = useState(null);
-  const [alias, setAlias] = useState(null);
+  const { cbu } = useContext(Context);
+  const { alias } = useContext(Context);
 
-  const [cantidadMayorista, setCantidadMayorista] = useState(null);
+  const { cantidadMayorista } = useContext(Context);
 
   const [costoEnvioDomicilio, setCostoEnvioDomicilio] = useState("");
   const [habilitadoEnvioDomicilio, setHabilitadoEnvioDomicilio] = useState("");
@@ -110,8 +111,6 @@ const CatalogueCart = () => {
   const [vendedor, setVendedor] = useState("");
   const [envio, setEnvio] = useState("");
   //#endregion
-
-  const [whatsapp, setWhatsapp] = useState(null);
 
   //#region Constantes necesarias para el filtro por busqueda
   const [products, setProducts] = useState([]);
@@ -143,21 +142,6 @@ const CatalogueCart = () => {
           (abono) => abono.habilitado
         );
         setListaNombresAbonos(abonosHabilitados);
-
-        const responseConfig = await GetInfoConfiguracion();
-        setWhatsapp(responseConfig.whatsapp);
-
-        setDireccionAuto(responseConfig.direccion);
-        setUrlDireccionAuto(responseConfig.urlDireccion);
-
-        setHorariosAtencion(responseConfig.horarios);
-
-        setCbu(responseConfig.cbu);
-        setAlias(responseConfig.alias);
-
-        setTelefonoEmpresa(responseConfig.telefono);
-
-        setCantidadMayorista(responseConfig.cantidadMayorista);
       } catch (error) {
         console.log(error);
       } finally {
@@ -489,25 +473,6 @@ const CatalogueCart = () => {
   }, [pathname, pedidoAprobado]);
 
   useEffect(() => {
-    const fetchData = async () => {
-      const responseConfig = await GetInfoConfiguracion();
-      setWhatsapp(responseConfig.whatsapp);
-
-      setDireccionAuto(responseConfig.direccion);
-      setUrlDireccionAuto(responseConfig.urlDireccion);
-
-      setHorariosAtencion(responseConfig.horarios);
-
-      setCbu(responseConfig.cbu);
-      setAlias(responseConfig.alias);
-
-      setTelefonoEmpresa(responseConfig.telefono);
-
-      setCantidadMayorista(responseConfig.cantidadMayorista);
-    };
-
-    fetchData();
-
     const isMayorista = pathname.includes("mayorista");
 
     const storedCartKey = isMayorista

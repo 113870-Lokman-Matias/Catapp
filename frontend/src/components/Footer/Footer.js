@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useContext } from "react";
+import { Context } from "../../common/Context";
 
 import "./Footer.css";
-
-import { GetInfoConfiguracion } from "../../services/SettingService";
 
 import Facebook from "../../assets/images/facebook.png";
 import Instagram from "../../assets/images/instagram.png";
@@ -11,37 +10,16 @@ let today = new Date();
 let year = today.getFullYear();
 
 function Footer() {
-  const [direccion, setDireccion] = useState(null);
-  const [urlDireccion, setUrlDireccion] = useState(null);
+  const { direccionAuto } = useContext(Context);
+  const { urlDireccionAuto } = useContext(Context);
 
-  const [telefono, setTelefono] = useState(null);
+  const { telefonoEmpresa } = useContext(Context);
 
-  const [facebook, setFacebook] = useState(null);
-  const [urlFacebook, setUrlFacebook] = useState(null);
+  const { facebook } = useContext(Context);
+  const { urlFacebook } = useContext(Context);
 
-  const [instagram, setInstagram] = useState(null);
-  const [urlInstagram, setUrlInstagram] = useState(null);
-
-  useEffect(() => {
-    // Funciónes asincronas
-    (async () => {
-      try {
-        const response = await GetInfoConfiguracion();
-        setDireccion(response.direccion);
-        setUrlDireccion(response.urlDireccion);
-
-        setTelefono(response.telefono);
-
-        setFacebook(response.facebook);
-        setUrlFacebook(response.urlFacebook);
-
-        setInstagram(response.instagram);
-        setUrlInstagram(response.urlInstagram);
-      } catch (error) {
-        console.log(error);
-      }
-    })();
-  }, []);
+  const { instagram } = useContext(Context);
+  const { urlInstagram } = useContext(Context);
 
   return (
     <footer className="footer">
@@ -107,29 +85,29 @@ function Footer() {
                 </div>
               )}
 
-              {((direccion && direccion !== "") ||
-                (telefono && telefono !== "")) && (
+              {((direccionAuto && direccionAuto !== "") ||
+                (telefonoEmpresa && telefonoEmpresa !== "")) && (
                 <div className="footer-nores">
                   <p className="info-text">
-                    {direccion && direccion !== "" && (
+                    {direccionAuto && direccionAuto !== "" && (
                       <a
                         className="address"
-                        href={urlDireccion ? urlDireccion : "#"}
-                        target={urlDireccion ? "_blank" : ""}
-                        rel={urlDireccion ? "noopener noreferrer" : ""}
+                        href={urlDireccionAuto ? urlDireccionAuto : "#"}
+                        target={urlDireccionAuto ? "_blank" : ""}
+                        rel={urlDireccionAuto ? "noopener noreferrer" : ""}
                       >
-                        {direccion}
+                        {direccionAuto}
                       </a>
                     )}
 
-                    {direccion &&
-                      direccion !== "" &&
-                      telefono &&
-                      telefono !== "" && <> - </>}
+                    {direccionAuto &&
+                      direccionAuto !== "" &&
+                      telefonoEmpresa &&
+                      telefonoEmpresa !== "" && <> - </>}
 
-                    {telefono && telefono !== "" && (
-                      <a className="address" href={`tel:${telefono}`}>
-                        {telefono}
+                    {telefonoEmpresa && telefonoEmpresa !== "" && (
+                      <a className="address" href={`tel:${telefonoEmpresa}`}>
+                        {telefonoEmpresa}
                       </a>
                     )}
                   </p>

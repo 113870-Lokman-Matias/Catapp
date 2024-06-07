@@ -1,8 +1,9 @@
 import Swal from "sweetalert2";
 import $ from "jquery";
-import React, { useEffect, useState } from "react";
+import React, { useState, useContext } from "react";
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet";
+import { Context } from "../../../../common/Context";
 
 //#region SVG'S Imports
 import { ReactComponent as Edit } from "../../../../assets/svgs/edit.svg";
@@ -32,14 +33,13 @@ import Loader from "../../../../components/Loaders/LoaderCircle";
 
 import "./SettingManager.css";
 
-import {
-  GetInfoConfiguracion,
-  UpdateConfiguracion,
-} from "../../../../services/SettingService";
+import { UpdateConfiguracion } from "../../../../services/SettingService";
 
 function SettingManager() {
+  const { infoConfiguracion } = useContext(Context);
+
   //#region Constantes
-  const [isLoading, setIsLoading] = useState(false);
+  const { isLoading } = useContext(Context);
 
   const [idConfiguracion, setIdConfiguracion] = useState("");
 
@@ -81,8 +81,6 @@ function SettingManager() {
 
   const [urlLogo, setUrlLogo] = useState("");
   const [prevUrlLogo, setPrevUrlLogo] = useState("");
-
-  const [infoConfiguracion, setInfoConfiguracion] = useState([]);
 
   const token = localStorage.getItem("token"); // Obtener el token del localStorage
   const headers = {
@@ -179,23 +177,6 @@ function SettingManager() {
       !mostrarLogo
     );
   };
-  //#endregion
-
-  //#region UseEffect
-  useEffect(() => {
-    (async () => {
-      setIsLoading(true);
-
-      try {
-        const response = await GetInfoConfiguracion();
-        setInfoConfiguracion(response);
-        setIsLoading(false);
-      } catch (error) {
-        // Manejar errores aquí si es necesario
-        setIsLoading(false);
-      }
-    })();
-  }, []);
   //#endregion
 
   //#region Función para limpiar el valor del input del formulario
@@ -343,8 +324,6 @@ function SettingManager() {
           timer: 2000,
         });
         CloseModal();
-        const response = await GetInfoConfiguracion();
-        setInfoConfiguracion(response);
 
         // InitialState();
         ClearConfiguracionesInputs();
@@ -471,8 +450,8 @@ function SettingManager() {
                   }`}
                   title={
                     mostrarCantidadMayorista
-                      ? "Ocultar detalle de cantidad mayorista"
-                      : "Ver detalle de cantidad mayorista"
+                      ? "Ocultar detalle de cantidad minima mayorista"
+                      : "Ver detalle de cantidad minima mayorista"
                   }
                   onClick={() => {
                     setMostrarCantidadMayorista(!mostrarCantidadMayorista);
@@ -790,7 +769,9 @@ function SettingManager() {
 
                         {mostrarCantidadMayorista && (
                           <>
-                            <label className="label">Cantidad Mayorista:</label>
+                            <label className="label">
+                              Cantidad Minima Mayorista:
+                            </label>
                             <div
                               className={`form-group-input ${
                                 !showNombreInputCantidadMayorista()
@@ -1133,14 +1114,16 @@ function SettingManager() {
                 </tbody>
               ) : (
                 <tbody>
-                  <tr className="tr-name1">
-                    <td
-                      className="table-name table-name-orders table-name1"
-                      colSpan={4}
-                    >
-                      Sin registros
-                    </td>
-                  </tr>
+                  {mostrarAccion && (
+                    <tr className="tr-name1">
+                      <td
+                        className="table-name table-name-orders table-name1"
+                        colSpan={4}
+                      >
+                        Sin registros
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               )}
             </table>
