@@ -19,7 +19,7 @@ const AppProvider = ({ children }) => {
   const [cbu, setCbu] = useState(null);
   const [alias, setAlias] = useState(null);
 
-  const [cantidadMayorista, setCantidadMayorista] = useState(null);
+  const [montoMayorista, setMontoMayorista] = useState(null);
 
   const [telefonoEmpresa, setTelefonoEmpresa] = useState(null);
   const [whatsapp, setWhatsapp] = useState(null);
@@ -45,7 +45,7 @@ const AppProvider = ({ children }) => {
         setCbu(response.cbu);
         setAlias(response.alias);
 
-        setCantidadMayorista(response.cantidadMayorista);
+        setMontoMayorista(response.montoMayorista);
 
         setTelefonoEmpresa(response.telefono);
         setWhatsapp(response.whatsapp);
@@ -56,10 +56,10 @@ const AppProvider = ({ children }) => {
         setInstagram(response.instagram);
         setUrlInstagram(response.urlInstagram);
 
-        setIsLoading(false)
+        setIsLoading(false);
       } catch (error) {
         console.log(error);
-        setIsLoading(false)
+        setIsLoading(false);
       }
     };
 
@@ -93,7 +93,7 @@ const AppProvider = ({ children }) => {
         setCbu(response.cbu);
         setAlias(response.alias);
 
-        setCantidadMayorista(response.cantidadMayorista);
+        setMontoMayorista(response.montoMayorista);
 
         setTelefonoEmpresa(response.telefono);
         setWhatsapp(response.whatsapp);
@@ -104,12 +104,12 @@ const AppProvider = ({ children }) => {
         setInstagram(response.instagram);
         setUrlInstagram(response.urlInstagram);
 
-        setIsLoading(false)
+        setIsLoading(false);
       } catch (error) {
         console.error(
           "Error al obtener la informacion de las configuraciones: " + error
         );
-        setIsLoading(false)
+        setIsLoading(false);
       }
     });
 
@@ -130,7 +130,7 @@ const AppProvider = ({ children }) => {
         horariosAtencion,
         cbu,
         alias,
-        cantidadMayorista,
+        montoMayorista,
         whatsapp,
         facebook,
         urlFacebook,

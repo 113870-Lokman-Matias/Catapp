@@ -213,19 +213,19 @@
   border: 1px solid gray !important;
 }
 
-.p-save-update-close-disabled{
+.p-save-update-close-disabled {
   color: #ffffff !important;
 }
 
-.p-save-update-close-disabled:hover{
+.p-save-update-close-disabled:hover {
   color: #ffffff !important;
 }
 
-.save-btn-disabled{
+.save-btn-disabled {
   fill: #ffffff !important;
 }
 
-.save-btn-disabled:hover{
+.save-btn-disabled:hover {
   fill: #ffffff !important;
 }
 
@@ -746,7 +746,7 @@
   transform: scale(0.7);
 }
 
-.quant-stock-container{
+.quant-stock-container {
   width: 100%;
   display: flex;
   flex-direction: column;

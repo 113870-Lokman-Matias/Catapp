@@ -112,7 +112,7 @@ CREATE TABLE public.configuraciones (
     url_facebook text,
     instagram text,
     url_instagram text,
-    cantidad_mayorista integer DEFAULT 0 NOT NULL,
+    monto_mayorista real DEFAULT 0 NOT NULL,
     url_logo text
 );
 
@@ -692,7 +692,7 @@ COPY public.clientes (id_cliente, nombre_completo, dni, telefono, direccion, ent
 -- Data for Name: configuraciones; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.configuraciones (id_configuracion, direccion, url_direccion, horarios, cbu, alias, whatsapp, telefono, facebook, url_facebook, instagram, url_instagram, cantidad_mayorista, url_logo) FROM stdin;
+COPY public.configuraciones (id_configuracion, direccion, url_direccion, horarios, cbu, alias, whatsapp, telefono, facebook, url_facebook, instagram, url_instagram, monto_mayorista, url_logo) FROM stdin;
 \.
 
 

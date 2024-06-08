@@ -10,8 +10,8 @@ namespace API.Services.ConfiguracionServices.Commands.UpdateConfiguracionCommand
                    .NotEmpty().WithMessage("El número de WhatsApp no puede estar vacío")
                    .NotNull().WithMessage("El número de WhatsApp no puede ser nulo");
 
-            RuleFor(p => p.CantidadMayorista)
-                  .NotNull().WithMessage("La cantidad minima mayorista no puede ser nula");
+            RuleFor(p => p.MontoMayorista)
+                  .NotNull().WithMessage("El monto minimo mayorista no puede ser nul0");
         }
     }
 }

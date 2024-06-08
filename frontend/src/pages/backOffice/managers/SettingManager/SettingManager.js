@@ -10,6 +10,7 @@ import { ReactComponent as Edit } from "../../../../assets/svgs/edit.svg";
 import { ReactComponent as Update } from "../../../../assets/svgs/update.svg";
 import { ReactComponent as Close } from "../../../../assets/svgs/closebtn.svg";
 import { ReactComponent as Back } from "../../../../assets/svgs/back.svg";
+import { ReactComponent as Show } from "../../../../assets/svgs/visible.svg";
 
 import { ReactComponent as DireccionInput } from "../../../../assets/svgs/location.svg";
 import { ReactComponent as UrlDireccionInput } from "../../../../assets/svgs/locationUrl.svg";
@@ -22,7 +23,7 @@ import { ReactComponent as FacebookInput } from "../../../../assets/svgs/faceboo
 import { ReactComponent as InstagramInput } from "../../../../assets/svgs/instagram.svg";
 import { ReactComponent as UrlFacebookInput } from "../../../../assets/svgs/urlFacebook.svg";
 import { ReactComponent as UrlInstagramInput } from "../../../../assets/svgs/urlInstagram.svg";
-import { ReactComponent as PedidoInput } from "../../../../assets/svgs/cantidadPedidos.svg";
+import { ReactComponent as PedidoInput } from "../../../../assets/svgs/priceinput.svg";
 import { ReactComponent as LogoInput } from "../../../../assets/svgs/imageinput.svg";
 
 import { ReactComponent as Transferencia } from "../../../../assets/svgs/transferencia.svg";
@@ -76,11 +77,14 @@ function SettingManager() {
   const [urlInstagram, setUrlInstagram] = useState("");
   const [prevUrlInstagram, setPrevUrlInstagram] = useState("");
 
-  const [cantidadMayorista, setCantidadMayorista] = useState("");
-  const [prevCantidadMayorista, setPrevCantidadMayorista] = useState("");
+  const [montoMayorista, setMontoMayorista] = useState("");
+  const [prevMontoMayorista, setPrevMontoMayorista] = useState("");
 
-  const [urlLogo, setUrlLogo] = useState("");
-  const [prevUrlLogo, setPrevUrlLogo] = useState("");
+  const [urlLogoEmpresa, setUrlLogoEmpresa] = useState("");
+  const [prevUrlLogoEmpresa, setPrevUrlLogoEmpresa] = useState("");
+
+  const { urlLogo } = useContext(Context);
+  const { urlDireccionAuto } = useContext(Context);
 
   const token = localStorage.getItem("token"); // Obtener el token del localStorage
   const headers = {
@@ -92,8 +96,7 @@ function SettingManager() {
   const [mostrarHorarios, setMostrarHorarios] = useState(false);
   const [mostrarTransferencia, setMostrarTransferencia] = useState(false);
   const [mostrarTelefonos, setMostrarTelefonos] = useState(false);
-  const [mostrarCantidadMayorista, setMostrarCantidadMayorista] =
-    useState(false);
+  const [mostrarMontoMayorista, setMostrarMontoMayorista] = useState(false);
   const [mostrarRedes, setMostrarRedes] = useState(false);
   const [mostrarLogo, setMostrarLogo] = useState(false);
 
@@ -102,7 +105,7 @@ function SettingManager() {
     mostrarHorarios ||
     mostrarTransferencia ||
     mostrarTelefonos ||
-    mostrarCantidadMayorista ||
+    mostrarMontoMayorista ||
     mostrarRedes ||
     mostrarLogo;
 
@@ -112,7 +115,7 @@ function SettingManager() {
       !mostrarHorarios &&
       !mostrarTransferencia &&
       !mostrarTelefonos &&
-      !mostrarCantidadMayorista &&
+      !mostrarMontoMayorista &&
       !mostrarRedes &&
       !mostrarLogo
     );
@@ -124,7 +127,7 @@ function SettingManager() {
       (!mostrarDireccion || mostrarDireccion) &&
       !mostrarTransferencia &&
       !mostrarTelefonos &&
-      !mostrarCantidadMayorista &&
+      !mostrarMontoMayorista &&
       !mostrarRedes &&
       !mostrarLogo
     );
@@ -136,7 +139,7 @@ function SettingManager() {
       (!mostrarDireccion || mostrarDireccion) &&
       (!mostrarHorarios || mostrarHorarios) &&
       !mostrarTelefonos &&
-      !mostrarCantidadMayorista &&
+      !mostrarMontoMayorista &&
       !mostrarRedes &&
       !mostrarLogo
     );
@@ -148,7 +151,7 @@ function SettingManager() {
       (!mostrarDireccion || mostrarDireccion) &&
       (!mostrarHorarios || mostrarHorarios) &&
       (!mostrarTransferencia || mostrarTransferencia) &&
-      !mostrarCantidadMayorista &&
+      !mostrarMontoMayorista &&
       !mostrarRedes &&
       !mostrarLogo
     );
@@ -161,14 +164,14 @@ function SettingManager() {
       (!mostrarHorarios || mostrarHorarios) &&
       (!mostrarTransferencia || mostrarTransferencia) &&
       (!mostrarTelefonos || mostrarTelefonos) &&
-      !mostrarCantidadMayorista &&
+      !mostrarMontoMayorista &&
       !mostrarLogo
     );
   };
 
-  const showNombreInputCantidadMayorista = () => {
+  const showNombreInputMontoMayorista = () => {
     return (
-      mostrarCantidadMayorista &&
+      mostrarMontoMayorista &&
       (!mostrarDireccion || mostrarDireccion) &&
       (!mostrarHorarios || mostrarHorarios) &&
       (!mostrarTransferencia || mostrarTransferencia) &&
@@ -194,8 +197,8 @@ function SettingManager() {
     setUrlFacebook("");
     setInstagram("");
     setUrlInstagram("");
-    setCantidadMayorista("");
-    setUrlLogo("");
+    setMontoMayorista("");
+    setUrlLogoEmpresa("");
   }
   //#endregion
 
@@ -213,8 +216,8 @@ function SettingManager() {
     setUrlFacebook(configuracion.urlFacebook);
     setInstagram(configuracion.instagram);
     setUrlInstagram(configuracion.urlInstagram);
-    setCantidadMayorista(configuracion.cantidadMayorista);
-    setUrlLogo(configuracion.urlLogo);
+    setMontoMayorista(configuracion.montoMayorista);
+    setUrlLogoEmpresa(configuracion.urlLogo);
 
     setPrevDireccion(configuracion.direccion);
     setPrevUrlDireccion(configuracion.urlDireccion);
@@ -227,8 +230,8 @@ function SettingManager() {
     setPrevUrlFacebook(configuracion.urlFacebook);
     setPrevInstagram(configuracion.instagram);
     setPrevUrlInstagram(configuracion.urlInstagram);
-    setPrevCantidadMayorista(configuracion.cantidadMayorista);
-    setPrevUrlLogo(configuracion.urlLogo);
+    setPrevMontoMayorista(configuracion.montoMayorista);
+    setPrevUrlLogoEmpresa(configuracion.urlLogo);
   }
   //#endregion
 
@@ -242,20 +245,33 @@ function SettingManager() {
 
   //#region Funcion para verificar si el valore ingresado a traves del input es correcto
   function IsValid() {
-    // if (precio === "") {
-    //   Swal.fire({
-    //     icon: "error",
-    //     title: "El costo de envío no puede estar vacío",
-    //     text: "Complete el campo, si no tiene costo ingrese 0",
-    //     confirmButtonText: "Aceptar",
-    //     confirmButtonColor: "#f27474",
-    //   }).then(function () {
-    //     setTimeout(function () {
-    //       $("#precio").focus();
-    //     }, 500);
-    //   });
-    //   return false;
-    // }
+    if (whatsapp === "") {
+      Swal.fire({
+        icon: "error",
+        title: "El número de WhatsApp no puede estar vacío",
+        text: "Complete el campo",
+        confirmButtonText: "Aceptar",
+        confirmButtonColor: "#f27474",
+      }).then(function () {
+        setTimeout(function () {
+          $("#whatsapp").focus();
+        }, 500);
+      });
+      return false;
+    } else if (montoMayorista === "") {
+      Swal.fire({
+        icon: "error",
+        title: "El monto minimo de compra mayorista no puede estar vacío",
+        text: "Complete el campo",
+        confirmButtonText: "Aceptar",
+        confirmButtonColor: "#f27474",
+      }).then(function () {
+        setTimeout(function () {
+          $("#montoMayorista").focus();
+        }, 500);
+      });
+      return false;
+    }
     return true;
   }
   //#endregion
@@ -274,8 +290,8 @@ function SettingManager() {
       prevUrlFacebook !== urlFacebook ||
       prevInstagram !== instagram ||
       prevUrlInstagram !== urlInstagram ||
-      prevCantidadMayorista !== cantidadMayorista ||
-      prevUrlLogo !== urlLogo
+      prevMontoMayorista !== montoMayorista ||
+      prevUrlLogoEmpresa !== urlLogoEmpresa
     ) {
       return true;
     }
@@ -312,8 +328,8 @@ function SettingManager() {
             urlFacebook: urlFacebook,
             instagram: instagram,
             urlInstagram: urlInstagram,
-            cantidadMayorista: cantidadMayorista,
-            urlLogo: urlLogo,
+            montoMayorista: montoMayorista,
+            urlLogo: urlLogoEmpresa,
           },
           headers
         );
@@ -446,20 +462,20 @@ function SettingManager() {
                 <button
                   type="button"
                   className={`btn btn-dark btn-show-orders mayorista ${
-                    mostrarCantidadMayorista ? "btn-seleccionado" : ""
+                    mostrarMontoMayorista ? "btn-seleccionado" : ""
                   }`}
                   title={
-                    mostrarCantidadMayorista
-                      ? "Ocultar detalle de cantidad minima mayorista"
-                      : "Ver detalle de cantidad minima mayorista"
+                    mostrarMontoMayorista
+                      ? "Ocultar detalle de monto minimo mayorista"
+                      : "Ver detalle de monto minimo mayorista"
                   }
                   onClick={() => {
-                    setMostrarCantidadMayorista(!mostrarCantidadMayorista);
+                    setMostrarMontoMayorista(!mostrarMontoMayorista);
                   }}
                 >
                   <PedidoInput
                     className={`show-orders ${
-                      mostrarCantidadMayorista ? "show-orders-seleccionado" : ""
+                      mostrarMontoMayorista ? "show-orders-seleccionado" : ""
                     }`}
                   />
                 </button>
@@ -767,14 +783,14 @@ function SettingManager() {
                           </>
                         )}
 
-                        {mostrarCantidadMayorista && (
+                        {mostrarMontoMayorista && (
                           <>
                             <label className="label">
-                              Cantidad Minima Mayorista:
+                              Monto Minimo Mayorista:
                             </label>
                             <div
                               className={`form-group-input ${
-                                !showNombreInputCantidadMayorista()
+                                !showNombreInputMontoMayorista()
                                   ? "nombre-input"
                                   : ""
                               }`}
@@ -785,10 +801,10 @@ function SettingManager() {
                               <input
                                 type="text"
                                 className="input"
-                                id="cantidadMayorista"
-                                value={cantidadMayorista}
+                                id="montoMayorista"
+                                value={montoMayorista}
                                 onChange={(event) => {
-                                  setCantidadMayorista(event.target.value);
+                                  setMontoMayorista(event.target.value);
                                 }}
                               />
                             </div>
@@ -806,9 +822,9 @@ function SettingManager() {
                                 type="text"
                                 className="input"
                                 id="urlLogo"
-                                value={urlLogo}
+                                value={urlLogoEmpresa}
                                 onChange={(event) => {
-                                  setUrlLogo(event.target.value);
+                                  setUrlLogoEmpresa(event.target.value);
                                 }}
                               />
                             </div>
@@ -908,6 +924,18 @@ function SettingManager() {
                     >
                       <UrlDireccionInput className="input-group-svg-white" />
                       URL Dirección
+                      {urlDireccionAuto && (
+                        <a
+                          href={urlDireccionAuto ? urlDireccionAuto : "#"}
+                          target={urlDireccionAuto ? "_blank" : ""}
+                          rel={urlDireccionAuto ? "noopener noreferrer" : ""}
+                        >
+                          <DireccionInput
+                            className="logo-svg-white pointer"
+                            title="Ver URL"
+                          />
+                        </a>
+                      )}
                     </th>
                   )}
                   {mostrarHorarios && (
@@ -955,13 +983,13 @@ function SettingManager() {
                       WhatsApp
                     </th>
                   )}
-                  {mostrarCantidadMayorista && (
+                  {mostrarMontoMayorista && (
                     <th
                       className="table-title table-title-orders mayorista"
                       scope="col"
                     >
                       <PedidoInput className="input-group-svg-white" />
-                      Cantidad minima mayorista
+                      Monto minimo mayorista
                     </th>
                   )}
                   {mostrarRedes && (
@@ -1007,6 +1035,24 @@ function SettingManager() {
                     >
                       <LogoInput className="input-group-svg-white" />
                       URL Logo
+                      {urlLogo && (
+                        <Show
+                          className="logo-svg-white pointer"
+                          title="Ver Logo"
+                          onClick={() =>
+                            Swal.fire({
+                              title: "Logo",
+                              imageUrl: `${urlLogo}`,
+                              imageWidth: 400,
+                              imageHeight: 400,
+                              imageAlt: "Vista Logo",
+                              confirmButtonColor: "#6c757d",
+                              confirmButtonText: "Cerrar",
+                              focusConfirm: true,
+                            })
+                          }
+                        />
+                      )}
                     </th>
                   )}
                   {mostrarAccion && (
@@ -1022,36 +1068,36 @@ function SettingManager() {
                   <tr>
                     {mostrarDireccion && (
                       <td className="table-name table-name-orders direccion">
-                        {infoConfiguracion.direccion}
+                        {infoConfiguracion.direccion || "-"}
                       </td>
                     )}
                     {mostrarDireccion && (
                       <td className="table-name table-name-orders direccion">
                         <p className="long-text">
-                          {infoConfiguracion.urlDireccion}
+                          {infoConfiguracion.urlDireccion || "-"}
                         </p>
                       </td>
                     )}
                     {mostrarHorarios && (
                       <td className="table-name table-name-orders horarios">
                         <p className="long-text">
-                          {infoConfiguracion.horarios}
+                          {infoConfiguracion.horarios || "-"}
                         </p>
                       </td>
                     )}
                     {mostrarTransferencia && (
                       <td className="table-name table-name-orders transferencia">
-                        {infoConfiguracion.cbu}
+                        {infoConfiguracion.cbu || "-"}
                       </td>
                     )}
                     {mostrarTransferencia && (
                       <td className="table-name table-name-orders transferencia">
-                        {infoConfiguracion.alias}
+                        {infoConfiguracion.alias || "-"}
                       </td>
                     )}
                     {mostrarTelefonos && (
                       <td className="table-name table-name-orders whatsapp">
-                        {infoConfiguracion.telefono}
+                        {infoConfiguracion.telefono || "-"}
                       </td>
                     )}
                     {mostrarTelefonos && (
@@ -1059,38 +1105,38 @@ function SettingManager() {
                         {infoConfiguracion.whatsapp}
                       </td>
                     )}
-                    {mostrarCantidadMayorista && (
+                    {mostrarMontoMayorista && (
                       <td className="table-name table-name-orders mayorista">
-                        {infoConfiguracion.cantidadMayorista}
+                        ${infoConfiguracion.montoMayorista}
                       </td>
                     )}
                     {mostrarRedes && (
                       <td className="table-name table-name-orders facebook">
-                        {infoConfiguracion.facebook}
+                        {infoConfiguracion.facebook || "-"}
                       </td>
                     )}
                     {mostrarRedes && (
                       <td className="table-name table-name-orders facebook">
                         <p className="long-text">
-                          {infoConfiguracion.urlFacebook}
+                          {infoConfiguracion.urlFacebook || "-"}
                         </p>
                       </td>
                     )}
                     {mostrarRedes && (
                       <td className="table-name table-name-orders instagram">
-                        {infoConfiguracion.instagram}
+                        {infoConfiguracion.instagram || "-"}
                       </td>
                     )}
                     {mostrarRedes && (
                       <td className="table-name table-name-orders instagram">
                         <p className="long-text">
-                          {infoConfiguracion.urlInstagram}
+                          {infoConfiguracion.urlInstagram || "-"}
                         </p>
                       </td>
                     )}
                     {mostrarLogo && (
                       <td className="table-name table-name-orders logo">
-                        {infoConfiguracion.urlLogo}
+                        {infoConfiguracion.urlLogo || "-"}
                       </td>
                     )}
 

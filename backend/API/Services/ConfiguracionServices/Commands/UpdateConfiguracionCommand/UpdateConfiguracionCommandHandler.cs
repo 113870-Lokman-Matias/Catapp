@@ -66,7 +66,7 @@ namespace API.Services.ConfiguracionServices.Commands.UpdateConfiguracionCommand
                          ConfiguracionToUpdate.UrlFacebook = request.UrlFacebook;
                          ConfiguracionToUpdate.Instagram = request.Instagram;
                          ConfiguracionToUpdate.UrlInstagram = request.UrlInstagram;
-                         ConfiguracionToUpdate.CantidadMayorista = request.CantidadMayorista;
+                         ConfiguracionToUpdate.MontoMayorista = request.MontoMayorista;
                          ConfiguracionToUpdate.UrlLogo = request.UrlLogo;
 
                         await _context.SaveChangesAsync();

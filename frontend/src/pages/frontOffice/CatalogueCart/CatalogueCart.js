@@ -96,7 +96,7 @@ const CatalogueCart = () => {
   const { cbu } = useContext(Context);
   const { alias } = useContext(Context);
 
-  const { cantidadMayorista } = useContext(Context);
+  const { montoMayorista } = useContext(Context);
 
   const [costoEnvioDomicilio, setCostoEnvioDomicilio] = useState("");
   const [habilitadoEnvioDomicilio, setHabilitadoEnvioDomicilio] = useState("");
@@ -1743,21 +1743,33 @@ const CatalogueCart = () => {
                         // Agregar verificación antes de abrir el modal
                         if (
                           clientType === "Mayorista" &&
-                          totalQuantity < cantidadMayorista
+                          calculateTotal() < montoMayorista
                         ) {
-                          const faltanProductos =
-                            cantidadMayorista - totalQuantity;
+                          const faltaImporte =
+                            montoMayorista - calculateTotal();
 
                           Swal.fire({
                             icon: "warning",
-                            title: `Falta${
-                              faltanProductos !== 1 ? "n" : ""
-                            } ${faltanProductos} producto${
-                              faltanProductos !== 1 ? "s" : ""
-                            } para que puedas hacer tu pedido mayorista`,
-                            text: `Debes agregar al menos ${cantidadMayorista} producto${
-                              cantidadMayorista !== 1 ? "s" : ""
-                            } al carrito para enviar el pedido.`,
+                            title: `Falta $${faltaImporte
+                              .toLocaleString("es-ES", {
+                                minimumFractionDigits: 0,
+                                maximumFractionDigits: 2,
+                              })
+                              .replace(",", ".")
+                              .replace(
+                                /\B(?=(\d{3})+(?!\d))/g,
+                                "."
+                              )} para que puedas hacer tu pedido mayorista`,
+                            text: `Debes agregar al menos $${montoMayorista
+                              .toLocaleString("es-ES", {
+                                minimumFractionDigits: 0,
+                                maximumFractionDigits: 2,
+                              })
+                              .replace(",", ".")
+                              .replace(
+                                /\B(?=(\d{3})+(?!\d))/g,
+                                "."
+                              )} en productos al carrito para enviar el pedido.`,
                             confirmButtonText: "Aceptar",
                             showCancelButton: false,
                             confirmButtonColor: "#f8bb86",
@@ -2420,20 +2432,32 @@ const CatalogueCart = () => {
                     // Agregar verificación antes de abrir el modal
                     if (
                       clientType === "Mayorista" &&
-                      totalQuantity < cantidadMayorista
+                      calculateTotal() < montoMayorista
                     ) {
-                      const faltanProductos = cantidadMayorista - totalQuantity;
+                      const faltaImporte = montoMayorista - calculateTotal();
 
                       Swal.fire({
                         icon: "warning",
-                        title: `Falta${
-                          faltanProductos !== 1 ? "n" : ""
-                        } ${faltanProductos} producto${
-                          faltanProductos !== 1 ? "s" : ""
-                        } para que puedas hacer tu pedido mayorista`,
-                        text: `Debes agregar al menos ${cantidadMayorista} producto${
-                          cantidadMayorista !== 1 ? "s" : ""
-                        } al carrito para enviar el pedido.`,
+                        title: `Falta $${faltaImporte
+                          .toLocaleString("es-ES", {
+                            minimumFractionDigits: 0,
+                            maximumFractionDigits: 2,
+                          })
+                          .replace(",", ".")
+                          .replace(
+                            /\B(?=(\d{3})+(?!\d))/g,
+                            "."
+                          )} para que puedas hacer tu pedido mayorista`,
+                        text: `Debes agregar al menos $${montoMayorista
+                          .toLocaleString("es-ES", {
+                            minimumFractionDigits: 0,
+                            maximumFractionDigits: 2,
+                          })
+                          .replace(",", ".")
+                          .replace(
+                            /\B(?=(\d{3})+(?!\d))/g,
+                            "."
+                          )} en productos al carrito para enviar el pedido.`,
                         confirmButtonText: "Aceptar",
                         showCancelButton: false,
                         confirmButtonColor: "#f8bb86",

@@ -87,7 +87,7 @@ namespace API.Data
 
                 entity.Property(e => e.Alias).HasColumnName("alias");
 
-                entity.Property(e => e.CantidadMayorista).HasColumnName("cantidad_mayorista");
+                entity.Property(e => e.MontoMayorista).HasColumnName("monto_mayorista");
 
                 entity.Property(e => e.Cbu).HasColumnName("cbu");
 

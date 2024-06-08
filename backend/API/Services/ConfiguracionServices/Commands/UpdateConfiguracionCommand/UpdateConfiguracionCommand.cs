@@ -19,7 +19,7 @@ namespace API.Services.ConfiguracionServices.Commands.UpdateConfiguracionCommand
         public string? UrlFacebook { get; set; }
         public string? Instagram { get; set; }
         public string? UrlInstagram { get; set; }
-        public int CantidadMayorista { get; set; }
+        public float MontoMayorista { get; set; }
         public string? UrlLogo { get; set; }
     }
 }
