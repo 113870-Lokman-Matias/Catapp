@@ -247,6 +247,8 @@ namespace API.Data
 
                 entity.Property(e => e.Disponibilidad).HasColumnName("disponibilidad");
 
+                entity.Property(e => e.DisponibilidadCatalogo).HasColumnName("disponibilidad_catalogo");
+
                 entity.Property(e => e.Habilitado).HasColumnName("habilitado");
 
                 entity.Property(e => e.Nombre).HasColumnName("nombre");

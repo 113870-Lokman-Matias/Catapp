@@ -683,6 +683,12 @@ function OrderManager() {
       setEntrega(2);
     }
 
+    if (order.tipo === "Minorista") {
+      setTipo(1);
+    } else if (order.entrega === "Mayorista") {
+      setTipo(2);
+    }
+
     setVendedor(getIdVendedor(order.vendedor));
     setCostoEnvio(order.costoEnvio);
     setAbono(getIdAbono(order.abono));
@@ -1138,7 +1144,7 @@ function OrderManager() {
                         </div>
 
                         <label className="label selects" htmlFor="abono">
-                          Abono:
+                          Medio de pago:
                         </label>
                         <div className="form-group-input nombre-input">
                           <span className="input-group-text">
@@ -1155,17 +1161,37 @@ function OrderManager() {
                             <option hidden key={0} value="0">
                               Seleccione un medio de pago
                             </option>
+
                             {listaNombresAbonos &&
-                              Array.from(listaNombresAbonos).map((opts, i) => (
-                                <option
-                                  className="btn-option"
-                                  key={i}
-                                  value={opts.idMetodoPago}
-                                  disabled={!opts.habilitado}
-                                >
-                                  {opts.nombre}
-                                </option>
-                              ))}
+                              Array.from(listaNombresAbonos).map((opts, i) => {
+                                const shouldShowEnvio =
+                                  (entrega === 1 &&
+                                    opts.disponibilidad !== 2) ||
+                                  (entrega === 2 &&
+                                    opts.disponibilidad !== 1) ||
+                                  opts.disponibilidad === 3;
+
+                                const shouldShowCatalogo =
+                                  (tipo === 1 &&
+                                    opts.disponibilidadCatalogo !== 2) ||
+                                  (tipo === 2 &&
+                                    opts.disponibilidadCatalogo !== 1) ||
+                                  opts.disponibilidadCatalogo === 3;
+
+                                const shouldShow =
+                                  shouldShowEnvio && shouldShowCatalogo;
+
+                                return shouldShow ? (
+                                  <option
+                                    className="btn-option"
+                                    key={i}
+                                    value={opts.idMetodoPago}
+                                    disabled={!opts.habilitado}
+                                  >
+                                    {opts.nombre}
+                                  </option>
+                                ) : null;
+                              })}
                           </select>
                         </div>
                       </div>

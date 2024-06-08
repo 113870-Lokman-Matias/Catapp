@@ -54,6 +54,7 @@ namespace API.Services.MetodoPagoServices.Commands.UpdateMetodoPagoCommand
             MetodoPagoToUpdate.Nombre = request.Nombre;
             MetodoPagoToUpdate.Habilitado = request.Habilitado;
             MetodoPagoToUpdate.Disponibilidad = request.Disponibilidad;
+            MetodoPagoToUpdate.DisponibilidadCatalogo = request.DisponibilidadCatalogo;
 
             await _context.SaveChangesAsync();
 

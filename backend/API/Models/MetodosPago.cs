@@ -14,6 +14,7 @@ namespace API.Models
         public string Nombre { get; set; } = null!;
         public bool Habilitado { get; set; }
         public int Disponibilidad { get; set; }
+        public int DisponibilidadCatalogo { get; set; }
 
         public virtual ICollection<Pedido> Pedidos { get; set; }
     }

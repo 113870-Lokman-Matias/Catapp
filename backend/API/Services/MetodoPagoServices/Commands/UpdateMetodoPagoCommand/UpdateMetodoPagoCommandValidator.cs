@@ -26,6 +26,10 @@ namespace API.Services.MetodoPagoServices.Commands.UpdateMetodoPagoCommand
       RuleFor(c => c.Disponibilidad)
           .NotEmpty().WithMessage("La disponibilidad no puede estar vacía")
           .NotNull().WithMessage("La disponibilidad no puede ser nula");
+
+      RuleFor(c => c.DisponibilidadCatalogo)
+          .NotEmpty().WithMessage("La disponibilidad del catálogo no puede estar vacía")
+          .NotNull().WithMessage("La disponibilidad del catálogo no puede ser nula");
     }
 
     private async Task<bool> MetodoPagoExiste(int id, CancellationToken token)

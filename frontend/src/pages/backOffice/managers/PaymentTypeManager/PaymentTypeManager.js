@@ -40,6 +40,10 @@ function PaymentTypeManager() {
   const [habilitado, setHabilitado] = useState("");
   const [prevHabilitado, setPrevHabilitado] = useState("");
 
+  const [disponibilidadCatalogo, setDisponibilidadCatalogo] = useState("");
+  const [prevDisponibilidadCatalogo, setPrevDisponibilidadCatalogo] =
+    useState("");
+
   const [disponibilidad, setDisponibilidad] = useState("");
   const [prevDisponibilidad, setPrevDisponibilidad] = useState("");
 
@@ -143,6 +147,28 @@ function PaymentTypeManager() {
     });
   };
 
+  const handleCheckboxChangeCatalogo = (e) => {
+    const value = e.target.value;
+    const isChecked = e.target.checked;
+
+    setDisponibilidadCatalogo((prevState) => {
+      // Si el checkbox se selecciona y es "Entrega por local"
+      if (value === "1" && isChecked) {
+        return prevState.includes("2") ? ["1", "2"] : ["1"];
+      }
+      // Si el checkbox se selecciona y es "Entrega a domicilio"
+      if (value === "2" && isChecked) {
+        return prevState.includes("1") ? ["1", "2"] : ["2"];
+      }
+      // Si ambos checkboxes están seleccionados
+      if (isChecked && prevState.includes("1") && prevState.includes("2")) {
+        return ["1", "2"];
+      }
+      // Si el checkbox se deselecciona
+      return prevState.filter((item) => item !== value);
+    });
+  };
+
   //#region Función para borrar cualquier filtro
   const ClearFilter = () => {
     setPaymentTypes(originalPaymentTypesList); // trae la lista de medios de pago original, sin ningun filtro
@@ -206,6 +232,7 @@ function PaymentTypeManager() {
 
     setNombre("");
     setHabilitado("");
+    setDisponibilidadCatalogo("");
     setDisponibilidad("");
   }
   //#endregion
@@ -215,6 +242,18 @@ function PaymentTypeManager() {
     setIdMetodoPago(paymentType.idMetodoPago);
     setNombre(paymentType.nombre);
     setHabilitado(paymentType.habilitado);
+
+    const disponibilidadCatalogoValue = paymentType.disponibilidadCatalogo;
+    if (disponibilidadCatalogoValue === 1) {
+      setDisponibilidadCatalogo(["1"]);
+      setPrevDisponibilidadCatalogo(["1"]);
+    } else if (disponibilidadCatalogoValue === 2) {
+      setDisponibilidadCatalogo(["2"]);
+      setPrevDisponibilidadCatalogo(["2"]);
+    } else if (disponibilidadCatalogoValue === 3) {
+      setDisponibilidadCatalogo(["1", "2"]);
+      setPrevDisponibilidadCatalogo(["1", "2"]);
+    }
 
     const disponibilidadValue = paymentType.disponibilidad;
     if (disponibilidadValue === 1) {
@@ -227,7 +266,6 @@ function PaymentTypeManager() {
       setDisponibilidad(["1", "2"]);
       setPrevDisponibilidad(["1", "2"]);
     }
-
     setPrevNombre(paymentType.nombre);
     setPrevHabilitado(paymentType.habilitado);
   }
@@ -299,13 +337,29 @@ function PaymentTypeManager() {
       }
       return false;
     } else if (
+      disponibilidadCatalogo === "" ||
+      (Array.isArray(disponibilidadCatalogo) &&
+        disponibilidadCatalogo.length === 0)
+    ) {
+      Swal.fire({
+        icon: "error",
+        title: "Debe indicar en que catálogo se encuentra disponible",
+        text: "Clickeé en el/los botón/es de los catálogos donde se encuentre disponible",
+        confirmButtonText: "Aceptar",
+        confirmButtonColor: "#f27474",
+      });
+      if (modalTitle === "Registrar Medio de pago") {
+        ShowSaveButton();
+      }
+      return false;
+    } else if (
       disponibilidad === "" ||
       (Array.isArray(disponibilidad) && disponibilidad.length === 0)
     ) {
       Swal.fire({
         icon: "error",
-        title: "Debe indicar en donde se encuentra disponible",
-        text: "Clickeé en el/los botón/es donde se encuentre disponible",
+        title: "Debe indicar con que tipo de envio se encuentra disponible",
+        text: "Clickeé en el/los botón/es de los tipos de envio donde se encuentre disponible",
         confirmButtonText: "Aceptar",
         confirmButtonColor: "#f27474",
       });
@@ -354,6 +408,8 @@ function PaymentTypeManager() {
       return false;
     } else if (habilitado !== false) {
       return false;
+    } else if (disponibilidadCatalogo !== "") {
+      return false;
     } else if (disponibilidad !== "") {
       return false;
     }
@@ -378,6 +434,7 @@ function PaymentTypeManager() {
     if (
       prevNombre.toLowerCase() !== nombre.toLocaleLowerCase() ||
       prevHabilitado !== habilitado ||
+      !arraysEqual(prevDisponibilidadCatalogo, disponibilidadCatalogo) ||
       !arraysEqual(prevDisponibilidad, disponibilidad)
     ) {
       return true;
@@ -410,6 +467,14 @@ function PaymentTypeManager() {
                 ? ""
                 : disponibilidad.length === 1
                 ? disponibilidad.includes("1")
+                  ? 1
+                  : 2
+                : 3,
+            disponibilidadCatalogo:
+              disponibilidadCatalogo.length === 0
+                ? ""
+                : disponibilidadCatalogo.length === 1
+                ? disponibilidadCatalogo.includes("1")
                   ? 1
                   : 2
                 : 3,
@@ -470,6 +535,14 @@ function PaymentTypeManager() {
                 ? ""
                 : disponibilidad.length === 1
                 ? disponibilidad.includes("1")
+                  ? 1
+                  : 2
+                : 3,
+            disponibilidadCatalogo:
+              disponibilidadCatalogo.length === 0
+                ? ""
+                : disponibilidadCatalogo.length === 1
+                ? disponibilidadCatalogo.includes("1")
                   ? 1
                   : 2
                 : 3,
@@ -682,9 +755,50 @@ function PaymentTypeManager() {
                       <div className="form-group">
                         <label
                           className="label selects"
+                          htmlFor="disponibilidadCatalogo"
+                        >
+                          Disponibilidad Catálogo:
+                        </label>
+
+                        <div className="checkbox-group">
+                          <div className="checkbox-cont">
+                            <input
+                              className="checkbox-input"
+                              type="checkbox"
+                              id="catalogoMinorista"
+                              name="disponibilidadCatalogo"
+                              value="1"
+                              checked={disponibilidadCatalogo.includes("1")}
+                              onChange={handleCheckboxChangeCatalogo}
+                            />
+                            <label htmlFor="catalogoMinorista">
+                              Catálogo Minorista
+                            </label>
+                          </div>
+
+                          <div className="checkbox-cont">
+                            <input
+                              className="checkbox-input"
+                              type="checkbox"
+                              id="catalogoMayorista"
+                              name="disponibilidadCatalogo"
+                              value="2"
+                              checked={disponibilidadCatalogo.includes("2")}
+                              onChange={handleCheckboxChangeCatalogo}
+                            />
+                            <label htmlFor="catalogoMayorista">
+                              Catálogo Mayorista
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="form-group">
+                        <label
+                          className="label selects"
                           htmlFor="disponibilidad"
                         >
-                          Disponibilidad:
+                          Disponibilidad Entrega:
                         </label>
 
                         <div className="checkbox-group">
@@ -953,7 +1067,10 @@ function PaymentTypeManager() {
                     Habilitado
                   </th>
                   <th className="table-title" scope="col">
-                    Disponibilidad
+                    Disponibilidad Catálogo
+                  </th>
+                  <th className="table-title" scope="col">
+                    Disponibilidad Entrega
                   </th>
                   <th className="table-title" scope="col">
                     Acciones
@@ -975,6 +1092,14 @@ function PaymentTypeManager() {
                         ) : (
                           <td className="table-name">No</td>
                         )}
+
+                        <td className="table-name">
+                          {paymentType.disponibilidadCatalogo === 1
+                            ? "Catálogo minorista"
+                            : paymentType.disponibilidadCatalogo === 2
+                            ? "Catálogo mayorista"
+                            : "Catálogo minorista y mayorista"}
+                        </td>
 
                         <td className="table-name">
                           {paymentType.disponibilidad === 1

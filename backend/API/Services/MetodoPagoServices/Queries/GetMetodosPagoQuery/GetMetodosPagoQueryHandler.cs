@@ -21,11 +21,13 @@ namespace API.Services.MetodoPagoServices.Queries.GetMetodosPagoQuery
       try
       {
         var metodosPago = await _context.MetodosPagos
-            .Select(x => new ListaMetodoPagoDto { 
-                IdMetodoPago = x.IdMetodoPago,
-                Nombre = x.Nombre,
-                Habilitado = x.Habilitado,
-                Disponibilidad = x.Disponibilidad
+            .Select(x => new ListaMetodoPagoDto
+            {
+              IdMetodoPago = x.IdMetodoPago,
+              Nombre = x.Nombre,
+              Habilitado = x.Habilitado,
+              Disponibilidad = x.Disponibilidad,
+              DisponibilidadCatalogo = x.DisponibilidadCatalogo
             })
             .OrderBy(x => x.Nombre)
             .ToListAsync();

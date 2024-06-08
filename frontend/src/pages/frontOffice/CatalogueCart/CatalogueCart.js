@@ -2694,10 +2694,22 @@ const CatalogueCart = () => {
                         </option>
                         {listaNombresAbonos &&
                           Array.from(listaNombresAbonos).map((opts, i) => {
-                            const shouldShow =
+                            const shouldShowEnvio =
                               (envio === "1" && opts.disponibilidad !== 2) ||
                               (envio === "2" && opts.disponibilidad !== 1) ||
                               opts.disponibilidad === 3;
+
+                            const shouldShowCatalogo = pathname.includes(
+                              "minorista"
+                            )
+                              ? opts.disponibilidadCatalogo !== 2
+                              : pathname.includes("mayorista")
+                              ? opts.disponibilidadCatalogo !== 1
+                              : true;
+
+                            const shouldShow =
+                              shouldShowEnvio && shouldShowCatalogo;
+
                             return shouldShow ? (
                               <option
                                 className="btn-option"

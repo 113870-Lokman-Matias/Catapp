@@ -23,6 +23,10 @@ namespace API.Services.MetodoPagoServices.Commands.CreateMetodoPagoCommand
           .NotEmpty().WithMessage("La disponibilidad no puede estar vacía")
           .NotNull().WithMessage("La disponibilidad no puede ser nula");
 
+      RuleFor(c => c.DisponibilidadCatalogo)
+          .NotEmpty().WithMessage("La disponibilidad del catálogo no puede estar vacía")
+          .NotNull().WithMessage("La disponibilidad del catálogo no puede ser nula");
+
       RuleFor(c => c)
           .MustAsync(MetodoPagoExiste).WithMessage("Este metodo de pago ya se encuentra registrado");
     }
