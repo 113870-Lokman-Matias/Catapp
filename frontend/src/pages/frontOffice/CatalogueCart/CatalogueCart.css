@@ -746,6 +746,15 @@
   transform: scale(0.7);
 }
 
+.quant-stock-container{
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 10px;
+}
+
 @media (max-width: 800px) {
   .btn-excel {
     width: 170px;

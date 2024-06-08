@@ -517,6 +517,18 @@ const CatalogueCart = () => {
   };
   //#endregion
 
+  //#region Función para formatear el stock disponible para mostrar
+  function formatStock(stock) {
+    if (stock <= 10) {
+      return stock;
+    } else {
+      const tens = Math.floor(stock / 10);
+      const increase = tens * 10;
+      return `+${increase}`;
+    }
+  }
+  //#endregion
+
   //#region Función para filtrar los productos por query
   const search = async () => {
     closeAllCategories();
@@ -1644,29 +1656,38 @@ const CatalogueCart = () => {
                           </p>
                         </div>
 
-                        <div className="product-quantity">
-                          <button
-                            className="quantity-btn btnminus"
-                            onClick={() => handleSubtract(product)}
-                          >
-                            -
-                          </button>
-                          <input
-                            type="number"
-                            min="0"
-                            value={productQuantities[product.idProducto]}
-                            onChange={(event) =>
-                              handleQuantityChange(event, product)
-                            }
-                            onBlur={() => updateTotalQuantity()}
-                            className="quantity-input"
-                          />
-                          <button
-                            className="quantity-btn btnplus"
-                            onClick={() => handleAdd(product)}
-                          >
-                            +
-                          </button>
+                        <div className="quant-stock-container">
+                          <div className="product-quantity">
+                            <button
+                              className="quantity-btn btnminus"
+                              onClick={() => handleSubtract(product)}
+                            >
+                              -
+                            </button>
+                            <input
+                              type="number"
+                              min="0"
+                              value={productQuantities[product.idProducto]}
+                              onChange={(event) =>
+                                handleQuantityChange(event, product)
+                              }
+                              onBlur={() => updateTotalQuantity()}
+                              className="quantity-input"
+                            />
+                            <button
+                              className="quantity-btn btnplus"
+                              onClick={() => handleAdd(product)}
+                            >
+                              +
+                            </button>
+                          </div>
+                          <p className="product-desc">
+                            ({formatStock(product.stockTransitorio)}{" "}
+                            {product.stockTransitorio === 1
+                              ? "disponible"
+                              : "disponibles"}
+                            )
+                          </p>
                         </div>
                       </div>
 
@@ -2033,31 +2054,46 @@ const CatalogueCart = () => {
                                           </b>
                                         </p>
                                       </div>
-                                      <div className="product-quantity">
-                                        <button
-                                          className="quantity-btn btnminus"
-                                          onClick={() =>
-                                            handleSubtract(product)
-                                          }
-                                        >
-                                          -
-                                        </button>
-                                        <input
-                                          type="number"
-                                          min="0"
-                                          value={quantity}
-                                          onChange={(event) =>
-                                            handleQuantityChange(event, product)
-                                          }
-                                          onBlur={() => updateTotalQuantity()}
-                                          className="quantity-input"
-                                        />
-                                        <button
-                                          className="quantity-btn btnplus"
-                                          onClick={() => handleAdd(product)}
-                                        >
-                                          +
-                                        </button>
+                                      <div className="quant-stock-container">
+                                        <div className="product-quantity">
+                                          <button
+                                            className="quantity-btn btnminus"
+                                            onClick={() =>
+                                              handleSubtract(product)
+                                            }
+                                          >
+                                            -
+                                          </button>
+                                          <input
+                                            type="number"
+                                            min="0"
+                                            value={quantity}
+                                            onChange={(event) =>
+                                              handleQuantityChange(
+                                                event,
+                                                product
+                                              )
+                                            }
+                                            onBlur={() => updateTotalQuantity()}
+                                            className="quantity-input"
+                                          />
+                                          <button
+                                            className="quantity-btn btnplus"
+                                            onClick={() => handleAdd(product)}
+                                          >
+                                            +
+                                          </button>
+                                        </div>
+                                        <p className="product-desc">
+                                          (
+                                          {formatStock(
+                                            product.stockTransitorio
+                                          )}{" "}
+                                          {product.stockTransitorio === 1
+                                            ? "disponible"
+                                            : "disponibles"}
+                                          )
+                                        </p>
                                       </div>
                                     </div>
                                   )}
@@ -2288,36 +2324,50 @@ const CatalogueCart = () => {
                                               </b>
                                             </p>
                                           </div>
-                                          <div className="product-quantity">
-                                            <button
-                                              className="quantity-btn btnminus"
-                                              onClick={() =>
-                                                handleSubtract(product)
-                                              }
-                                            >
-                                              -
-                                            </button>
-                                            <input
-                                              type="number"
-                                              min="0"
-                                              value={quantity}
-                                              onChange={(event) =>
-                                                handleQuantityChange(
-                                                  event,
-                                                  product
-                                                )
-                                              }
-                                              onBlur={() =>
-                                                updateTotalQuantity()
-                                              }
-                                              className="quantity-input"
-                                            />
-                                            <button
-                                              className="quantity-btn btnplus"
-                                              onClick={() => handleAdd(product)}
-                                            >
-                                              +
-                                            </button>
+                                          <div className="quant-stock-container">
+                                            <div className="product-quantity">
+                                              <button
+                                                className="quantity-btn btnminus"
+                                                onClick={() =>
+                                                  handleSubtract(product)
+                                                }
+                                              >
+                                                -
+                                              </button>
+                                              <input
+                                                type="number"
+                                                min="0"
+                                                value={quantity}
+                                                onChange={(event) =>
+                                                  handleQuantityChange(
+                                                    event,
+                                                    product
+                                                  )
+                                                }
+                                                onBlur={() =>
+                                                  updateTotalQuantity()
+                                                }
+                                                className="quantity-input"
+                                              />
+                                              <button
+                                                className="quantity-btn btnplus"
+                                                onClick={() =>
+                                                  handleAdd(product)
+                                                }
+                                              >
+                                                +
+                                              </button>
+                                            </div>
+                                            <p className="product-desc">
+                                              (
+                                              {formatStock(
+                                                product.stockTransitorio
+                                              )}{" "}
+                                              {product.stockTransitorio === 1
+                                                ? "disponible"
+                                                : "disponibles"}
+                                              )
+                                            </p>
                                           </div>
                                         </div>
                                       )}

@@ -75,7 +75,7 @@ namespace API.Services.ProductoServices.Queries.GetProductosByCategoryQuery
                 UrlImagen = x.UrlImagen,
                 StockTransitorio = x.StockTransitorio
               })
-              .OrderByDescending(x => x.StockTransitorio)
+              .OrderBy(x => x.Nombre)
               .ToListAsync();
 
           if (productos == null)
