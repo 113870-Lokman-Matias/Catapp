@@ -37,6 +37,7 @@ import { ReactComponent as StockInput } from "../../../../assets/svgs/stockinput
 import { ReactComponent as PercentageInput } from "../../../../assets/svgs/percentageinput.svg";
 import { ReactComponent as ImageInput } from "../../../../assets/svgs/imageinput.svg";
 import { ReactComponent as CategoryInput } from "../../../../assets/svgs/category.svg";
+import { ReactComponent as SubcategoryInput } from "../../../../assets/svgs/subcategory.svg";
 import { ReactComponent as PromocionInput } from "../../../../assets/svgs/promocion.svg";
 import { ReactComponent as DestacadoInput } from "../../../../assets/svgs/destacado.svg";
 
@@ -56,6 +57,7 @@ import {
   DeleteProducts,
   UploadImages,
 } from "../../../../services/ProductService";
+import { GetSubcategoriesByCategoryManage } from "../../../../services/SubcategoryService";
 
 import { SaveStockDetail } from "../../../../services/DetailService";
 
@@ -125,6 +127,9 @@ function ProductManager() {
   const [idCategoria, setIdCategoria] = useState("");
   const [prevIdCategoria, setPrevIdCategoria] = useState("");
 
+  const [idSubcategoria, setIdSubcategoria] = useState("");
+  const [prevIdSubcategoria, setPrevIdSubcategoria] = useState("");
+
   const [idImagen, setIdImagen] = useState("");
 
   const [urlImagen, setUrlImagen] = useState("");
@@ -134,6 +139,7 @@ function ProductManager() {
 
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [subcategories, setSubcategories] = useState([]);
 
   const [originalProductsList, setOriginalProductsList] = useState(products);
 
@@ -252,14 +258,24 @@ function ProductManager() {
       }
     });
 
-    connection.on("MensajeCrudProducto", async () => {
+    connection.on("MensajeCrudSubcategoria", async () => {
       try {
-        const result = await GetCategoriesManage();
-        setCategories(result);
+        const resultProducts = await GetProductsManage();
+        setProducts(resultProducts);
+        setOriginalProductsList(resultProducts);
       } catch (error) {
-        console.error("Error al obtener las categorias: " + error);
+        console.error("Error al obtener las subcategorías: " + error);
       }
     });
+
+    // connection.on("MensajeCrudProducto", async () => {
+    //   try {
+    //     const result = await GetCategoriesManage();
+    //     setCategories(result);
+    //   } catch (error) {
+    //     console.error("Error al obtener las categorias: " + error);
+    //   }
+    // });
 
     connection.on("MensajeUpdateCotizacion", async () => {
       try {
@@ -572,6 +588,7 @@ function ProductManager() {
     setPromocion("");
     setDestacado("");
     setIdCategoria("");
+    setIdSubcategoria("");
     setIdImagen("");
     setUrlImagen("");
 
@@ -589,8 +606,29 @@ function ProductManager() {
   }
   //#endregion
 
+  //#region Función para obtener las subcategorías de una categoría
+  const RetrieveCategorySubcategories = async (idCategoria) => {
+    const result = await GetSubcategoriesByCategoryManage(idCategoria);
+    setSubcategories(result);
+  };
+  //#endregion
+
+  //#region Funcíon para setear el id de la categoría y cargar las subcategorías de la misma
+  // Handle category change
+  const handleCategoryChange = async (e) => {
+    const selectedCategoryId = e.target.value;
+    setIdCategoria(selectedCategoryId);
+    setIdSubcategoria("");
+
+    // Call function to retrieve subcategories
+    await RetrieveCategorySubcategories(selectedCategoryId);
+  };
+  //#endregion
+
   //#region Función para obtener los valores almacenados de un producto y cargar cada uno de ellos en su input correspondiente
-  function RetrieveProductInputs(product) {
+  async function RetrieveProductInputs(product) {
+    await RetrieveCategorySubcategories(product.idCategoria);
+
     setIdProducto(product.idProducto);
     setNombre(product.nombre);
     setDescripcion(product.descripcion);
@@ -605,6 +643,7 @@ function ProductManager() {
     setPromocion(product.enPromocion);
     setDestacado(product.enDestacado);
     setIdCategoria(product.idCategoria);
+    setIdSubcategoria(product.idSubcategoria);
     setIdImagen(product.idImagen);
     setUrlImagen(product.urlImagen);
 
@@ -639,6 +678,7 @@ function ProductManager() {
     setPrevPromocion(product.enPromocion);
     setPrevDestacado(product.enDestacado);
     setPrevIdCategoria(product.idCategoria);
+    setPrevIdSubcategoria(product.idSubcategoria);
     setPrevUrlImagen(product.urlImagen);
   }
   //#endregion
@@ -900,8 +940,8 @@ function ProductManager() {
     } else if (promocion === "") {
       Swal.fire({
         icon: "error",
-        title: "Debe indicar si se encuentra en promocion",
-        text: "Clickeé el botón en caso de que el mismo se encuentre en promocion",
+        title: "Debe indicar si se encuentra en promoción",
+        text: "Clickeé el botón en caso de que el mismo se encuentre en promoción",
         confirmButtonText: "Aceptar",
         confirmButtonColor: "#f27474",
       });
@@ -1114,6 +1154,7 @@ function ProductManager() {
       prevDestacado !== destacado ||
       prevOcultar !== ocultar ||
       prevIdCategoria !== idCategoria ||
+      prevIdSubcategoria !== idSubcategoria ||
       prevUrlImagen !== urlImagen
     ) {
       return true;
@@ -1158,6 +1199,7 @@ function ProductManager() {
               ocultar: rolUsuario === "Vendedor" ? true : ocultar,
               enPromocion: rolUsuario === "Vendedor" ? false : promocion,
               enDestacado: rolUsuario === "Vendedor" ? false : destacado,
+              idSubcategoria: idSubcategoria ? idSubcategoria : "-1",
             },
             headers
           );
@@ -1275,6 +1317,7 @@ function ProductManager() {
             ocultar: ocultar,
             enPromocion: promocion,
             enDestacado: destacado,
+            idSubcategoria: idSubcategoria ? idSubcategoria : "-1",
           },
           headers
         );
@@ -1935,9 +1978,15 @@ function ProductManager() {
                           )}
 
                         <label className="label selects" htmlFor="categorias">
-                          Categoria:
+                          Categoría:
                         </label>
-                        <div className="form-group-input">
+                        <div
+                          className={`form-group-input ${
+                            idCategoria && subcategories.length > 0
+                              ? "desc-input"
+                              : ""
+                          }`}
+                        >
                           <span className="input-group-text">
                             <CategoryInput className="input-group-svg" />
                           </span>
@@ -1946,24 +1995,71 @@ function ProductManager() {
                             name="categorias"
                             id="categorias"
                             value={idCategoria}
-                            onChange={(e) => setIdCategoria(e.target.value)}
+                            onChange={handleCategoryChange}
                           >
                             <option hidden key={0} value="0">
                               Seleccione una categoría
                             </option>
                             {Array.from(categories)
-                            .filter((opts) => opts.nombre !== "Promociones" && opts.nombre !== "Destacados")
-                            .map((opts, i) => (
-                              <option
-                                className="btn-option"
-                                key={i}
-                                value={opts.idCategoria}
-                              >
-                                {opts.nombre}
-                              </option>
-                            ))}
+                              .filter(
+                                (opts) =>
+                                  opts.nombre !== "Promociones" &&
+                                  opts.nombre !== "Destacados"
+                              )
+                              .map((opts, i) => (
+                                <option
+                                  className="btn-option"
+                                  key={i}
+                                  value={opts.idCategoria}
+                                >
+                                  {opts.nombre}
+                                </option>
+                              ))}
                           </select>
                         </div>
+
+                        {idCategoria && subcategories.length > 0 && (
+                          <>
+                            <label
+                              className="label selects"
+                              htmlFor="subcategorias"
+                            >
+                              Subcategoría:
+                            </label>
+                            <div className="form-group-input">
+                              <span className="input-group-text">
+                                <SubcategoryInput className="input-group-svg" />
+                              </span>
+                              <select
+                                className="input"
+                                name="subcategorias"
+                                id="subcategorias"
+                                value={idSubcategoria}
+                                onChange={(e) =>
+                                  setIdSubcategoria(e.target.value)
+                                }
+                              >
+                                <option hidden key={0} value="0">
+                                  Seleccione una subcategoría
+                                </option>
+                                {Array.from(subcategories).map((opts, i) => (
+                                  <option
+                                    className="btn-option"
+                                    key={i}
+                                    value={opts.idSubcategoria}
+                                  >
+                                    {opts.nombre}
+                                  </option>
+                                ))}
+                                {idSubcategoria && (
+                                  <option className="no-vendedor" value="-1">
+                                    Sin subcategoría
+                                  </option>
+                                )}
+                              </select>
+                            </div>
+                          </>
+                        )}
                       </div>
 
                       {(rolUsuario === "Supervisor" ||
@@ -1974,7 +2070,7 @@ function ProductManager() {
                               className="label selects"
                               htmlFor="promocion"
                             >
-                              En promocion
+                              En promoción
                             </label>
 
                             <div className="checkbox-group">
@@ -3227,7 +3323,16 @@ function ProductManager() {
                               : "table-name"
                           }
                         >
-                          {product.nombreCategoria}
+                          <div className="cate-subcate">
+                            <p className="cate-info">
+                              {product.nombreCategoria}
+                            </p>
+                            {product.nombreSubcategoria !== null && (
+                              <p className="cate-info subcate">
+                                {product.nombreSubcategoria}
+                              </p>
+                            )}
+                          </div>
                         </td>
                         {product.ocultar ? (
                           <td
@@ -3418,7 +3523,16 @@ function ProductManager() {
                   Categoría
                 </th>
                 <th className="table-title" scope="col">
+                  Subcategoría
+                </th>
+                <th className="table-title" scope="col">
                   Oculto
+                </th>
+                <th className="table-title" scope="col">
+                  En promoción
+                </th>
+                <th className="table-title" scope="col">
+                  Destacado
                 </th>
                 <th className="table-title" scope="col">
                   URL Imagen
@@ -3559,7 +3673,14 @@ function ProductManager() {
                       )}
                       <td>{product.stockTransitorio}</td>
                       <td>{product.nombreCategoria}</td>
+                      {product.nombreSubcategoria ? (
+                        <td>{product.nombreSubcategoria}</td>
+                      ) : (
+                        <td></td>
+                      )}
                       {product.ocultar ? <td>Si</td> : <td>No</td>}
+                      {product.enPromocion ? <td>Si</td> : <td>No</td>}
+                      {product.enDestacado ? <td>Si</td> : <td>No</td>}
                       <td>{product.urlImagen}</td>
                     </tr>
                   </tbody>

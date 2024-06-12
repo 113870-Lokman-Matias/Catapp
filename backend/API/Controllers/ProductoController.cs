@@ -4,6 +4,7 @@ using MediatR;
 using API.Services.ProductoServices.Queries.GetProductosManageQuery;
 using API.Dtos.ProductoDtos;
 using API.Services.ProductoServices.Queries.GetProductosByCategoryQuery;
+using API.Services.ProductoServices.Queries.GetProductosBySubcategoryQuery;
 using API.Services.ProductoServices.Queries.GetProductosByQueryQuery;
 using API.Services.ProductoServices.Queries.GetProductoByIdQuery;
 using API.Services.ProductoServices.Commands.CreateProductoCommand;
@@ -45,6 +46,13 @@ public class ProductoController : ControllerBase
   {
     var productosByCategory = _mediator.Send(new GetProductosByCategoryQuery(category));
     return productosByCategory;
+  }
+
+  [HttpGet("subcategoria/{idCategory}/{idSubcategory}")]
+  public Task<ListaProductosDto> GetProductosBySubcategory(int idCategory, int idSubcategory)
+  {
+    var productosBySubcategory = _mediator.Send(new GetProductosBySubcategoryQuery(idCategory, idSubcategory));
+    return productosBySubcategory;
   }
 
   [HttpGet("query/{query}")]

@@ -8,12 +8,16 @@ import { GetCategories } from "../../../services/CategoryService";
 import {
   GetProductsByCategory,
   GetProductsByQuery,
+  GetProductsBySubcategory,
 } from "../../../services/ProductService";
+import { GetSubcategoriesByCategory } from "../../../services/SubcategoryService";
 
 //#region Imports de los SVG'S
 import { ReactComponent as Zoom } from "../../../assets/svgs/zoom.svg";
 import { ReactComponent as Close } from "../../../assets/svgs/closebtn.svg";
 import { ReactComponent as Lupa } from "../../../assets/svgs/lupa.svg";
+import { ReactComponent as Up } from "../../../assets/svgs/up.svg";
+import { ReactComponent as Down } from "../../../assets/svgs/down.svg";
 import Loader from "../../../components/Loaders/LoaderCircle";
 //#endregion
 
@@ -36,10 +40,20 @@ const Catalogue = () => {
   const [categoryProducts, setCategoryProducts] = useState({});
   const [openCategories, setOpenCategories] = useState([]);
 
+  const [categorySubcategories, setCategorySubcategories] = useState({});
+  const [subcategorySigns, setSubcategorySigns] = useState({});
+  const [subcategoryProducts, setSubcategoryProducts] = useState({});
+  const [openSubcategories, setOpenSubcategories] = useState([]);
+
   const [isLoading, setIsLoading] = useState(true);
-  const [isLoadingProductByCategory, setIsLoadingProductByCategory] =
-    useState(true);
   const [isLoadingQuery, setIsLoadingQuery] = useState(false);
+
+  const [isLoadingProductByCategory, setIsLoadingProductByCategory] = useState(
+    {}
+  );
+  const [isLoadingProductBySubcategory, setIsLoadingProductBySubcategory] =
+    useState({});
+  const [isLoadingSubcategories, setIsLoadingSubcategories] = useState({});
 
   //#region Constantes necesarias para el filtro por busqueda
   const [products, setProducts] = useState([]);
@@ -88,7 +102,6 @@ const Catalogue = () => {
         if (query !== "") {
           const products = await GetProductsByQuery(query);
           setProducts(products);
-
           GetCategories(setCategories);
         } else {
           // Iterar sobre las categorías abiertas en openCategories
@@ -96,6 +109,7 @@ const Catalogue = () => {
             let products;
 
             try {
+              setIsLoadingProductByCategory(true);
               products = await GetProductsByCategory(category);
             } catch (error) {
               console.log(
@@ -112,27 +126,101 @@ const Catalogue = () => {
               ...prevProducts,
               [category]: products,
             }));
+
+            // Obtener las subcategorías para la categoría
+            const subcategories = categorySubcategories[category] || [];
+            for (const subcategory of subcategories) {
+              if (openSubcategories.includes(subcategory.nombre)) {
+                let subcategoryProducts;
+
+                try {
+                  subcategoryProducts = await GetProductsBySubcategory(
+                    subcategory.idCategoria,
+                    subcategory.idSubcategoria
+                  );
+                } catch (error) {
+                  console.log(
+                    "Error al obtener productos para la subcategoría",
+                    subcategory.nombre,
+                    error
+                  );
+                }
+
+                // Actualizar los productos para la subcategoría en subcategoryProducts
+                setSubcategoryProducts((prevProducts) => ({
+                  ...prevProducts,
+                  [subcategory.nombre]: subcategoryProducts,
+                }));
+              }
+            }
           }
         }
+
+        // Actualizar las categorías después de actualizar productos
+        GetCategories(setCategories);
       } catch (error) {
         console.error("Error al obtener los productos: " + error);
+      }
+    });
+
+    connection.on("MensajeCrudSubcategoria", async () => {
+      try {
+        // Obtener las categorías abiertas con sus IDs
+        const openedCategoriesWithIds = openCategories.map((categoryName) => {
+          const category = categories.find(
+            (cat) => cat.nombre === categoryName
+          );
+          return { idCategoria: category.idCategoria, nombre: categoryName };
+        });
+
+        // Iterar sobre las categorías abiertas
+        for (const category of openedCategoriesWithIds) {
+          // Obtener las subcategorías actualizadas para cada categoría abierta
+          const updatedSubcategories = await GetSubcategoriesByCategory(
+            category.idCategoria
+          );
+
+          // Actualizar el estado de las subcategorías para esa categoría
+          setCategorySubcategories((prevSubcategories) => ({
+            ...prevSubcategories,
+            [category.nombre]: updatedSubcategories,
+          }));
+        }
+      } catch (error) {
+        console.error(
+          "Error al obtener las subcategorías actualizadas: " + error
+        );
       }
     });
 
     return () => {
       connection.stop();
     };
-  }, [openCategories, query]);
+  }, [openCategories, openSubcategories, query]);
   //#endregion
 
-  //#region Función para quitar los signos "-" de las categorias que quedaron abiertas cuando se ejecuta la función de search()
+  //#region Función para quitar los signos "-" de las categorías y subcategorías que quedaron abiertas cuando se ejecuta la función de search()
   const closeAllCategories = () => {
-    const updatedSigns = {};
+    const updatedCategorySigns = {};
+    const updatedSubcategorySigns = {}; // Nuevo objeto para los signos de subcategorías
+
+    // Recorrer el estado actual de las categorías
     for (const index in categorySign) {
-      updatedSigns[index] = "+";
+      updatedCategorySigns[index] = "+"; // Cerrar todas las categorías
     }
-    setCategorySign(updatedSigns);
+
+    // Recorrer el estado actual de las subcategorías
+    for (const category in subcategorySigns) {
+      updatedSubcategorySigns[category] = {}; // Crear un objeto vacío para cada categoría
+      for (const subcategory in subcategorySigns[category]) {
+        updatedSubcategorySigns[category][subcategory] = "+"; // Cerrar todas las subcategorías de cada categoría
+      }
+    }
+
+    // Actualizar los estados de las categorías y subcategorías
+    setCategorySign(updatedCategorySigns);
     setOpenCategories([]);
+    setSubcategorySigns(updatedSubcategorySigns); // Actualizar el estado de las subcategorías
   };
   //#endregion
 
@@ -181,7 +269,7 @@ const Catalogue = () => {
   };
   //#endregion
 
-  //#region Funcion para abrir el "+" o "-" de cada categoria
+  //#region Funcion para abrir el "+" o "-" de cada categoría
   const handleCategoryClick = async (index) => {
     setCategorySign((prevSigns) => ({
       ...prevSigns,
@@ -189,18 +277,28 @@ const Catalogue = () => {
     }));
 
     const category = categories[index].nombre;
+    const idCategory = categories[index].idCategoria;
 
-    // Verificamos si la categoría está abierta
     if (categorySign[index] === "-") {
-      // La categoría está cerrada, la eliminamos de openCategories
+      // La categoría se está cerrando, cerrar todas las subcategorías asociadas
+      const subcategoriesToClose = categorySubcategories[category] || [];
+      subcategoriesToClose.forEach((subcategory) => {
+        if (openSubcategories.includes(subcategory.nombre)) {
+          // Si la subcategoría está abierta, cerrarla
+          handleSubcategoryClick(subcategory, categories[index]);
+        }
+      });
+
       setOpenCategories((prevOpenCategories) =>
         prevOpenCategories.filter((cat) => cat !== category)
       );
-      setIsLoadingProductByCategory(false);
-      return; // No hacer la petición de productos
+      setIsLoadingProductByCategory((prevLoadingState) => ({
+        ...prevLoadingState,
+        [idCategory]: false,
+      }));
+      return;
     }
 
-    // La categoría está abierta, la agregamos a openCategories
     setOpenCategories((prevOpenCategories) => [
       ...prevOpenCategories,
       category,
@@ -209,16 +307,104 @@ const Catalogue = () => {
     let products;
 
     try {
+      setIsLoadingSubcategories((prevLoadingState) => ({
+        ...prevLoadingState,
+        [category]: true,
+      }));
+      const subcategories = await GetSubcategoriesByCategory(idCategory);
+      setCategorySubcategories((prevSubcategories) => ({
+        ...prevSubcategories,
+        [category]: subcategories,
+      }));
+    } catch (error) {
+      console.log("Error al obtener subcategorías:", error);
+    } finally {
+      setIsLoadingSubcategories((prevLoadingState) => ({
+        ...prevLoadingState,
+        [category]: false,
+      }));
+    }
+
+    try {
+      setIsLoadingProductByCategory((prevLoadingState) => ({
+        ...prevLoadingState,
+        [idCategory]: true,
+      }));
       products = await GetProductsByCategory(category);
     } catch (error) {
       console.log(error);
     } finally {
-      setIsLoadingProductByCategory(false);
+      setIsLoadingProductByCategory((prevLoadingState) => ({
+        ...prevLoadingState,
+        [idCategory]: false,
+      }));
     }
 
     setCategoryProducts((prevProducts) => ({
       ...prevProducts,
       [category]: products,
+    }));
+  };
+  //#endregion
+
+  //#region Funcion para abrir el "+" o "-" de cada subcategoría
+  const handleSubcategoryClick = async (subcategory, category) => {
+    const subcategoryName = subcategory.nombre;
+    const categoryName = category.nombre;
+
+    // Actualizar el estado de los signos de subcategorías por categoría
+    setSubcategorySigns((prevSigns) => ({
+      ...prevSigns,
+      [categoryName]: {
+        ...prevSigns[categoryName],
+        [subcategoryName]:
+          prevSigns[categoryName]?.[subcategoryName] === "-" ? "+" : "-",
+      },
+    }));
+
+    const idCategory = subcategory.idCategoria;
+    const idSubcategory = subcategory.idSubcategoria;
+
+    // Verificar si la subcategoría está abierta
+    if (subcategorySigns[categoryName]?.[subcategoryName] === "-") {
+      // La subcategoría está cerrada, la eliminamos de openSubcategories
+      setOpenSubcategories((prevOpenSubcategories) =>
+        prevOpenSubcategories.filter((subcat) => subcat !== subcategoryName)
+      );
+      setIsLoadingProductBySubcategory((prevLoadingState) => ({
+        ...prevLoadingState,
+        [idSubcategory]: false,
+      }));
+      return; // No hacer la petición de productos
+    }
+
+    // La subcategoría está abierta, la agregamos a openSubcategories
+    setOpenSubcategories((prevOpenSubcategories) => [
+      ...prevOpenSubcategories,
+      subcategoryName,
+    ]);
+
+    let products;
+
+    try {
+      setIsLoadingProductBySubcategory((prevLoadingState) => ({
+        ...prevLoadingState,
+        [idSubcategory]: true,
+      }));
+      products = await GetProductsBySubcategory(idCategory, idSubcategory);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsLoadingProductBySubcategory((prevLoadingState) => ({
+        ...prevLoadingState,
+        [idSubcategory]: false,
+      }));
+    }
+
+    // Actualizar el estado de productos de subcategorías
+    setSubcategoryProducts((prevProducts) => ({
+      ...prevProducts,
+      [subcategoryName]: products,
     }));
   };
   //#endregion
@@ -400,7 +586,145 @@ const Catalogue = () => {
                           id={`collapseCategory${index}`}
                         >
                           <div className="product-container">
-                            {isLoadingProductByCategory === true ? (
+                            <div>
+                              {isLoadingSubcategories[category.nombre] ===
+                                true &&
+                              category.nombre !== "Promociones" &&
+                              category.nombre !== "Destacados" ? (
+                                <div className="loading-single-furniture">
+                                  <Loader />
+                                  <p className="bold-loading">
+                                    Cargando subcategorías de {category.nombre}
+                                  </p>
+                                </div>
+                              ) : (
+                                <div>
+                                  {categorySubcategories[category.nombre]
+                                    ?.length > 0 && (
+                                    <div className="subcategorias-container">
+                                      {categorySubcategories[
+                                        category.nombre
+                                      ].map((subcategory) => (
+                                        <div
+                                          className="filters-left"
+                                          key={subcategory.idSubcategoria}
+                                        >
+                                          <div className="filter-container">
+                                            <div
+                                              className="subcategory-btn-container"
+                                              onClick={() =>
+                                                handleSubcategoryClick(
+                                                  subcategory,
+                                                  category
+                                                )
+                                              }
+                                              data-bs-toggle="collapse"
+                                              href={`#collapseSubcategory${subcategory.idSubcategoria}`}
+                                              role="button"
+                                              aria-expanded="false"
+                                              aria-controls={`collapseSubcategory${subcategory.idSubcategoria}`}
+                                            >
+                                              <p className="filter-btn-name2">
+                                                {subcategory.nombre}
+                                              </p>
+                                              <p className="filter-btn2">
+                                                {subcategorySigns[
+                                                  category.nombre
+                                                ]?.[subcategory.nombre] ===
+                                                "-" ? (
+                                                  <Up className="updown"></Up>
+                                                ) : (
+                                                  <Down className="updown"></Down>
+                                                )}
+                                              </p>
+                                            </div>
+                                            <div
+                                              className="collapse"
+                                              id={`collapseSubcategory${subcategory.idSubcategoria}`}
+                                            >
+                                              <div className="product-container">
+                                                {isLoadingProductBySubcategory[
+                                                  subcategory.idSubcategoria
+                                                ] === true ? (
+                                                  <div className="loading-single-furniture">
+                                                    <Loader />
+                                                    <p className="bold-loading">
+                                                      Cargando productos
+                                                      pertenecientes a la
+                                                      subcategoría "
+                                                      {subcategory.nombre}"...
+                                                    </p>
+                                                  </div>
+                                                ) : (
+                                                  subcategoryProducts[
+                                                    subcategory.nombre
+                                                  ]?.map((product, index) => (
+                                                    <div
+                                                      className="contenedor-producto"
+                                                      key={index}
+                                                    >
+                                                      <div className="product">
+                                                        <div className="product-1-col">
+                                                          <figure className="figure">
+                                                            <Zoom
+                                                              className="zoom"
+                                                              onClick={() => {
+                                                                Swal.fire({
+                                                                  title:
+                                                                    product.nombre,
+                                                                  imageUrl: `${product.urlImagen}`,
+                                                                  imageWidth: 400,
+                                                                  imageHeight: 400,
+                                                                  imageAlt:
+                                                                    "Vista Producto",
+                                                                  confirmButtonColor:
+                                                                    "#6c757d",
+                                                                  confirmButtonText:
+                                                                    "Cerrar",
+                                                                  focusConfirm: true,
+                                                                });
+                                                              }}
+                                                            ></Zoom>
+                                                            <img
+                                                              src={
+                                                                product.urlImagen
+                                                              }
+                                                              className="product-img"
+                                                              alt="Producto"
+                                                            />
+                                                          </figure>
+                                                        </div>
+                                                        <div className="product-2-col">
+                                                          <h3 className="product-title">
+                                                            {product.nombre}
+                                                          </h3>
+                                                          <h3 className="product-desc">
+                                                            <pre className="pre">
+                                                              {
+                                                                product.descripcion
+                                                              }
+                                                            </pre>
+                                                          </h3>
+                                                        </div>
+                                                        <div className="product-3-col"></div>
+                                                      </div>
+                                                    </div>
+                                                  ))
+                                                )}
+                                              </div>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+
+                            {isLoadingProductByCategory[
+                              category.idCategoria
+                            ] === true ? (
                               <div className="loading-single-furniture">
                                 <Loader />
                                 <p className="bold-loading">
@@ -408,65 +732,52 @@ const Catalogue = () => {
                                   categoría "{category.nombre}"...
                                 </p>
                               </div>
-                            ) : categoryProducts[category.nombre]?.length ===
-                              0 ? (
-                              <div className="vacio2">
-                                <p className="product-desc no-p">
-                                  No hay productos correspondientes a{" "}
-                                  <b className="category-name">
-                                    {category.nombre}
-                                  </b>
-                                  .
-                                </p>
-                              </div>
                             ) : (
                               categoryProducts[category.nombre]?.map(
-                                (product, index) => {
-                                  return (
-                                    <div
-                                      className="contenedor-producto"
-                                      key={index}
-                                    >
-                                      <div className="product">
-                                        <div className="product-1-col">
-                                          <figure className="figure">
-                                            <Zoom
-                                              className="zoom"
-                                              onClick={() =>
-                                                Swal.fire({
-                                                  title: product.nombre,
-                                                  imageUrl: `${product.urlImagen}`,
-                                                  imageWidth: 400,
-                                                  imageHeight: 400,
-                                                  imageAlt: "Vista Producto",
-                                                  confirmButtonColor: "#6c757d",
-                                                  confirmButtonText: "Cerrar",
-                                                  focusConfirm: true,
-                                                })
-                                              }
-                                            ></Zoom>
-                                            <img
-                                              src={product.urlImagen}
-                                              className="product-img"
-                                              alt="Producto"
-                                            />
-                                          </figure>
-                                        </div>
-                                        <div className="product-2-col">
-                                          <h3 className="product-title">
-                                            {product.nombre}
-                                          </h3>
-                                          <h3 className="product-desc">
-                                            <pre className="pre">
-                                              {product.descripcion}
-                                            </pre>
-                                          </h3>
-                                        </div>
-                                        <div className="product-3-col"></div>
+                                (product, index) => (
+                                  <div
+                                    className="contenedor-producto oscuro"
+                                    key={index}
+                                  >
+                                    <div className="product">
+                                      <div className="product-1-col">
+                                        <figure className="figure">
+                                          <Zoom
+                                            className="zoom"
+                                            onClick={() => {
+                                              Swal.fire({
+                                                title: product.nombre,
+                                                imageUrl: `${product.urlImagen}`,
+                                                imageWidth: 400,
+                                                imageHeight: 400,
+                                                imageAlt: "Vista Producto",
+                                                confirmButtonColor: "#6c757d",
+                                                confirmButtonText: "Cerrar",
+                                                focusConfirm: true,
+                                              });
+                                            }}
+                                          ></Zoom>
+                                          <img
+                                            src={product.urlImagen}
+                                            className="product-img"
+                                            alt="Producto"
+                                          />
+                                        </figure>
                                       </div>
+                                      <div className="product-2-col">
+                                        <h3 className="product-title">
+                                          {product.nombre}
+                                        </h3>
+                                        <h3 className="product-desc">
+                                          <pre className="pre">
+                                            {product.descripcion}
+                                          </pre>
+                                        </h3>
+                                      </div>
+                                      <div className="product-3-col"></div>
                                     </div>
-                                  );
-                                }
+                                  </div>
+                                )
                               )
                             )}
                           </div>

@@ -113,7 +113,8 @@ CREATE TABLE public.configuraciones (
     instagram text,
     url_instagram text,
     monto_mayorista real DEFAULT 0 NOT NULL,
-    url_logo text
+    url_logo text,
+    codigo text
 );
 
 
@@ -439,7 +440,8 @@ CREATE TABLE public.productos (
     en_promocion boolean DEFAULT false NOT NULL,
     en_destacado boolean DEFAULT false NOT NULL,
     id_divisa integer NOT NULL,
-    stock_transitorio integer NOT NULL
+    stock_transitorio integer NOT NULL,
+    id_subcategoria integer
 );
 
 
@@ -499,6 +501,42 @@ ALTER TABLE public.roles_id_rol_seq OWNER TO postgres;
 --
 
 ALTER SEQUENCE public.roles_id_rol_seq OWNED BY public.roles.id_rol;
+
+
+--
+-- Name: subcategorias; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.subcategorias (
+    id_subcategoria integer NOT NULL,
+    nombre text NOT NULL,
+    ocultar boolean DEFAULT false NOT NULL,
+    id_categoria integer NOT NULL
+);
+
+
+ALTER TABLE public.subcategorias OWNER TO postgres;
+
+--
+-- Name: subcategorias_id_subcategoria_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.subcategorias_id_subcategoria_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.subcategorias_id_subcategoria_seq OWNER TO postgres;
+
+--
+-- Name: subcategorias_id_subcategoria_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.subcategorias_id_subcategoria_seq OWNED BY public.subcategorias.id_subcategoria;
 
 
 --
@@ -660,6 +698,13 @@ ALTER TABLE ONLY public.roles ALTER COLUMN id_rol SET DEFAULT nextval('public.ro
 
 
 --
+-- Name: subcategorias id_subcategoria; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.subcategorias ALTER COLUMN id_subcategoria SET DEFAULT nextval('public.subcategorias_id_subcategoria_seq'::regclass);
+
+
+--
 -- Name: tipos_pedido id_tipo_pedido; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -693,7 +738,7 @@ COPY public.clientes (id_cliente, nombre_completo, dni, telefono, direccion, ent
 -- Data for Name: configuraciones; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.configuraciones (id_configuracion, direccion, url_direccion, horarios, cbu, alias, whatsapp, telefono, facebook, url_facebook, instagram, url_instagram, monto_mayorista, url_logo) FROM stdin;
+COPY public.configuraciones (id_configuracion, direccion, url_direccion, horarios, cbu, alias, whatsapp, telefono, facebook, url_facebook, instagram, url_instagram, monto_mayorista, url_logo, codigo) FROM stdin;
 \.
 
 
@@ -776,7 +821,7 @@ COPY public.pedidos (id_pedido, costo_envio, fecha, verificado, direccion, entre
 -- Data for Name: productos; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.productos (id_producto, nombre, descripcion, precio, porcentaje_minorista, porcentaje_mayorista, precio_minorista, precio_mayorista, stock, id_categoria, id_imagen, url_imagen, ocultar, en_promocion, en_destacado, id_divisa, stock_transitorio) FROM stdin;
+COPY public.productos (id_producto, nombre, descripcion, precio, porcentaje_minorista, porcentaje_mayorista, precio_minorista, precio_mayorista, stock, id_categoria, id_imagen, url_imagen, ocultar, en_promocion, en_destacado, id_divisa, stock_transitorio, id_subcategoria) FROM stdin;
 \.
 
 
@@ -791,6 +836,14 @@ COPY public.roles (id_rol, nombre) FROM stdin;
 4	Supervisor
 5	Vendedor
 6	Predeterminado
+\.
+
+
+--
+-- Data for Name: subcategorias; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.subcategorias (id_subcategoria, nombre, ocultar, id_categoria) FROM stdin;
 \.
 
 
@@ -896,6 +949,13 @@ SELECT pg_catalog.setval('public.productos_id_producto_seq', 1, false);
 --
 
 SELECT pg_catalog.setval('public.roles_id_rol_seq', 6, true);
+
+
+--
+-- Name: subcategorias_id_subcategoria_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.subcategorias_id_subcategoria_seq', 1, false);
 
 
 --
@@ -1017,6 +1077,14 @@ ALTER TABLE ONLY public.roles
 
 
 --
+-- Name: subcategorias subcategorias_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.subcategorias
+    ADD CONSTRAINT subcategorias_pkey PRIMARY KEY (id_subcategoria);
+
+
+--
 -- Name: tipos_pedido tipos_pedido_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1089,6 +1157,13 @@ CREATE INDEX fki_fk_rol ON public.usuarios USING btree (id_rol);
 
 
 --
+-- Name: fki_fk_subcategoria; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX fki_fk_subcategoria ON public.productos USING btree (id_subcategoria);
+
+
+--
 -- Name: fki_fk_tipo_pedido; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -1107,6 +1182,14 @@ CREATE INDEX fki_fk_vendedor ON public.pedidos USING btree (id_vendedor);
 --
 
 ALTER TABLE ONLY public.productos
+    ADD CONSTRAINT fk_categoria FOREIGN KEY (id_categoria) REFERENCES public.categorias(id_categoria) NOT VALID;
+
+
+--
+-- Name: subcategorias fk_categoria; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.subcategorias
     ADD CONSTRAINT fk_categoria FOREIGN KEY (id_categoria) REFERENCES public.categorias(id_categoria) NOT VALID;
 
 
@@ -1172,6 +1255,14 @@ ALTER TABLE ONLY public.detalles_stock
 
 ALTER TABLE ONLY public.usuarios
     ADD CONSTRAINT fk_rol FOREIGN KEY (id_rol) REFERENCES public.roles(id_rol) NOT VALID;
+
+
+--
+-- Name: productos fk_subcategoria; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.productos
+    ADD CONSTRAINT fk_subcategoria FOREIGN KEY (id_subcategoria) REFERENCES public.subcategorias(id_subcategoria) NOT VALID;
 
 
 --

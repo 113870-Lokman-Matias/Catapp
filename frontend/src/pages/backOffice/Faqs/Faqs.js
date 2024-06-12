@@ -104,7 +104,9 @@ function Faqs() {
                       <span className="ref-nohover">Crear Categorías</span>:
                       Establece categorías que luego se asociarán a productos
                       específicos. Esto ayuda a organizar tu inventario de
-                      manera estructurada.
+                      manera estructurada. Además, puedes crear subcategorías
+                      dentro de cada categoría principal, permitiendo segmentar
+                      los productos de forma más específica y detallada.
                     </li>
                     <img
                       className="img"

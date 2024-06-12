@@ -62,6 +62,20 @@
   border: black 2px solid;
 }
 
+.subcategory-btn-container {
+  align-items: center;
+  cursor: pointer;
+  display: flex;
+  flex-direction: row;
+  gap: 50px;
+  padding: 20px;
+  height: 60px;
+  border-radius: 10px;
+  background-color: #ffffffc2;
+  border: black 2px solid;
+  margin-top: 5px;
+}
+
 .filter-btn-name2 {
   width: 100%;
   background-color: initial;
@@ -102,6 +116,10 @@
   padding: 15px;
   margin-top: 10px;
   border-radius: 15px;
+}
+
+.oscuro {
+  background-color: #042b3fe0 !important;
 }
 
 .product {
@@ -191,6 +209,10 @@
   position: absolute;
   width: 35px;
   padding: 7px;
+}
+
+.updown{
+    width: 13px;
 }
 
 .title-search {

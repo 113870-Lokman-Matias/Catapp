@@ -36,6 +36,20 @@ async function GetCategoriesMayorista(state) {
 }
 //#endregion
 
+//#region Función para obtener una categoría por su ID
+async function GetCategoryById(id) {
+  const token = localStorage.getItem("token"); // Obtener el token almacenado en el localStorage
+  const headers = {
+    Authorization: `Bearer ${token}`, // Agregar el encabezado Authorization con el valor del token
+  };
+
+  const response = await axios.get(`https://localhost:7207/categoria/id/${id}`, {
+    headers,
+  });
+  return response.data;
+}
+//#endregion
+
 //#region Función para guardar una categoría en la base de datos
 async function SaveCategories(data, headers) {
   return axios.post("https://localhost:7207/categoria", data, { headers });
@@ -84,6 +98,7 @@ export {
   GetCategories,
   GetCategoriesMinorista,
   GetCategoriesMayorista,
+  GetCategoryById,
   SaveCategories,
   UpdateCategories,
   DeleteCategories,

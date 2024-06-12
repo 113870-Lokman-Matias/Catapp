@@ -73,7 +73,9 @@ namespace API.Services.ProductoServices.Queries.GetProductosManageQuery
               EnPromocion = x.EnPromocion,
               EnDestacado = x.EnDestacado,
               IdDivisa = x.IdDivisa,
-              StockTransitorio = x.StockTransitorio
+              StockTransitorio = x.StockTransitorio,
+              IdSubcategoria = x.IdSubcategoria,
+              NombreSubcategoria = x.IdSubcategoriaNavigation.Nombre
             })
             .OrderBy(x => x.Ocultar)
             .ThenBy(x => x.StockTransitorio)

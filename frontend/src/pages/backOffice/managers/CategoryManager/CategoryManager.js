@@ -17,6 +17,7 @@ import { ReactComponent as Close } from "../../../../assets/svgs/closebtn.svg";
 import { ReactComponent as Back } from "../../../../assets/svgs/back.svg";
 
 import { ReactComponent as CategoryInput } from "../../../../assets/svgs/category.svg";
+import { ReactComponent as Subcategory } from "../../../../assets/svgs/subcategory.svg";
 import { ReactComponent as ImageInput } from "../../../../assets/svgs/imageinput.svg";
 //#endregion
 
@@ -957,6 +958,15 @@ function CategoryManager() {
                         </td>
 
                         <td className="table-name">
+                          <Link
+                            to={`/administrar-subcategorias/${category.idCategoria}`}
+                            title="Gestionar subcategorías"
+                            type="button"
+                            className="btn btn-secondary btn-subcategories"
+                          >
+                            <Subcategory className="delete" />
+                          </Link>
+
                           <button
                             type="button"
                             className="btn btn-warning btn-edit"

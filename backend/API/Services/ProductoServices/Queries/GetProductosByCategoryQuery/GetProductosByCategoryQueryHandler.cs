@@ -55,7 +55,7 @@ namespace API.Services.ProductoServices.Queries.GetProductosByCategoryQuery
           else
           {
               productosQuery = _context.Productos
-                  .Where(x => x.IdCategoriaNavigation.Nombre == request.category && x.Ocultar == false);
+                  .Where(x => x.IdCategoriaNavigation.Nombre == request.category && x.Ocultar == false && x.IdSubcategoria == null);
           }
 
           var productos = await productosQuery
@@ -73,7 +73,8 @@ namespace API.Services.ProductoServices.Queries.GetProductosByCategoryQuery
                 Stock = x.Stock,
                 NombreCategoria = x.IdCategoriaNavigation.Nombre,
                 UrlImagen = x.UrlImagen,
-                StockTransitorio = x.StockTransitorio
+                StockTransitorio = x.StockTransitorio,
+                NombreSubcategoria = x.IdSubcategoriaNavigation.Nombre
               })
               .OrderBy(x => x.Nombre)
               .ToListAsync();

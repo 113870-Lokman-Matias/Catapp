@@ -22,5 +22,6 @@ namespace API.Services.ProductoServices.Commands.UpdateProductoCommand
     public bool Ocultar { get; set; }
     public bool EnPromocion { get; set; }
     public bool EnDestacado { get; set; }
+    public int? IdSubcategoria { get; set; }
   }
 }

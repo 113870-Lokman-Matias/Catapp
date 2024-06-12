@@ -23,6 +23,7 @@ import Faqs from "./pages/backOffice/Faqs/Faqs";
 
 import UserManager from "./pages/backOffice/managers/UserManager/UserManager";
 import CategoryManager from "./pages/backOffice/managers/CategoryManager/CategoryManager";
+import SubcategoryManager from "./pages/backOffice/managers/SubcategoryManager/SubcategoryManager";
 import DollarManager from "./pages/backOffice/managers/DollarManager/DollarManager";
 import ProductManager from "./pages/backOffice/managers/ProductManager/ProductManager";
 import DetailManager from "./pages/backOffice/managers/DetailManager/DetailManager";
@@ -99,6 +100,16 @@ function App() {
                 allowedRoles={["SuperAdmin", "Admin", "Supervisor", "Vendedor"]}
               >
                 <CategoryManager />
+              </RoleProtectedRoute>
+            }
+          />
+          <Route
+            path="administrar-subcategorias/:id"
+            element={
+              <RoleProtectedRoute
+                allowedRoles={["SuperAdmin", "Admin", "Supervisor", "Vendedor"]}
+              >
+                <SubcategoryManager />
               </RoleProtectedRoute>
             }
           />

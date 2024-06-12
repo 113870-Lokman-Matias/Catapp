@@ -85,23 +85,25 @@
   margin-bottom: 3px;
 }
 
-.input-group-svg-prom-dest{
+.input-group-svg-prom-dest {
   height: 22px;
   width: 22px;
   fill: #353c42;
 }
 
-.input-group-svg-prom-activo{
+.input-group-svg-prom-activo {
   fill: #e42626;
 }
 
-.input-group-svg-dest-activo{
+.input-group-svg-dest-activo {
   fill: #e2c20d;
 }
 
 .precio-pesos {
   background-color: #6c757d;
   border-radius: 5px;
+  padding: 1px;
+  margin: 0px;
 }
 
 .stock-btns {
@@ -155,7 +157,7 @@
   text-wrap: nowrap;
 }
 
-.prom-dest{
+.prom-dest {
   justify-content: center;
   align-items: center;
   display: flex;
@@ -164,8 +166,24 @@
   gap: 5px;
 }
 
+.cate-subcate {
+  display: flex;
+  flex-direction: column !important;
+}
+
+.cate-info {
+  margin: 0px;
+}
+
+.subcate {
+  margin-top: 15px;
+  background-color: #5b435e;
+  border-radius: 5px;
+  padding: 1px;
+}
+
 @media (max-width: 1350px) {
-  .table-name-prom-dest{
+  .table-name-prom-dest {
     display: flex;
     flex-direction: column;
   }

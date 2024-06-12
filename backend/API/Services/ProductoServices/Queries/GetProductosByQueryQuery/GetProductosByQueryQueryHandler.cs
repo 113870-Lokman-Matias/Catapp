@@ -54,7 +54,8 @@ namespace API.Services.ProductoServices.Queries.GetProductosByQueryQuery
                 Stock = x.Stock,
                 NombreCategoria = x.IdCategoriaNavigation.Nombre,
                 UrlImagen = x.UrlImagen,
-                StockTransitorio = x.StockTransitorio
+                StockTransitorio = x.StockTransitorio,
+                NombreSubcategoria = x.IdSubcategoriaNavigation.Nombre
               })
               .OrderBy(x => x.Nombre)
               .ToListAsync();

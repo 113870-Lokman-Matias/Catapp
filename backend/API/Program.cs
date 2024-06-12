@@ -18,6 +18,7 @@ using API.Services.UsuarioServices.Commands.VerifyUsuarioCommand;
 using API.Services.UsuarioServices.Commands.UpdateUsuarioNoLogueadoPasswordCommand;
 using API.Services.UsuarioServices.Commands.UpdateUsuarioPasswordCommand;
 
+using API.Services.CategoriaServices.Queries.GetCategoriaByIdQuery;
 using API.Services.CategoriaServices.Commands.CreateCategoriaCommand;
 using API.Services.CategoriaServices.Commands.UpdateCategoriaCommand;
 using API.Services.CategoriaServices.Commands.DeleteCategoriaCommand;
@@ -25,6 +26,7 @@ using API.Services.CategoriaServices.Commands.DeleteCategoriaCommand;
 using API.Services.CotizacionServices.Commands.UpdateCotizacionDolarCommand;
 
 using API.Services.ProductoServices.Queries.GetProductosByCategoryQuery;
+using API.Services.ProductoServices.Queries.GetProductosBySubcategoryQuery;
 using API.Services.ProductoServices.Queries.GetProductosByQueryQuery;
 using API.Services.ProductoServices.Queries.GetProductoByIdQuery;
 using API.Services.ProductoServices.Commands.CreateProductoCommand;
@@ -54,6 +56,12 @@ using API.Services.MetodoPagoServices.Commands.UpdateMetodoPagoCommand;
 using API.Services.MetodoPagoServices.Commands.DeleteMetodoPagoCommand;
 
 using API.Services.ConfiguracionServices.Commands.UpdateConfiguracionCommand;
+
+using API.Services.SubcategoriaServices.Queries.GetSubcategoriasByCategoryManageQuery;
+using API.Services.SubcategoriaServices.Queries.GetSubcategoriasByCategoryQuery;
+using API.Services.SubcategoriaServices.Commands.CreateSubcategoriaCommand;
+using API.Services.SubcategoriaServices.Commands.UpdateSubcategoriaCommand;
+using API.Services.SubcategoriaServices.Commands.DeleteSubcategoriaCommand;
 
 using MercadoPago.Config;
 
@@ -117,6 +125,7 @@ builder.Services.AddScoped<IValidator<UpdateUsuarioNoLogueadoPasswordCommand>, U
 builder.Services.AddScoped<IValidator<UpdateUsuarioPasswordCommand>, UpdateUsuarioPasswordCommandValidator>();
 
 // Validaciones para los servicios de Categorias
+builder.Services.AddScoped<IValidator<GetCategoriaByIdQuery>, GetCategoriaByIdQueryValidator>();
 builder.Services.AddScoped<IValidator<CreateCategoriaCommand>, CreateCategoriaCommandValidator>();
 builder.Services.AddScoped<IValidator<UpdateCategoriaCommand>, UpdateCategoriaCommandValidator>();
 builder.Services.AddScoped<IValidator<DeleteCategoriaCommand>, DeleteCategoriaCommandValidator>();
@@ -130,6 +139,7 @@ builder.Services.AddScoped<IValidator<UpdateProductoCommand>, UpdateProductoComm
 builder.Services.AddScoped<IValidator<UpdateStockProductoCommand>, UpdateStockProductoCommandValidator>();
 builder.Services.AddScoped<IValidator<DeleteProductoCommand>, DeleteProductoCommandValidator>();
 builder.Services.AddScoped<IValidator<GetProductosByCategoryQuery>, GetProductosByCategoryQueryValidator>();
+builder.Services.AddScoped<IValidator<GetProductosBySubcategoryQuery>, GetProductosBySubcategoryQueryValidator>();
 builder.Services.AddScoped<IValidator<GetProductosByQueryQuery>, GetProductosByQueryQueryValidator>();
 builder.Services.AddScoped<IValidator<GetProductoByIdQuery>, GetProductoByIdQueryValidator>();
 
@@ -161,6 +171,13 @@ builder.Services.AddScoped<IValidator<DeleteMetodoPagoCommand>, DeleteMetodoPago
 
 // Validacion para el servicio de Configuraciones
 builder.Services.AddScoped<IValidator<UpdateConfiguracionCommand>, UpdateConfiguracionCommandValidator>();
+
+// Validaciones para los servicios de Subcategorias
+builder.Services.AddScoped<IValidator<GetSubcategoriasByCategoryManageQuery>, GetSubcategoriasByCategoryManageQueryValidator>();
+builder.Services.AddScoped<IValidator<GetSubcategoriasByCategoryQuery>, GetSubcategoriasByCategoryQueryValidator>();
+builder.Services.AddScoped<IValidator<CreateSubcategoriaCommand>, CreateSubcategoriaCommandValidator>();
+builder.Services.AddScoped<IValidator<UpdateSubcategoriaCommand>, UpdateSubcategoriaCommandValidator>();
+builder.Services.AddScoped<IValidator<DeleteSubcategoriaCommand>, DeleteSubcategoriaCommandValidator>();
 
 builder.Services.AddControllers();
 

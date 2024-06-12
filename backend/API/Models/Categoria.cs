@@ -8,6 +8,7 @@ namespace API.Models
         public Categoria()
         {
             Productos = new HashSet<Producto>();
+            Subcategoria = new HashSet<Subcategoria>();
         }
 
         public int IdCategoria { get; set; }
@@ -17,5 +18,6 @@ namespace API.Models
         public bool Ocultar { get; set; }
 
         public virtual ICollection<Producto> Productos { get; set; }
+        public virtual ICollection<Subcategoria> Subcategoria { get; set; }
     }
 }

@@ -30,6 +30,7 @@ namespace API.Data
         public virtual DbSet<Pedido> Pedidos { get; set; } = null!;
         public virtual DbSet<Producto> Productos { get; set; } = null!;
         public virtual DbSet<Rol> Roles { get; set; } = null!;
+        public virtual DbSet<Subcategoria> Subcategorias { get; set; } = null!;
         public virtual DbSet<TiposPedido> TiposPedidos { get; set; } = null!;
         public virtual DbSet<Usuario> Usuarios { get; set; } = null!;
 
@@ -87,9 +88,9 @@ namespace API.Data
 
                 entity.Property(e => e.Alias).HasColumnName("alias");
 
-                entity.Property(e => e.MontoMayorista).HasColumnName("monto_mayorista");
-
                 entity.Property(e => e.Cbu).HasColumnName("cbu");
+
+                entity.Property(e => e.Codigo).HasColumnName("codigo");
 
                 entity.Property(e => e.Direccion).HasColumnName("direccion");
 
@@ -98,6 +99,8 @@ namespace API.Data
                 entity.Property(e => e.Horarios).HasColumnName("horarios");
 
                 entity.Property(e => e.Instagram).HasColumnName("instagram");
+
+                entity.Property(e => e.MontoMayorista).HasColumnName("monto_mayorista");
 
                 entity.Property(e => e.Telefono).HasColumnName("telefono");
 
@@ -338,6 +341,8 @@ namespace API.Data
 
                 entity.HasIndex(e => e.IdDivisa, "fki_fk_divisa");
 
+                entity.HasIndex(e => e.IdSubcategoria, "fki_fk_subcategoria");
+
                 entity.Property(e => e.IdProducto).HasColumnName("id_producto");
 
                 entity.Property(e => e.Descripcion).HasColumnName("descripcion");
@@ -351,6 +356,8 @@ namespace API.Data
                 entity.Property(e => e.IdDivisa).HasColumnName("id_divisa");
 
                 entity.Property(e => e.IdImagen).HasColumnName("id_imagen");
+
+                entity.Property(e => e.IdSubcategoria).HasColumnName("id_subcategoria");
 
                 entity.Property(e => e.Nombre).HasColumnName("nombre");
 
@@ -383,6 +390,11 @@ namespace API.Data
                     .HasForeignKey(d => d.IdDivisa)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("fk_divisa");
+
+                entity.HasOne(d => d.IdSubcategoriaNavigation)
+                    .WithMany(p => p.Productos)
+                    .HasForeignKey(d => d.IdSubcategoria)
+                    .HasConstraintName("fk_subcategoria");
             });
 
             modelBuilder.Entity<Rol>(entity =>
@@ -395,6 +407,28 @@ namespace API.Data
                 entity.Property(e => e.IdRol).HasColumnName("id_rol");
 
                 entity.Property(e => e.Nombre).HasColumnName("nombre");
+            });
+
+            modelBuilder.Entity<Subcategoria>(entity =>
+            {
+                entity.HasKey(e => e.IdSubcategoria)
+                    .HasName("subcategorias_pkey");
+
+                entity.ToTable("subcategorias");
+
+                entity.Property(e => e.IdSubcategoria).HasColumnName("id_subcategoria");
+
+                entity.Property(e => e.IdCategoria).HasColumnName("id_categoria");
+
+                entity.Property(e => e.Nombre).HasColumnName("nombre");
+
+                entity.Property(e => e.Ocultar).HasColumnName("ocultar");
+
+                entity.HasOne(d => d.IdCategoriaNavigation)
+                    .WithMany(p => p.Subcategoria)
+                    .HasForeignKey(d => d.IdCategoria)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("fk_categoria");
             });
 
             modelBuilder.Entity<TiposPedido>(entity =>

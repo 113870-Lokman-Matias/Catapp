@@ -21,5 +21,7 @@
     public bool EnDestacado { get; set; }
     public int IdDivisa { get; set; }
     public int StockTransitorio { get; set; }
+    public int? IdSubcategoria { get; set; }
+    public string? NombreSubcategoria { get; set; }
   }
 }

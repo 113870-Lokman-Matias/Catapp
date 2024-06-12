@@ -60,4 +60,10 @@ public class GeneralHub : Hub
     {
         await Clients.All.SendAsync("MensajeUpdateConfiguracion", mensaje);
     }
+
+    // Mensaje de Subcategoria
+    public async Task EnviarMensajeCrudSubcategoria(string mensaje)
+    {
+        await Clients.All.SendAsync("MensajeCrudSubcategoria", mensaje);
+    }
 }

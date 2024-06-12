@@ -49,6 +49,11 @@ using API.Services.MetodoPagoServices.Commands.DeleteMetodoPagoCommand;
 using API.Dtos.ConfiguracionDto;
 using API.Services.ConfiguracionServices.Commands.UpdateConfiguracionCommand;
 
+using API.Dtos.SubcategoriaDtos;
+using API.Services.SubcategoriaServices.Commands.CreateSubcategoriaCommand;
+using API.Services.SubcategoriaServices.Commands.UpdateSubcategoriaCommand;
+using API.Services.SubcategoriaServices.Commands.DeleteSubcategoriaCommand;
+
 namespace API.Mapper
 {
   public class MapperConfig : Profile
@@ -81,6 +86,8 @@ namespace API.Mapper
       // Mapper para Productos
       CreateMap<Producto, ProductoDto>()
           .ForMember(dest => dest.NombreCategoria, opt => opt.MapFrom(src => src.IdCategoriaNavigation.Nombre));
+      CreateMap<Producto, ProductoDto>()
+          .ForMember(dest => dest.NombreSubcategoria, opt => opt.MapFrom(src => src.IdSubcategoriaNavigation.Nombre));
       CreateMap<Producto, CreateProductoCommand>().ReverseMap();
       CreateMap<Producto, UpdateProductoCommand>().ReverseMap();
       CreateMap<Producto, UpdateStockProductoCommand>().ReverseMap();
@@ -111,6 +118,12 @@ namespace API.Mapper
       // Mapper para Configuraciones
       CreateMap<ConfiguracionDto, Configuracion>().ReverseMap();
       CreateMap<Configuracion, UpdateConfiguracionCommand>().ReverseMap();
+
+      // Mapper para Subcategorías
+      CreateMap<SubcategoriaDto, Subcategoria>().ReverseMap();
+      CreateMap<Subcategoria, CreateSubcategoriaCommand>().ReverseMap();
+      CreateMap<Subcategoria, UpdateSubcategoriaCommand>().ReverseMap();
+      CreateMap<Subcategoria, DeleteSubcategoriaCommand>().ReverseMap();
     }
   }
 }

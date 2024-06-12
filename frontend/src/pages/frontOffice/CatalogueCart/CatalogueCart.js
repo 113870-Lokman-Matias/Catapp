@@ -18,7 +18,9 @@ import { GetPaymentTypes } from "../../../services/PaymentTypeService";
 import {
   GetProductsByCategory,
   GetProductsByQuery,
+  GetProductsBySubcategory,
 } from "../../../services/ProductService";
+import { GetSubcategoriesByCategory } from "../../../services/SubcategoryService";
 import { PayWithMercadoPago } from "../../../services/PaymentService";
 import { GetOrderIdByPaymentId } from "../../../services/OrderService";
 
@@ -35,6 +37,8 @@ import { ReactComponent as Save } from "../../../assets/svgs/save.svg";
 import { ReactComponent as Lupa } from "../../../assets/svgs/lupa.svg";
 import { ReactComponent as Location } from "../../../assets/svgs/location.svg";
 import { ReactComponent as Mercadopagologo } from "../../../assets/svgs/mercadopago.svg";
+import { ReactComponent as Up } from "../../../assets/svgs/up.svg";
+import { ReactComponent as Down } from "../../../assets/svgs/down.svg";
 import Loader from "../../../components/Loaders/LoaderCircle";
 //#endregion
 
@@ -67,16 +71,28 @@ const CatalogueCart = () => {
   const [categorySign, setCategorySign] = useState({});
   const [categoryProducts, setCategoryProducts] = useState({});
   const [openCategories, setOpenCategories] = useState([]);
+
+  const [categorySubcategories, setCategorySubcategories] = useState({});
+  const [subcategorySigns, setSubcategorySigns] = useState({});
+  const [subcategoryProducts, setSubcategoryProducts] = useState({});
+  const [openSubcategories, setOpenSubcategories] = useState([]);
+
   const [productQuantities, setProductQuantities] = useState({});
   const [productNotes, setProductNotes] = useState({});
   const [cart, setCart] = useState({});
   const [totalQuantity, setTotalQuantity] = useState(0);
   const [modalAbierto, setModalAbierto] = useState(false);
   const [showButton, setShowButton] = useState(false);
+
   const [isLoading, setIsLoading] = useState(true);
-  const [isLoadingProductByCategory, setIsLoadingProductByCategory] =
-    useState(true);
   const [isLoadingQuery, setIsLoadingQuery] = useState(false);
+  const [isLoadingProductByCategory, setIsLoadingProductByCategory] = useState(
+    {}
+  );
+  const [isLoadingProductBySubcategory, setIsLoadingProductBySubcategory] =
+    useState({});
+  const [isLoadingSubcategories, setIsLoadingSubcategories] = useState({});
+
   const [listaNombresVendedores, setListaNombresVendedores] = useState(true);
   const [listaNombresAbonos, setListaNombresAbonos] = useState(true);
 
@@ -198,6 +214,7 @@ const CatalogueCart = () => {
             let products;
 
             try {
+              setIsLoadingProductByCategory(true);
               products = await GetProductsByCategory(category);
             } catch (error) {
               console.log(
@@ -214,10 +231,233 @@ const CatalogueCart = () => {
               ...prevProducts,
               [category]: products,
             }));
+
+            // Obtener las subcategorías para la categoría
+            const subcategories = categorySubcategories[category] || [];
+            for (const subcategory of subcategories) {
+              if (openSubcategories.includes(subcategory.nombre)) {
+                let subcategoryProducts;
+
+                try {
+                  subcategoryProducts = await GetProductsBySubcategory(
+                    subcategory.idCategoria,
+                    subcategory.idSubcategoria
+                  );
+                } catch (error) {
+                  console.log(
+                    "Error al obtener productos para la subcategoría",
+                    subcategory.nombre,
+                    error
+                  );
+                }
+
+                // Actualizar los productos para la subcategoría en subcategoryProducts
+                setSubcategoryProducts((prevProducts) => ({
+                  ...prevProducts,
+                  [subcategory.nombre]: subcategoryProducts,
+                }));
+              }
+            }
           }
+        }
+        // Actualizar las categorías después de actualizar productos
+        if (pathname.includes("mayorista")) {
+          GetCategoriesMayorista(setCategories);
+        } else if (pathname.includes("minorista")) {
+          GetCategoriesMinorista(setCategories);
         }
       } catch (error) {
         console.error("Error al obtener los productos: " + error);
+      }
+    });
+
+    connection.on("MensajeCreatePedido", async () => {
+      try {
+        if (query !== "") {
+          const products = await GetProductsByQuery(query);
+          setProducts(products);
+
+          if (pathname.includes("mayorista")) {
+            GetCategoriesMayorista(setCategories);
+          } else if (pathname.includes("minorista")) {
+            GetCategoriesMinorista(setCategories);
+          }
+        } else {
+          // Iterar sobre las categorías abiertas en openCategories
+          if (pathname.includes("mayorista")) {
+            GetCategoriesMayorista(setCategories);
+          } else if (pathname.includes("minorista")) {
+            GetCategoriesMinorista(setCategories);
+          }
+
+          for (const category of openCategories) {
+            let products;
+
+            try {
+              setIsLoadingProductByCategory(true);
+              products = await GetProductsByCategory(category);
+            } catch (error) {
+              console.log(
+                "Error al obtener productos para la categoría",
+                category,
+                error
+              );
+            } finally {
+              setIsLoadingProductByCategory(false);
+            }
+
+            // Actualizar los productos para la categoría en categoryProducts
+            setCategoryProducts((prevProducts) => ({
+              ...prevProducts,
+              [category]: products,
+            }));
+
+            // Obtener las subcategorías para la categoría
+            const subcategories = categorySubcategories[category] || [];
+            for (const subcategory of subcategories) {
+              if (openSubcategories.includes(subcategory.nombre)) {
+                let subcategoryProducts;
+
+                try {
+                  subcategoryProducts = await GetProductsBySubcategory(
+                    subcategory.idCategoria,
+                    subcategory.idSubcategoria
+                  );
+                } catch (error) {
+                  console.log(
+                    "Error al obtener productos para la subcategoría",
+                    subcategory.nombre,
+                    error
+                  );
+                }
+
+                // Actualizar los productos para la subcategoría en subcategoryProducts
+                setSubcategoryProducts((prevProducts) => ({
+                  ...prevProducts,
+                  [subcategory.nombre]: subcategoryProducts,
+                }));
+              }
+            }
+          }
+        }
+        // Actualizar las categorías después de actualizar productos
+        if (pathname.includes("mayorista")) {
+          GetCategoriesMayorista(setCategories);
+        } else if (pathname.includes("minorista")) {
+          GetCategoriesMinorista(setCategories);
+        }
+      } catch (error) {
+        console.error("Error al obtener los productos: " + error);
+      }
+    });
+
+    connection.on("MensajeUpdateDeletePedido", async () => {
+      try {
+        if (query !== "") {
+          const products = await GetProductsByQuery(query);
+          setProducts(products);
+
+          if (pathname.includes("mayorista")) {
+            GetCategoriesMayorista(setCategories);
+          } else if (pathname.includes("minorista")) {
+            GetCategoriesMinorista(setCategories);
+          }
+        } else {
+          // Iterar sobre las categorías abiertas en openCategories
+          if (pathname.includes("mayorista")) {
+            GetCategoriesMayorista(setCategories);
+          } else if (pathname.includes("minorista")) {
+            GetCategoriesMinorista(setCategories);
+          }
+
+          for (const category of openCategories) {
+            let products;
+
+            try {
+              setIsLoadingProductByCategory(true);
+              products = await GetProductsByCategory(category);
+            } catch (error) {
+              console.log(
+                "Error al obtener productos para la categoría",
+                category,
+                error
+              );
+            } finally {
+              setIsLoadingProductByCategory(false);
+            }
+
+            // Actualizar los productos para la categoría en categoryProducts
+            setCategoryProducts((prevProducts) => ({
+              ...prevProducts,
+              [category]: products,
+            }));
+
+            // Obtener las subcategorías para la categoría
+            const subcategories = categorySubcategories[category] || [];
+            for (const subcategory of subcategories) {
+              if (openSubcategories.includes(subcategory.nombre)) {
+                let subcategoryProducts;
+
+                try {
+                  subcategoryProducts = await GetProductsBySubcategory(
+                    subcategory.idCategoria,
+                    subcategory.idSubcategoria
+                  );
+                } catch (error) {
+                  console.log(
+                    "Error al obtener productos para la subcategoría",
+                    subcategory.nombre,
+                    error
+                  );
+                }
+
+                // Actualizar los productos para la subcategoría en subcategoryProducts
+                setSubcategoryProducts((prevProducts) => ({
+                  ...prevProducts,
+                  [subcategory.nombre]: subcategoryProducts,
+                }));
+              }
+            }
+          }
+        }
+        // Actualizar las categorías después de actualizar productos
+        if (pathname.includes("mayorista")) {
+          GetCategoriesMayorista(setCategories);
+        } else if (pathname.includes("minorista")) {
+          GetCategoriesMinorista(setCategories);
+        }
+      } catch (error) {
+        console.error("Error al obtener los productos: " + error);
+      }
+    });
+
+    connection.on("MensajeCrudSubcategoria", async () => {
+      try {
+        // Obtener las categorías abiertas con sus IDs
+        const openedCategoriesWithIds = openCategories.map((categoryName) => {
+          const category = categories.find(
+            (cat) => cat.nombre === categoryName
+          );
+          return { idCategoria: category.idCategoria, nombre: categoryName };
+        });
+
+        // Iterar sobre las categorías abiertas
+        for (const category of openedCategoriesWithIds) {
+          // Obtener las subcategorías actualizadas para cada categoría abierta
+          const updatedSubcategories = await GetSubcategoriesByCategory(
+            category.idCategoria
+          );
+
+          // Actualizar el estado de las subcategorías para esa categoría
+          setCategorySubcategories((prevSubcategories) => ({
+            ...prevSubcategories,
+            [category.nombre]: updatedSubcategories,
+          }));
+        }
+      } catch (error) {
+        console.error(
+          "Error al obtener las subcategorías actualizadas: " + error
+        );
       }
     });
 
@@ -266,7 +506,7 @@ const CatalogueCart = () => {
     return () => {
       connection.stop();
     };
-  }, [openCategories, query]);
+  }, [openCategories, openSubcategories, query]);
 
   useEffect(() => {
     calculateTotal();
@@ -506,14 +746,27 @@ const CatalogueCart = () => {
   }, [pedidoAprobado]);
   //#endregion
 
-  //#region Función para quitar los signos "-" de las categorias que quedaron abiertas cuando se ejecuta la función de search()
+  //#region Función para quitar los signos "-" de las categorías y subcategorías que quedaron abiertas cuando se ejecuta la función de search()
   const closeAllCategories = () => {
-    const updatedSigns = {};
+    const updatedCategorySigns = {};
+    const updatedSubcategorySigns = {}; // Nuevo objeto para los signos de subcategorías
+
+    // Recorrer el estado actual de las categorías
     for (const index in categorySign) {
-      updatedSigns[index] = "+";
+      updatedCategorySigns[index] = "+"; // Cerrar todas las categorías
     }
-    setCategorySign(updatedSigns);
+
+    // Recorrer el estado actual de las subcategorías
+    for (const category in subcategorySigns) {
+      updatedSubcategorySigns[category] = {}; // Crear un objeto vacío para cada categoría
+      for (const subcategory in subcategorySigns[category]) {
+        updatedSubcategorySigns[category][subcategory] = "+"; // Cerrar todas las subcategorías de cada categoría
+      }
+    }
+    // Actualizar los estados de las categorías y subcategorías
+    setCategorySign(updatedCategorySigns);
     setOpenCategories([]);
+    setSubcategorySigns(updatedSubcategorySigns); // Actualizar el estado de las subcategorías
   };
   //#endregion
 
@@ -572,7 +825,7 @@ const CatalogueCart = () => {
   };
   //#endregion
 
-  //#region Función para abrir el "+" o "-" de cada categoria
+  //#region Función para abrir el "+" o "-" de cada categoría
   const handleCategoryClick = async (index) => {
     setCategorySign((prevSigns) => ({
       ...prevSigns,
@@ -580,18 +833,29 @@ const CatalogueCart = () => {
     }));
 
     const category = categories[index].nombre;
+    const idCategory = categories[index].idCategoria;
 
-    // Verificamos si la categoría está abierta
     if (categorySign[index] === "-") {
-      // La categoría está cerrada, la eliminamos de openCategories
+      // La categoría se está cerrando, cerrar todas las subcategorías asociadas
+      const subcategoriesToClose = categorySubcategories[category] || [];
+      subcategoriesToClose.forEach((subcategory) => {
+        if (openSubcategories.includes(subcategory.nombre)) {
+          // Si la subcategoría está abierta, cerrarla
+          handleSubcategoryClick(subcategory, categories[index]);
+        }
+      });
+
       setOpenCategories((prevOpenCategories) =>
         prevOpenCategories.filter((cat) => cat !== category)
       );
-      setIsLoadingProductByCategory(false);
-      return; // No hacer la petición de productos
+
+      setIsLoadingProductByCategory((prevLoadingState) => ({
+        ...prevLoadingState,
+        [idCategory]: false,
+      }));
+      return;
     }
 
-    // La categoría está abierta, la agregamos a openCategories
     setOpenCategories((prevOpenCategories) => [
       ...prevOpenCategories,
       category,
@@ -600,16 +864,104 @@ const CatalogueCart = () => {
     let products;
 
     try {
+      setIsLoadingSubcategories((prevLoadingState) => ({
+        ...prevLoadingState,
+        [category]: true,
+      }));
+      const subcategories = await GetSubcategoriesByCategory(idCategory);
+      setCategorySubcategories((prevSubcategories) => ({
+        ...prevSubcategories,
+        [category]: subcategories,
+      }));
+    } catch (error) {
+      console.log("Error al obtener subcategorías:", error);
+    } finally {
+      setIsLoadingSubcategories((prevLoadingState) => ({
+        ...prevLoadingState,
+        [category]: false,
+      }));
+    }
+
+    try {
+      setIsLoadingProductByCategory((prevLoadingState) => ({
+        ...prevLoadingState,
+        [idCategory]: true,
+      }));
       products = await GetProductsByCategory(category);
     } catch (error) {
       console.log(error);
     } finally {
-      setIsLoadingProductByCategory(false);
+      setIsLoadingProductByCategory((prevLoadingState) => ({
+        ...prevLoadingState,
+        [idCategory]: false,
+      }));
     }
 
     setCategoryProducts((prevProducts) => ({
       ...prevProducts,
       [category]: products,
+    }));
+  };
+  //#endregion
+
+  //#region Funcion para abrir el "+" o "-" de cada subcategoría
+  const handleSubcategoryClick = async (subcategory, category) => {
+    const subcategoryName = subcategory.nombre;
+    const categoryName = category.nombre;
+
+    // Actualizar el estado de los signos de subcategorías por categoría
+    setSubcategorySigns((prevSigns) => ({
+      ...prevSigns,
+      [categoryName]: {
+        ...prevSigns[categoryName],
+        [subcategoryName]:
+          prevSigns[categoryName]?.[subcategoryName] === "-" ? "+" : "-",
+      },
+    }));
+
+    const idCategory = subcategory.idCategoria;
+    const idSubcategory = subcategory.idSubcategoria;
+
+    // Verificar si la subcategoría está abierta
+    if (subcategorySigns[categoryName]?.[subcategoryName] === "-") {
+      // La subcategoría está cerrada, la eliminamos de openSubcategories
+      setOpenSubcategories((prevOpenSubcategories) =>
+        prevOpenSubcategories.filter((subcat) => subcat !== subcategoryName)
+      );
+      setIsLoadingProductBySubcategory((prevLoadingState) => ({
+        ...prevLoadingState,
+        [idSubcategory]: false,
+      }));
+      return; // No hacer la petición de productos
+    }
+
+    // La subcategoría está abierta, la agregamos a openSubcategories
+    setOpenSubcategories((prevOpenSubcategories) => [
+      ...prevOpenSubcategories,
+      subcategoryName,
+    ]);
+
+    let products;
+
+    try {
+      setIsLoadingProductBySubcategory((prevLoadingState) => ({
+        ...prevLoadingState,
+        [idSubcategory]: true,
+      }));
+      products = await GetProductsBySubcategory(idCategory, idSubcategory);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsLoadingProductBySubcategory((prevLoadingState) => ({
+        ...prevLoadingState,
+        [idSubcategory]: false,
+      }));
+    }
+
+    // Actualizar el estado de productos de subcategorías
+    setSubcategoryProducts((prevProducts) => ({
+      ...prevProducts,
+      [subcategoryName]: products,
     }));
   };
   //#endregion
@@ -2178,22 +2530,365 @@ const CatalogueCart = () => {
                           id={`collapseCategory${index}`}
                         >
                           <div className="product-container">
-                            {isLoadingProductByCategory === true ? (
+                            <div>
+                              {isLoadingSubcategories[category.nombre] ===
+                                true &&
+                              category.nombre !== "Promociones" &&
+                              category.nombre !== "Destacados" ? (
+                                <div className="loading-single-furniture">
+                                  <Loader />
+                                  <p className="bold-loading">
+                                    Cargando subcategorías de {category.nombre}
+                                  </p>
+                                </div>
+                              ) : (
+                                <div>
+                                  {categorySubcategories[category.nombre]
+                                    ?.length > 0 && (
+                                    <div className="subcategorias-container">
+                                      {categorySubcategories[
+                                        category.nombre
+                                      ].map((subcategory) => (
+                                        <div
+                                          className="filters-left"
+                                          key={subcategory.idSubcategoria}
+                                        >
+                                          <div className="filter-container">
+                                            <div
+                                              className="subcategory-btn-container"
+                                              onClick={() =>
+                                                handleSubcategoryClick(
+                                                  subcategory,
+                                                  category
+                                                )
+                                              }
+                                              data-bs-toggle="collapse"
+                                              href={`#collapseSubcategory${subcategory.idSubcategoria}`}
+                                              role="button"
+                                              aria-expanded="false"
+                                              aria-controls={`collapseSubcategory${subcategory.idSubcategoria}`}
+                                            >
+                                              <p className="filter-btn-name2">
+                                                {subcategory.nombre}
+                                              </p>
+                                              <p className="filter-btn2">
+                                                {subcategorySigns[
+                                                  category.nombre
+                                                ]?.[subcategory.nombre] ===
+                                                "-" ? (
+                                                  <Up className="updown"></Up>
+                                                ) : (
+                                                  <Down className="updown"></Down>
+                                                )}
+                                              </p>
+                                            </div>
+                                            <div
+                                              className="collapse"
+                                              id={`collapseSubcategory${subcategory.idSubcategoria}`}
+                                            >
+                                              <div className="product-container">
+                                                {isLoadingProductBySubcategory[
+                                                  subcategory.idSubcategoria
+                                                ] === true ? (
+                                                  <div className="loading-single-furniture">
+                                                    <Loader />
+                                                    <p className="bold-loading">
+                                                      Cargando productos
+                                                      pertenecientes a la
+                                                      subcategoría "
+                                                      {subcategory.nombre}"...
+                                                    </p>
+                                                  </div>
+                                                ) : (
+                                                  subcategoryProducts[
+                                                    subcategory.nombre
+                                                  ]?.map((product, index) => {
+                                                    const quantity =
+                                                      productQuantities[
+                                                        product.idProducto
+                                                      ] || 0;
+                                                    const subtotal =
+                                                      calculateSubtotal(
+                                                        product
+                                                      );
+
+                                                    if (
+                                                      (clientType ===
+                                                        "Minorista" &&
+                                                        product.porcentajeMinorista ===
+                                                          0 &&
+                                                        product.precioMinorista ===
+                                                          0) ||
+                                                      (clientType ===
+                                                        "Mayorista" &&
+                                                        product.porcentajeMayorista ===
+                                                          0 &&
+                                                        product.precioMayorista ===
+                                                          0)
+                                                    ) {
+                                                      return <></>; // No renderizar el producto
+                                                    }
+
+                                                    return (
+                                                      <div
+                                                        className={`contenedor-producto ${
+                                                          product.stockTransitorio ===
+                                                          0
+                                                            ? "sin-stock"
+                                                            : ""
+                                                        }`}
+                                                        key={index}
+                                                      >
+                                                        <div className="product">
+                                                          <div className="product-1-col">
+                                                            <figure className="figure">
+                                                              <Zoom
+                                                                className="zoom"
+                                                                onClick={() =>
+                                                                  Swal.fire({
+                                                                    title:
+                                                                      product.nombre,
+                                                                    imageUrl: `${product.urlImagen}`,
+                                                                    imageWidth: 400,
+                                                                    imageHeight: 400,
+                                                                    imageAlt:
+                                                                      "Vista Producto",
+                                                                    confirmButtonColor:
+                                                                      "#6c757d",
+                                                                    confirmButtonText:
+                                                                      "Cerrar",
+                                                                    focusConfirm: true,
+                                                                  })
+                                                                }
+                                                              ></Zoom>
+                                                              <img
+                                                                src={
+                                                                  product.urlImagen
+                                                                }
+                                                                className="product-img"
+                                                                alt="Producto"
+                                                              />
+                                                            </figure>
+                                                          </div>
+                                                          <div className="product-2-col">
+                                                            <h3 className="product-title">
+                                                              {product.nombre}
+                                                            </h3>
+                                                            <h3 className="product-desc">
+                                                              <pre className="pre">
+                                                                {
+                                                                  product.descripcion
+                                                                }
+                                                              </pre>
+                                                            </h3>
+                                                            {product.stockTransitorio ===
+                                                              0 && (
+                                                              <h3 className="product-title sin-stock-h">
+                                                                SIN STOCK
+                                                              </h3>
+                                                            )}
+                                                          </div>
+                                                          <div className="product-3-col">
+                                                            <p className="product-price">
+                                                              {(clientType ===
+                                                              "Minorista"
+                                                                ? product.precioMinorista
+                                                                : product.precioMayorista) >
+                                                              0
+                                                                ? `$${Math.ceil(
+                                                                    clientType ===
+                                                                      "Minorista"
+                                                                      ? product.precioMinorista
+                                                                      : product.precioMayorista
+                                                                  )
+                                                                    .toLocaleString(
+                                                                      "es-ES",
+                                                                      {
+                                                                        minimumFractionDigits: 0,
+                                                                        maximumFractionDigits: 2,
+                                                                      }
+                                                                    )
+                                                                    .replace(
+                                                                      ",",
+                                                                      "."
+                                                                    )
+                                                                    .replace(
+                                                                      /\B(?=(\d{3})+(?!\d))/g,
+                                                                      "."
+                                                                    )}`
+                                                                : `$${Math.round(
+                                                                    (product.divisa ===
+                                                                    "Dólar"
+                                                                      ? product.precio *
+                                                                        valorDolar
+                                                                      : product.precio) *
+                                                                      (1 +
+                                                                        (clientType ===
+                                                                        "Minorista"
+                                                                          ? product.porcentajeMinorista
+                                                                          : product.porcentajeMayorista) /
+                                                                          100)
+                                                                  )
+                                                                    .toLocaleString(
+                                                                      "es-ES",
+                                                                      {
+                                                                        minimumFractionDigits: 0,
+                                                                        maximumFractionDigits: 2,
+                                                                      }
+                                                                    )
+                                                                    .replace(
+                                                                      ",",
+                                                                      "."
+                                                                    )
+                                                                    .replace(
+                                                                      /\B(?=(\d{3})+(?!\d))/g,
+                                                                      "."
+                                                                    )}`}
+                                                            </p>
+                                                          </div>
+                                                        </div>
+
+                                                        {product.stockTransitorio !==
+                                                          0 && (
+                                                          <div className="product-2">
+                                                            <div className="product-subtotal2">
+                                                              <p className="product-desc">
+                                                                Cantidad:{" "}
+                                                                <b className="product-price">
+                                                                  {quantity !==
+                                                                    null &&
+                                                                  quantity !==
+                                                                    undefined
+                                                                    ? quantity
+                                                                    : 0}
+                                                                </b>
+                                                              </p>
+                                                              <p className="product-desc">
+                                                                Subtotal:{" "}
+                                                                <b className="product-price">
+                                                                  $
+                                                                  {subtotal
+                                                                    .toLocaleString(
+                                                                      "es-ES",
+                                                                      {
+                                                                        minimumFractionDigits: 0,
+                                                                        maximumFractionDigits: 2,
+                                                                      }
+                                                                    )
+                                                                    .replace(
+                                                                      ",",
+                                                                      "."
+                                                                    )
+                                                                    .replace(
+                                                                      /\B(?=(\d{3})+(?!\d))/g,
+                                                                      "."
+                                                                    )}
+                                                                </b>
+                                                              </p>
+                                                            </div>
+                                                            <div className="quant-stock-container">
+                                                              <div className="product-quantity">
+                                                                <button
+                                                                  className="quantity-btn btnminus"
+                                                                  onClick={() =>
+                                                                    handleSubtract(
+                                                                      product
+                                                                    )
+                                                                  }
+                                                                >
+                                                                  -
+                                                                </button>
+                                                                <input
+                                                                  type="number"
+                                                                  min="0"
+                                                                  value={
+                                                                    quantity
+                                                                  }
+                                                                  onChange={(
+                                                                    event
+                                                                  ) =>
+                                                                    handleQuantityChange(
+                                                                      event,
+                                                                      product
+                                                                    )
+                                                                  }
+                                                                  onBlur={() =>
+                                                                    updateTotalQuantity()
+                                                                  }
+                                                                  className="quantity-input"
+                                                                />
+                                                                <button
+                                                                  className="quantity-btn btnplus"
+                                                                  onClick={() =>
+                                                                    handleAdd(
+                                                                      product
+                                                                    )
+                                                                  }
+                                                                >
+                                                                  +
+                                                                </button>
+                                                              </div>
+                                                              <p className="product-desc">
+                                                                (
+                                                                {formatStock(
+                                                                  product.stockTransitorio
+                                                                )}{" "}
+                                                                {product.stockTransitorio ===
+                                                                1
+                                                                  ? "disponible"
+                                                                  : "disponibles"}
+                                                                )
+                                                              </p>
+                                                            </div>
+                                                          </div>
+                                                        )}
+
+                                                        {product.stockTransitorio !==
+                                                          0 && (
+                                                          <div className="product-notes">
+                                                            <textarea
+                                                              className="textarea"
+                                                              placeholder="Agregar aclaraciones..."
+                                                              value={
+                                                                productNotes[
+                                                                  product
+                                                                    .idProducto
+                                                                ] || ""
+                                                              }
+                                                              onChange={(
+                                                                event
+                                                              ) =>
+                                                                handleAclaracionesChange(
+                                                                  event,
+                                                                  product
+                                                                )
+                                                              }
+                                                            ></textarea>
+                                                          </div>
+                                                        )}
+                                                      </div>
+                                                    );
+                                                  })
+                                                )}
+                                              </div>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+
+                            {isLoadingProductByCategory[
+                              category.idCategoria
+                            ] === true ? (
                               <div className="loading-single-furniture">
                                 <Loader />
                                 <p className="bold-loading">
-                                  Cargando productos de {category.nombre}...
-                                </p>
-                              </div>
-                            ) : categoryProducts[category.nombre]?.length ===
-                              0 ? (
-                              <div className="vacio2">
-                                <p className="product-desc no-p">
-                                  No hay productos correspondientes a{" "}
-                                  <b className="category-name">
-                                    {category.nombre}
-                                  </b>
-                                  .
+                                  Cargando productos pertenecientes a la
+                                  categoría "{category.nombre}"...
                                 </p>
                               </div>
                             ) : (
@@ -2216,7 +2911,7 @@ const CatalogueCart = () => {
 
                                   return (
                                     <div
-                                      className={`contenedor-producto ${
+                                      className={`contenedor-producto oscuro ${
                                         product.stockTransitorio === 0
                                           ? "sin-stock"
                                           : ""
@@ -2339,7 +3034,7 @@ const CatalogueCart = () => {
                                           <div className="quant-stock-container">
                                             <div className="product-quantity">
                                               <button
-                                                className="quantity-btn btnminus"
+                                                className="quantity-btn btnminus oscuro"
                                                 onClick={() =>
                                                   handleSubtract(product)
                                                 }
@@ -2362,7 +3057,7 @@ const CatalogueCart = () => {
                                                 className="quantity-input"
                                               />
                                               <button
-                                                className="quantity-btn btnplus"
+                                                className="quantity-btn btnplus oscuro"
                                                 onClick={() =>
                                                   handleAdd(product)
                                                 }

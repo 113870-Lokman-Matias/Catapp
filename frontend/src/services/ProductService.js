@@ -35,6 +35,15 @@ async function GetProductsByCategory(category) {
 }
 //#endregion
 
+//#region Funcion para obtener todos los productos por categoria
+async function GetProductsBySubcategory(idCategory, idSubcategory) {
+  const result = await axios.get(
+    "https://localhost:7207/producto/subcategoria/" + idCategory + "/" + idSubcategory
+  );
+  return result.data.productos || [];
+}
+//#endregion
+
 //#region Funcion para obtener todos los productos por query
 async function GetProductsByQuery(query) {
   const result = await axios.get(
@@ -112,6 +121,7 @@ const UploadImages = async (imageSelected) => {
 export {
   GetProductsManage,
   GetProductsByCategory,
+  GetProductsBySubcategory,
   GetProductsByQuery,
   GetProductById,
   SaveProducts,

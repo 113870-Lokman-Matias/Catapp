@@ -66,6 +66,14 @@ namespace API.Services.ProductoServices.Commands.UpdateProductoCommand
             ProductoToUpdate.Ocultar = request.Ocultar;
             ProductoToUpdate.EnPromocion = request.EnPromocion;
             ProductoToUpdate.EnDestacado = request.EnDestacado;
+            if (request.IdSubcategoria == -1)
+            {
+              ProductoToUpdate.IdSubcategoria = null; // Asignar null si el valor es -1 (representando "ninguno")
+            }
+            else
+            {
+              ProductoToUpdate.IdSubcategoria = request.IdSubcategoria; // Asignar el valor normal
+            }
 
             await _context.SaveChangesAsync();
 

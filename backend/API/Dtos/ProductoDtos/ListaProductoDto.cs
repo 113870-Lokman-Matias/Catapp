@@ -17,5 +17,6 @@
     public string UrlImagen { get; set; } = null!;
     public int IdDivisa { get; set; }
     public int StockTransitorio { get; set; }
+    public string? NombreSubcategoria { get; set; }
   }
 }

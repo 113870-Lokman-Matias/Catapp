@@ -5,6 +5,7 @@ using API.Dtos.CategoriaDtos;
 using API.Services.CategoriaServices.Queries.GetCategoriasQuery;
 using API.Services.CategoriaServices.Queries.GetCategoriasMinoristaQuery;
 using API.Services.CategoriaServices.Queries.GetCategoriasMayoristaQuery;
+using API.Services.CategoriaServices.Queries.GetCategoriaByIdQuery;
 using API.Services.CategoriaServices.Commands.CreateCategoriaCommand;
 using API.Services.CategoriaServices.Commands.UpdateCategoriaCommand;
 using API.Services.CategoriaServices.Commands.DeleteCategoriaCommand;
@@ -58,6 +59,14 @@ public class CategoriaController : ControllerBase
   {
     var categoriasMayoristas = _mediator.Send(new GetCategoriasMayoristaQuery());
     return categoriasMayoristas;
+  }
+
+  [HttpGet("id/{id}")]
+  [Authorize(Roles = "SuperAdmin, Supervisor, Vendedor")]
+  public async Task<CategoriaDto> GetCategoriaById(int id)
+  {
+    var categoria = await _mediator.Send(new GetCategoriaByIdQuery(id));
+    return categoria;
   }
 
 

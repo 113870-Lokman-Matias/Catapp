@@ -20,5 +20,6 @@ namespace API.Services.ProductoServices.Commands.CreateProductoCommand
     public bool Ocultar { get; set; }
     public bool EnPromocion { get; set; }
     public bool EnDestacado { get; set; }
+    public int? IdSubcategoria { get; set; }
   }
 }
