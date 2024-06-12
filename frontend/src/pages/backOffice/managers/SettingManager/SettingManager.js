@@ -24,6 +24,7 @@ import { ReactComponent as InstagramInput } from "../../../../assets/svgs/instag
 import { ReactComponent as UrlFacebookInput } from "../../../../assets/svgs/urlFacebook.svg";
 import { ReactComponent as UrlInstagramInput } from "../../../../assets/svgs/urlInstagram.svg";
 import { ReactComponent as PedidoInput } from "../../../../assets/svgs/priceinput.svg";
+import { ReactComponent as CodigoInput } from "../../../../assets/svgs/codigo.svg";
 import { ReactComponent as LogoInput } from "../../../../assets/svgs/imageinput.svg";
 
 import { ReactComponent as Transferencia } from "../../../../assets/svgs/transferencia.svg";
@@ -79,6 +80,9 @@ function SettingManager() {
 
   const [montoMayorista, setMontoMayorista] = useState("");
   const [prevMontoMayorista, setPrevMontoMayorista] = useState("");
+
+  const [codigo, setCodigo] = useState("");
+  const [prevCodigo, setPrevCodigo] = useState("");
 
   const [urlLogoEmpresa, setUrlLogoEmpresa] = useState("");
   const [prevUrlLogoEmpresa, setPrevUrlLogoEmpresa] = useState("");
@@ -198,6 +202,7 @@ function SettingManager() {
     setInstagram("");
     setUrlInstagram("");
     setMontoMayorista("");
+    setCodigo("");
     setUrlLogoEmpresa("");
   }
   //#endregion
@@ -217,6 +222,7 @@ function SettingManager() {
     setInstagram(configuracion.instagram);
     setUrlInstagram(configuracion.urlInstagram);
     setMontoMayorista(configuracion.montoMayorista);
+    setCodigo(configuracion.codigo);
     setUrlLogoEmpresa(configuracion.urlLogo);
 
     setPrevDireccion(configuracion.direccion);
@@ -231,6 +237,7 @@ function SettingManager() {
     setPrevInstagram(configuracion.instagram);
     setPrevUrlInstagram(configuracion.urlInstagram);
     setPrevMontoMayorista(configuracion.montoMayorista);
+    setPrevCodigo(configuracion.codigo);
     setPrevUrlLogoEmpresa(configuracion.urlLogo);
   }
   //#endregion
@@ -291,6 +298,7 @@ function SettingManager() {
       prevInstagram !== instagram ||
       prevUrlInstagram !== urlInstagram ||
       prevMontoMayorista !== montoMayorista ||
+      prevCodigo !== codigo ||
       prevUrlLogoEmpresa !== urlLogoEmpresa
     ) {
       return true;
@@ -330,6 +338,7 @@ function SettingManager() {
             urlInstagram: urlInstagram,
             montoMayorista: montoMayorista,
             urlLogo: urlLogoEmpresa,
+            codigo: codigo,
           },
           headers
         );
@@ -466,8 +475,8 @@ function SettingManager() {
                   }`}
                   title={
                     mostrarMontoMayorista
-                      ? "Ocultar detalle de monto minimo mayorista"
-                      : "Ver detalle de monto minimo mayorista"
+                      ? "Ocultar detalles de compra minima mayorista"
+                      : "Ver detalles de compra minima mayorista"
                   }
                   onClick={() => {
                     setMostrarMontoMayorista(!mostrarMontoMayorista);
@@ -788,6 +797,22 @@ function SettingManager() {
                             <label className="label">
                               Monto Minimo Mayorista:
                             </label>
+                            <div className="form-group-input nombre-input">
+                              <span className="input-group-text">
+                                <PedidoInput className="input-group-svg" />
+                              </span>
+                              <input
+                                type="number"
+                                className="input"
+                                id="montoMayorista"
+                                value={montoMayorista}
+                                onChange={(event) => {
+                                  setMontoMayorista(event.target.value);
+                                }}
+                              />
+                            </div>
+
+                            <label className="label">Código de Exención:</label>
                             <div
                               className={`form-group-input ${
                                 !showNombreInputMontoMayorista()
@@ -796,15 +821,15 @@ function SettingManager() {
                               }`}
                             >
                               <span className="input-group-text">
-                                <PedidoInput className="input-group-svg" />
+                                <CodigoInput className="input-group-svg" />
                               </span>
                               <input
                                 type="text"
                                 className="input"
-                                id="montoMayorista"
-                                value={montoMayorista}
+                                id="codigo"
+                                value={codigo}
                                 onChange={(event) => {
-                                  setMontoMayorista(event.target.value);
+                                  setCodigo(event.target.value);
                                 }}
                               />
                             </div>
@@ -992,6 +1017,15 @@ function SettingManager() {
                       Monto minimo mayorista
                     </th>
                   )}
+                  {mostrarMontoMayorista && (
+                    <th
+                      className="table-title table-title-orders mayorista"
+                      scope="col"
+                    >
+                      <CodigoInput className="input-group-svg-white" />
+                      Código de Exención
+                    </th>
+                  )}
                   {mostrarRedes && (
                     <th
                       className="table-title table-title-orders facebook"
@@ -1108,6 +1142,11 @@ function SettingManager() {
                     {mostrarMontoMayorista && (
                       <td className="table-name table-name-orders mayorista">
                         ${infoConfiguracion.montoMayorista}
+                      </td>
+                    )}
+                    {mostrarMontoMayorista && (
+                      <td className="table-name table-name-orders mayorista">
+                        {infoConfiguracion.codigo || "-"}
                       </td>
                     )}
                     {mostrarRedes && (

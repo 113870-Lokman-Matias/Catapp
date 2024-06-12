@@ -46,6 +46,8 @@ import "../CatalogueCart/CatalogueCart.css";
 
 const CatalogueCart = () => {
   //#region Constantes
+  const [codigoExcento, setCodigoExcento] = useState(false);
+
   const [pedidoAprobado, setPedidoAprobado] = useState(false);
 
   const [showWallet, setShowWallet] = useState(false);
@@ -113,6 +115,7 @@ const CatalogueCart = () => {
   const { alias } = useContext(Context);
 
   const { montoMayorista } = useContext(Context);
+  const { codigo } = useContext(Context);
 
   const [costoEnvioDomicilio, setCostoEnvioDomicilio] = useState("");
   const [habilitadoEnvioDomicilio, setHabilitadoEnvioDomicilio] = useState("");
@@ -141,6 +144,10 @@ const CatalogueCart = () => {
       locale: "es-AR",
     });
   }, []);
+
+  useEffect(() => {
+    setCodigoExcento(false);
+  }, [codigo]);
 
   useEffect(() => {
     // Funciónes asincronas
@@ -2095,7 +2102,8 @@ const CatalogueCart = () => {
                         // Agregar verificación antes de abrir el modal
                         if (
                           clientType === "Mayorista" &&
-                          calculateTotal() < montoMayorista
+                          calculateTotal() < montoMayorista &&
+                          codigoExcento === false
                         ) {
                           const faltaImporte =
                             montoMayorista - calculateTotal();
@@ -2123,7 +2131,8 @@ const CatalogueCart = () => {
                                 "."
                               )} en productos al carrito para enviar el pedido.`,
                             confirmButtonText: "Aceptar",
-                            showCancelButton: false,
+                            cancelButtonText: "Ingresar código",
+                            showCancelButton: true,
                             confirmButtonColor: "#f8bb86",
                           });
 
@@ -3127,7 +3136,8 @@ const CatalogueCart = () => {
                     // Agregar verificación antes de abrir el modal
                     if (
                       clientType === "Mayorista" &&
-                      calculateTotal() < montoMayorista
+                      calculateTotal() < montoMayorista &&
+                      codigoExcento === false
                     ) {
                       const faltaImporte = montoMayorista - calculateTotal();
 
@@ -3154,8 +3164,51 @@ const CatalogueCart = () => {
                             "."
                           )} en productos al carrito para enviar el pedido.`,
                         confirmButtonText: "Aceptar",
-                        showCancelButton: false,
+                        cancelButtonText: "Ingresar código",
+                        showCancelButton: codigo && codigo !== "",
                         confirmButtonColor: "#f8bb86",
+                        allowOutsideClick: false,
+                      }).then((result) => {
+                        if (result.isDismissed) {
+                          Swal.fire({
+                            title: "Ingrese el código",
+                            input: "text",
+                            inputAttributes: {
+                              autocapitalize: "off",
+                            },
+                            showCancelButton: true,
+                            confirmButtonText: "Verificar",
+                            confirmButtonColor: "#40b142",
+                            cancelButtonText: "Cancelar",
+                            showLoaderOnConfirm: true,
+                            allowOutsideClick: false,
+                            preConfirm: (login) => {
+                              return new Promise((resolve, reject) => {
+                                if (login === codigo) {
+                                  resolve(); // Resolviendo la promesa para indicar que la validación fue exitosa
+                                } else if (login === "") {
+                                  reject("Código vacio");
+                                } else {
+                                  reject("Código incorrecto"); // Rechazando la promesa para indicar que la validación falló
+                                }
+                              }).catch((error) => {
+                                Swal.showValidationMessage(error);
+                              });
+                            },
+                          }).then((result) => {
+                            if (result.isConfirmed) {
+                              Swal.fire({
+                                title: "Código aplicado exitosamente",
+                                icon: "success",
+                                confirmButtonText: "Aceptar",
+                                confirmButtonColor: "#a5dc86",
+                                allowOutsideClick: true,
+                              });
+
+                              setCodigoExcento(true);
+                            }
+                          });
+                        }
                       });
 
                       return; // Detener el proceso si no hay suficientes productos

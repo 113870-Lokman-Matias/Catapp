@@ -21,5 +21,6 @@ namespace API.Services.ConfiguracionServices.Commands.UpdateConfiguracionCommand
         public string? UrlInstagram { get; set; }
         public float MontoMayorista { get; set; }
         public string? UrlLogo { get; set; }
+        public string? Codigo { get; set; }
     }
 }

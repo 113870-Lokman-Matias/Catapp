@@ -20,6 +20,7 @@ const AppProvider = ({ children }) => {
   const [alias, setAlias] = useState(null);
 
   const [montoMayorista, setMontoMayorista] = useState(null);
+  const [codigo, setCodigo] = useState(null);
 
   const [telefonoEmpresa, setTelefonoEmpresa] = useState(null);
   const [whatsapp, setWhatsapp] = useState(null);
@@ -46,6 +47,7 @@ const AppProvider = ({ children }) => {
         setAlias(response.alias);
 
         setMontoMayorista(response.montoMayorista);
+        setCodigo(response.codigo);
 
         setTelefonoEmpresa(response.telefono);
         setWhatsapp(response.whatsapp);
@@ -94,6 +96,7 @@ const AppProvider = ({ children }) => {
         setAlias(response.alias);
 
         setMontoMayorista(response.montoMayorista);
+        setCodigo(response.codigo);
 
         setTelefonoEmpresa(response.telefono);
         setWhatsapp(response.whatsapp);
@@ -131,6 +134,7 @@ const AppProvider = ({ children }) => {
         cbu,
         alias,
         montoMayorista,
+        codigo,
         whatsapp,
         facebook,
         urlFacebook,
