@@ -11,6 +11,7 @@ import { ReactComponent as Update } from "../../../../assets/svgs/update.svg";
 import { ReactComponent as Close } from "../../../../assets/svgs/closebtn.svg";
 import { ReactComponent as Back } from "../../../../assets/svgs/back.svg";
 import { ReactComponent as Show } from "../../../../assets/svgs/visible.svg";
+import { ReactComponent as Upload } from "../../../../assets/svgs/upload.svg";
 
 import { ReactComponent as DireccionInput } from "../../../../assets/svgs/location.svg";
 import { ReactComponent as UrlDireccionInput } from "../../../../assets/svgs/locationUrl.svg";
@@ -839,19 +840,27 @@ function SettingManager() {
                         {mostrarLogo && (
                           <>
                             <label className="label">URL del Logo:</label>
-                            <div className="form-group-input">
+                            <div className="form-group-input-upload-image">
                               <span className="input-group-text">
                                 <LogoInput className="input-group-svg" />
                               </span>
                               <input
                                 type="text"
-                                className="input"
+                                className="input-uploadimage"
                                 id="urlLogo"
                                 value={urlLogoEmpresa}
                                 onChange={(event) => {
                                   setUrlLogoEmpresa(event.target.value);
                                 }}
                               />
+
+                              <a
+                                href="https://yourfiles.cloud/"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                <Upload className="upload-btn" />
+                              </a>
                             </div>
                           </>
                         )}
