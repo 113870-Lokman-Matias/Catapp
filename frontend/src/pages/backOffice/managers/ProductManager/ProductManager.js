@@ -3334,6 +3334,7 @@ function ProductManager() {
                             )}
                           </div>
                         </td>
+
                         {product.ocultar ? (
                           <td
                             className={
@@ -3346,7 +3347,10 @@ function ProductManager() {
                                 : "table-name"
                             }
                           >
-                            Si
+                            <div className="status-btns">
+                              <div className="circulo-pendiente"></div>
+                              <p className="status-name">Si</p>
+                            </div>
                           </td>
                         ) : (
                           <td
@@ -3360,9 +3364,13 @@ function ProductManager() {
                                 : "table-name"
                             }
                           >
-                            No
+                            <div className="status-btns">
+                              <div className="circulo-verificado"></div>
+                              <p className="status-name">No</p>
+                            </div>
                           </td>
                         )}
+
                         <td
                           className={
                             product.ocultar && product.stockTransitorio === 0

@@ -742,7 +742,7 @@ function ShipmentManager() {
                       </div>
 
                       <div className="form-group ocultar2">
-                        <label className="label">Habilitado</label>
+                        <label className="label">Habilitada</label>
                         <input
                           type="checkbox"
                           className="form-check-input tick"
@@ -1035,7 +1035,7 @@ function ShipmentManager() {
                     Costo
                   </th>
                   <th className="table-title" scope="col">
-                    Habilitado
+                    Habilitada
                   </th>
                   <th className="table-title" scope="col">
                     Disponibilidad Catálogo
@@ -1093,11 +1093,23 @@ function ShipmentManager() {
                         >
                           ${shipmentType.costo}
                         </td>
+
                         {shipmentType.habilitado ? (
-                          <td className="table-name">Si</td>
+                          <td className="table-name">
+                            <div className="status-btns">
+                              <div className="circulo-verificado"></div>
+                              <p className="status-name">Si</p>
+                            </div>
+                          </td>
                         ) : (
-                          <td className="table-name">No</td>
+                          <td className="table-name">
+                            <div className="status-btns">
+                              <div className="circulo-pendiente"></div>
+                              <p className="status-name">No</p>
+                            </div>
+                          </td>
                         )}
+
                         <td className="table-name">
                           {shipmentType.disponibilidadCatalogo === 1
                             ? "Catálogo minorista"

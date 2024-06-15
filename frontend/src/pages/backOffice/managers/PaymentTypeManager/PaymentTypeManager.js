@@ -1095,10 +1095,21 @@ function PaymentTypeManager() {
                         >
                           {paymentType.nombre}
                         </td>
+
                         {paymentType.habilitado ? (
-                          <td className="table-name">Si</td>
+                          <td className="table-name">
+                            <div className="status-btns">
+                              <div className="circulo-verificado"></div>
+                              <p className="status-name">Si</p>
+                            </div>
+                          </td>
                         ) : (
-                          <td className="table-name">No</td>
+                          <td className="table-name">
+                            <div className="status-btns">
+                              <div className="circulo-pendiente"></div>
+                              <p className="status-name">No</p>
+                            </div>
+                          </td>
                         )}
 
                         <td className="table-name">
