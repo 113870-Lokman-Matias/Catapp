@@ -1086,7 +1086,15 @@ function PaymentTypeManager() {
                         <th scope="row" className="table-name">
                           {index + 1}
                         </th>
-                        <td className="table-name">{paymentType.nombre}</td>
+                        <td
+                          className={`table-name ${
+                            paymentType.nombre === "Mercado Pago"
+                              ? "mercado-pago"
+                              : "table-name"
+                          }`}
+                        >
+                          {paymentType.nombre}
+                        </td>
                         {paymentType.habilitado ? (
                           <td className="table-name">Si</td>
                         ) : (

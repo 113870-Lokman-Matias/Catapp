@@ -27,7 +27,9 @@ using API.Services.ProductoServices.Commands.DeleteProductoCommand;
 using API.Services.ProductoServices.Commands.UpdateStockProductoCommand;
 
 using API.Dtos.EnvioDto;
+using API.Services.EnvioServices.Commands.CreateEnvioCommand;
 using API.Services.EnvioServices.Commands.UpdateEnvioCommand;
+using API.Services.EnvioServices.Commands.DeleteEnvioCommand;
 
 using API.Dtos.StockDtos;
 using API.Services.StockServices.Commands.CreateDetalleStockCommand;
@@ -37,9 +39,6 @@ using API.Services.PedidoServices.Commands.CreatePedidoCommand;
 using API.Services.PedidoServices.Commands.UpdatePedidoCommand;
 using API.Services.PedidoServices.Commands.DeletePedidoCommand;
 using API.Services.PedidoServices.Commands.UpdateVerificadoPedidoCommand;
-
-using API.Dtos.PagoDto;
-using API.Services.PagoServices.Commands.CreatePagoCommand;
 
 using API.Dtos.MetodoPagoDto;
 using API.Services.MetodoPagoServices.Commands.CreateMetodoPagoCommand;
@@ -95,7 +94,9 @@ namespace API.Mapper
 
       // Mapper para Envios
       CreateMap<EnvioDto, Envio>().ReverseMap();
+      CreateMap<Envio, CreateEnvioCommand>().ReverseMap();
       CreateMap<Envio, UpdateEnvioCommand>().ReverseMap();
+      CreateMap<Envio, DeleteEnvioCommand>().ReverseMap();
 
       // Mapper para Detalles de stock
       CreateMap<DetallesStock, StockDto>()

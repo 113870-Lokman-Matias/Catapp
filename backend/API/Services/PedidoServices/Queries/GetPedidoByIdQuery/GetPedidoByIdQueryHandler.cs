@@ -54,6 +54,7 @@ namespace API.Services.PedidoServices.Queries.GetPedidoByIdQuery
                         IdPedido = x.IdPedido,
                         Cliente = x.IdClienteNavigation.NombreCompleto, // Obtener el nombre completo del cliente
                         Entrega = x.IdMetodoEntregaNavigation.Nombre,
+                        AclaracionEntrega = x.IdMetodoEntregaNavigation.Aclaracion,
                         Tipo = x.IdTipoPedidoNavigation.Nombre,
                         Vendedor = x.IdVendedorNavigation.Nombre, // Obtener el nombre del vendedor si no es nulo
                         CantidadProductos = x.DetallePedidos.Sum(d => d.Cantidad), // Sumar la cantidad de productos de todos los detalles
@@ -61,7 +62,7 @@ namespace API.Services.PedidoServices.Queries.GetPedidoByIdQuery
                         CostoEnvio = x.CostoEnvio,
                         Total = x.CostoEnvio == 0 ? x.DetallePedidos.Sum(d => d.Cantidad * d.PrecioUnitario) : x.DetallePedidos.Sum(d => d.Cantidad * d.PrecioUnitario) + x.CostoEnvio,
                         Abono = x.IdMetodoPagoNavigation.Nombre,
-                        Detalle = $"Datos del cliente:\nDNI: {x.IdClienteNavigation.Dni}\n{(x.IdMetodoEntregaNavigation.IdMetodoEntrega == 1 ? "" : "\nDirección:\n" + x.Direccion + "\n\nEntre calles:\n" + x.EntreCalles + "\n")}\nNúmero de teléfono:\n{x.IdClienteNavigation.Telefono}\n----------------------------------\nPedido:\n{string.Join("\n", x.DetallePedidos.Select(d => $"{d.Cantidad} x {d.IdProductoNavigation.Nombre} (${d.PrecioUnitario} c/u)\n{(string.IsNullOrEmpty(d.Aclaracion) ? "" : "Aclaración: " + d.Aclaracion + "\n")}"))}",
+                        Detalle = $"Datos del cliente:\nDNI: {x.IdClienteNavigation.Dni}\n{(x.IdMetodoEntregaNavigation.Nombre.ToLower().Contains("local") ? "" : "\nDirección:\n" + x.Direccion + "\n\nEntre calles:\n" + x.EntreCalles + "\n")}\nNúmero de teléfono:\n{x.IdClienteNavigation.Telefono}\n----------------------------------\nPedido:\n{string.Join("\n", x.DetallePedidos.Select(d => $"{d.Cantidad} x {d.IdProductoNavigation.Nombre} (${d.PrecioUnitario} c/u)\n{(string.IsNullOrEmpty(d.Aclaracion) ? "" : "Aclaración: " + d.Aclaracion + "\n")}"))}",
                         Fecha = x.Fecha,
                         Verificado = x.Verificado
                     })

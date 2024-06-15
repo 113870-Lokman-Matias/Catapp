@@ -54,6 +54,21 @@
   transform: translate(-15px, 0px);
 }
 
+.loading-abonos-entregas-div {
+  background-color: #808080e8;
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  z-index: 999;
+  border-radius: 15px;
+  transform: translate(-15px, 0px);
+  padding: 10px;
+}
+
 .pagination-count-filter-date2 {
   padding: 15px;
   height: 250px;
@@ -210,6 +225,7 @@
   padding: 10px;
   margin: 0px;
   gap: 5px;
+  white-space: nowrap;
 }
 
 .filtro-activo {
@@ -224,6 +240,7 @@
   align-items: center;
   gap: 5px;
   margin-top: 10px;
+  flex-wrap: wrap;
 }
 
 .loading-reports-div {
@@ -236,4 +253,12 @@
   width: 100%;
   height: 100%;
   z-index: 999;
+}
+
+.lupa-reportes-svg {
+  width: 20px;
+  height: 20px;
+  fill: #fff;
+  margin-right: 5px;
+  transition: all 0.3s ease;
 }

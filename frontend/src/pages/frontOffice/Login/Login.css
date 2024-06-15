@@ -161,6 +161,18 @@
   font-weight: 500;
 }
 
+.logout-svg {
+  width: 23px;
+  height: 23px;
+  fill: #fff;
+  margin-right: 5px;
+  transition: all 0.3s ease;
+}
+
+.login-button:hover .logout-svg {
+  fill: #000000;
+}
+
 @media (max-width: 420px) {
   .login-button {
     width: 180px;

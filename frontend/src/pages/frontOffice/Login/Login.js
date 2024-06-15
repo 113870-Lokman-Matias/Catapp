@@ -8,6 +8,7 @@ import { Helmet } from "react-helmet";
 
 //#region SVG'S
 import { ReactComponent as Panel } from "../../../assets/svgs/manager.svg";
+import { ReactComponent as Logout } from "../../../assets/svgs/logout.svg";
 import { ReactComponent as Show } from "../../../assets/svgs/visible.svg";
 import { ReactComponent as Hide } from "../../../assets/svgs/invisible.svg";
 //#endregion
@@ -208,15 +209,13 @@ function Login() {
               <b>{JSON.parse(atob(token.split(".")[1])).nameid}</b>
             </h2>
 
-            <Link
-              to="/panel"
-              className="btn btn-dark category-btn"
-            >
+            <Link to="/panel" className="btn btn-dark category-btn">
               <Panel className="category-svg" />
               <p className="category-title">Dashboard</p>
             </Link>
 
             <button className="login-button" onClick={handleLogout}>
+              <Logout className="logout-svg" />
               Cerrar sesión
             </button>
           </div>

@@ -142,7 +142,7 @@ function App() {
             }
           />
           <Route
-            path="administrar-envio"
+            path="administrar-entregas"
             element={
               <RoleProtectedRoute allowedRoles={["Supervisor", "SuperAdmin"]}>
                 <ShipmentManager />

@@ -25,6 +25,7 @@ import { ReactComponent as EntregaInput } from "../../../../assets/svgs/entregai
 import { ReactComponent as AbonoInput } from "../../../../assets/svgs/paymentInput.svg";
 import { ReactComponent as TipoInput } from "../../../../assets/svgs/typepriceinput.svg";
 import { ReactComponent as Pdf } from "../../../../assets/svgs/pdf.svg";
+import { ReactComponent as Lupa } from "../../../../assets/svgs/lupa.svg";
 //#endregion
 
 import Loader from "../../../../components/Loaders/LoaderCircle";
@@ -32,6 +33,7 @@ import Loader from "../../../../components/Loaders/LoaderCircle";
 import { GetVerifiedOrdersByDate } from "../../../../services/OrderService";
 import { GetUsersByRole } from "../../../../services/UserService";
 import { GetPaymentTypes } from "../../../../services/PaymentTypeService";
+import { GetFormasEntregaManage } from "../../../../services/ShipmentService";
 import { formatDate } from "../../../../utils/DateFormat";
 
 function OrderReports() {
@@ -133,11 +135,12 @@ function OrderReports() {
   const [filtroAbonoSeleccionado, setFiltroAbonoSeleccionado] = useState("");
 
   const [isLoadingVendedores, setIsLoadingVendedores] = useState(true);
-  const [isLoadingAbonos, setIsLoadingAbonos] = useState(true);
+  const [isLoadingAbonosEntregas, setIsLoadingAbonosEntregas] = useState(true);
   //#endregion
 
   const [listaVendedores, setListaVendedores] = useState({});
   const [listaAbonos, setListaAbonos] = useState({});
+  const [listaEntregas, setListaEntregas] = useState({});
 
   const [orders, setOrders] = useState([]);
 
@@ -204,11 +207,15 @@ function OrderReports() {
 
         const responseAbonos = await GetPaymentTypes();
         setListaAbonos(responseAbonos);
-        setIsLoadingAbonos(false);
+
+        const response = await GetFormasEntregaManage();
+        setListaEntregas(response);
+
+        setIsLoadingAbonosEntregas(false);
       } catch (error) {
         console.error("Hubo un error al obtener los vendedores:", error);
         setIsLoadingVendedores(false);
-        setIsLoadingAbonos(false);
+        setIsLoadingAbonosEntregas(false);
       }
     };
 
@@ -266,11 +273,15 @@ function OrderReports() {
     });
 
     connection.on("MensajeCrudMetodoPago", async () => {
-      setIsLoadingAbonos(true);
+      setIsLoadingAbonosEntregas(true);
       try {
         const responseAbonos = await GetPaymentTypes();
         setListaAbonos(responseAbonos);
-        setIsLoadingAbonos(false);
+
+        const response = await GetFormasEntregaManage();
+        setListaEntregas(response);
+
+        setIsLoadingAbonosEntregas(false);
       } catch (error) {
         console.error("Error al obtener los medios de pago: " + error);
       }
@@ -925,6 +936,7 @@ function OrderReports() {
                 </div>
 
                 <button className="btn-filter-date" onClick={search}>
+                  <Lupa className="lupa-reportes-svg" />
                   CONSULTAR
                 </button>
 
@@ -1019,7 +1031,7 @@ function OrderReports() {
                     }}
                   >
                     <option hidden key={0} value="">
-                      Seleccione un tipo
+                      Seleccione un tipo de pedido
                     </option>
                     <option className="btn-option" value="1">
                       Minorista
@@ -1046,14 +1058,16 @@ function OrderReports() {
 
             {showFilters === true && (
               <div className="pagination-count-filter-date">
-                {isLoadingAbonos === true && (
-                  <div className="loading-sellers-div">
+                {isLoadingAbonosEntregas === true && (
+                  <div className="loading-abonos-entregas-div">
                     <Loader />
-                    <p className="bold-loading">Cargando abonos...</p>
+                    <p className="bold-loading">
+                      Cargando medios de pago y formas de entrega...
+                    </p>
                   </div>
                 )}
 
-                <p className="p-filter-date">Entrega:</p>
+                <p className="p-filter-date">Forma de entrega:</p>
                 <div className="form-group-input nombre-input filter-report-div">
                   <select
                     className="input2"
@@ -1063,25 +1077,35 @@ function OrderReports() {
                     id="tipoEntrega"
                     value={selectedEntrega}
                     onChange={(e) => {
-                      setSelectedEntrega(e.target.value); // Asignar el tipo de entrega seleccionado a selectedEntrega
-                      const entregaNombre =
-                        e.target.value === "1"
-                          ? "Por el local"
-                          : e.target.value === "2"
-                          ? "Envío a domicilio"
-                          : ""; // Asignar el nombre de la entrega seleccionada
-                      setNombreSelectedEntrega(entregaNombre); // Asignar el nombre de la entrega seleccionada a nombreSelectedEntrega
+                      setSelectedEntrega(e.target.value);
+                      const selectedOption = listaEntregas.find(
+                        (opt) => opt.idEnvio === parseInt(e.target.value)
+                      );
+                      setNombreSelectedEntrega(
+                        selectedOption
+                          ? `${selectedOption.nombre}${
+                              selectedOption.aclaracion
+                                ? ` - ${selectedOption.aclaracion}`
+                                : ""
+                            }`
+                          : "-"
+                      );
                     }}
                   >
                     <option hidden key={0} value="">
-                      Seleccione un tipo de entrega
+                      Seleccione una forma de entrega
                     </option>
-                    <option className="btn-option" value="1">
-                      Por el local
-                    </option>
-                    <option className="btn-option" value="2">
-                      Envío a domicilio
-                    </option>
+                    {listaEntregas &&
+                      Array.from(listaEntregas).map((opts, i) => (
+                        <option
+                          className="btn-option"
+                          key={i}
+                          value={opts.idEnvio}
+                        >
+                          {opts.nombre}{" "}
+                          {opts.aclaracion ? ` - ${opts.aclaracion}` : ""}
+                        </option>
+                      ))}
                   </select>
                   {selectedEntrega !== "" && (
                     <button
@@ -1741,12 +1765,15 @@ function OrderReports() {
                           className={`table-name table-name-orders ${
                             order.entrega.includes("domicilio")
                               ? "domicilio"
-                              : order.entrega.includes("retiro por el local")
+                              : order.entrega.includes("local")
                               ? "retiro-local"
                               : "domicilio"
                           }`}
                         >
                           {order.entrega}
+                          {order.aclaracionEntrega
+                            ? ` - ${order.aclaracionEntrega}`
+                            : ""}
                         </td>
                         <td
                           className={`table-name table-name-orders ${
@@ -1765,7 +1792,7 @@ function OrderReports() {
                           className={`table-name table-name-orders ${
                             order.costoEnvio > 0
                               ? "domicilio"
-                              : order.entrega.includes("retiro por el local")
+                              : order.entrega.includes("local")
                               ? "retiro-local"
                               : "domicilio"
                           }`}
@@ -1856,12 +1883,15 @@ function OrderReports() {
                         className={`table-name table-name-orders ${
                           order.entrega.includes("domicilio")
                             ? "domicilio"
-                            : order.entrega.includes("retiro por el local")
+                            : order.entrega.includes("local")
                             ? "retiro-local"
                             : "domicilio"
                         }`}
                       >
                         {order.entrega}
+                        {order.aclaracionEntrega
+                          ? ` - ${order.aclaracionEntrega}`
+                          : ""}
                       </td>
                       <td
                         className={`table-name table-name-orders ${
@@ -1876,7 +1906,7 @@ function OrderReports() {
                         className={`table-name table-name-orders ${
                           order.costoEnvio > 0
                             ? "domicilio"
-                            : order.entrega.includes("retiro por el local")
+                            : order.entrega.includes("local")
                             ? "retiro-local"
                             : "domicilio"
                         }`}

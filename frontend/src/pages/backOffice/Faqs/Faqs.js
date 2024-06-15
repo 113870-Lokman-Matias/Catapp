@@ -142,12 +142,12 @@ function Faqs() {
                     />
                     <li>
                       <span className="ref-nohover">
-                        Ofrecer Envío a domicilio
+                        Crea y modifica distintas formas de entrega
                       </span>
-                      : Si ofreces envíos a domicilio, configura el costo de
-                      envío en la plataforma para que se refleje de manera clara
-                      en los pedidos. En caso contrario, puedes deshabilitar
-                      esta opción.
+                      : Especifica los costos y aclara los detalles de cada
+                      forma de entrega. Si alguna opción tiene costo, este se
+                      reflejará claramente en el total de los pedidos de tus
+                      clientes.
                     </li>
                     <img
                       className="img"
@@ -173,7 +173,7 @@ function Faqs() {
 
                     <li>
                       <span className="ref-nohover">
-                        Crear Usuarios de Tipo Vendedor
+                        Crear Usuarios de tipo Vendedor
                       </span>
                       : Si deseas que tus clientes puedan elegir quién les
                       vendió, puedes crear usuarios de tipo vendedor. Además,

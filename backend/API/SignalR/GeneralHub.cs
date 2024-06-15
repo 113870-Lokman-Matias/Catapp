@@ -17,7 +17,7 @@ public class GeneralHub : Hub
     // Mensaje de Envio
     public async Task EnviarMensajeUpdateEnvio(string mensaje)
     {
-        await Clients.All.SendAsync("MensajeUpdateEnvio", mensaje);
+        await Clients.All.SendAsync("MensajeCrudEntrega", mensaje);
     }
 
     // Mensaje de Vendedor

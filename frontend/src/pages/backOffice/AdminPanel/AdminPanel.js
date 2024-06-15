@@ -218,7 +218,11 @@ function AdminPanel() {
                 <ResetPassword className="logout" />
               </button>
 
-              <Link to="/administrar-configuraciones" className="btn-logout" aria-label="Configuraciones">
+              <Link
+                to="/administrar-configuraciones"
+                className="btn-logout"
+                aria-label="Configuraciones"
+              >
                 <Settings className="logout" />
               </Link>
 
@@ -441,11 +445,11 @@ function AdminPanel() {
 
               {(rolUsuario === "Supervisor" || rolUsuario === "SuperAdmin") && (
                 <Link
-                  to="/administrar-envio"
+                  to="/administrar-entregas"
                   className="btn btn-dark category-btn"
                 >
                   <Shipment className="category-svg" />
-                  <p className="category-title">Envío</p>
+                  <p className="category-title">Entregas</p>
                 </Link>
               )}
 

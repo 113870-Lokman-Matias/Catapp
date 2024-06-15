@@ -40,7 +40,7 @@ namespace API.Services.PedidoServices.Queries.GetPedidosByDateQuery
       When(p => p.IdMetodoEntrega.HasValue, () =>
       {
         RuleFor(p => p.IdMetodoEntrega)
-                  .Must(id => _context.MetodosEntregas.Any(me => me.IdMetodoEntrega == id))
+                  .Must(id => _context.Envios.Any(me => me.IdEnvio == id))
                   .WithMessage("El ID del método de entrega especificado no es válido");
       });
 

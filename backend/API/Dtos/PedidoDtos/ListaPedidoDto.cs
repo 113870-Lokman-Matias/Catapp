@@ -8,6 +8,8 @@ namespace API.Dtos.PedidoDtos
 
     public string Entrega { get; set; } = null!;
 
+    public string AclaracionEntrega { get; set; } 
+
     public string Tipo { get; set; } = null!;
 
     public string Vendedor { get; set; } = null!;

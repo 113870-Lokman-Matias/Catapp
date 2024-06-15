@@ -36,7 +36,7 @@ import {
   UpdateOrdersVerified,
 } from "../../../../services/OrderService";
 import { GetUsersByRole } from "../../../../services/UserService";
-import { GetInfoEnvio } from "../../../../services/ShipmentService";
+import { GetFormasEntregaManage } from "../../../../services/ShipmentService";
 import { GetPaymentTypes } from "../../../../services/PaymentTypeService";
 import { formatDate } from "../../../../utils/DateFormat";
 
@@ -60,11 +60,11 @@ function OrderManager() {
   const [abono, setAbono] = useState("");
   const [prevAbono, setPrevAbono] = useState("");
 
-  const [listaNombresVendedores, setListaNombresVendedores] = useState(true);
-  const [listaNombresAbonos, setListaNombresAbonos] = useState(true);
+  const [listaNombresVendedores, setListaNombresVendedores] = useState([]);
+  const [listaNombresAbonos, setListaNombresAbonos] = useState([]);
+  const [listaNombresEntregas, setListaNombresEntregas] = useState([]);
 
-  const [costoEnvioDomicilio, setCostoEnvioDomicilio] = useState("");
-  const [habilitadoEnvioDomicilio, setHabilitadoEnvioDomicilio] = useState("");
+  const [nombreEntrega, setNombreEntrega] = useState("");
 
   const [orders, setOrders] = useState([]);
 
@@ -128,9 +128,8 @@ function OrderManager() {
         const responsePaymentTypes = await GetPaymentTypes();
         setListaNombresAbonos(responsePaymentTypes);
 
-        const response = await GetInfoEnvio();
-        setCostoEnvioDomicilio(response.precio);
-        setHabilitadoEnvioDomicilio(response.habilitado);
+        const response = await GetFormasEntregaManage();
+        setListaNombresEntregas(response);
 
         setIsLoading(false);
       } catch (error) {
@@ -185,11 +184,10 @@ function OrderManager() {
       })
       .catch((err) => console.error(err.toString()));
 
-    connection.on("MensajeUpdateCostoEnvio", async () => {
+    connection.on("MensajeCrudEntrega", async () => {
       try {
-        const response = await GetInfoEnvio();
-        setCostoEnvioDomicilio(response.precio);
-        setHabilitadoEnvioDomicilio(response.habilitado);
+        const response = await GetFormasEntregaManage();
+        setListaNombresEntregas(response);
       } catch (error) {
         console.error("Error al obtener el costo de envío: " + error);
       }
@@ -229,17 +227,14 @@ function OrderManager() {
   }, []);
   //#endregion
 
-  //#region Función para ajustar el costo de envío y el total según la forma de entrega seleccionada
-  const ajustarCostoYTotal = (selectedEntrega) => {
-    if (selectedEntrega === "1") {
-      // Si la nueva forma de entrega tiene un costo de envío de $0
-      // Restablecer el costo de envío a 0 y restar el costo de envío actual del total
-      setCostoEnvio(0);
-    } else {
-      // Si la nueva forma de entrega tiene un costo de envío diferente de $0
-      // Actualizar el costo de envío y sumar el nuevo costo al total
-      setCostoEnvio(costoEnvioDomicilio);
-    }
+  //#region Función para cuando selecciono una entrega
+  const handleEntregaClick = (e) => {
+    const selectedIndex = e.target.selectedIndex;
+    const selectedOption = e.target.options[selectedIndex];
+
+    setEntrega(e.target.value);
+    setNombreEntrega(selectedOption.getAttribute("data-nombre"));
+    setCostoEnvio(Number(selectedOption.getAttribute("data-costo")));
   };
   //#endregion
 
@@ -677,15 +672,13 @@ function OrderManager() {
   function RetrieveOrderInputs(order) {
     setIdPedido(order.idPedido);
 
-    if (order.entrega === "Lo retiro por el local") {
-      setEntrega(1);
-    } else if (order.entrega === "Envío a domicilio") {
-      setEntrega(2);
-    }
+    setEntrega(getIdEntrega(order.entrega, order.aclaracionEntrega));
+
+    setNombreEntrega(order.entrega);
 
     if (order.tipo === "Minorista") {
       setTipo(1);
-    } else if (order.entrega === "Mayorista") {
+    } else if (order.tipo === "Mayorista") {
       setTipo(2);
     }
 
@@ -693,11 +686,7 @@ function OrderManager() {
     setCostoEnvio(order.costoEnvio);
     setAbono(getIdAbono(order.abono));
 
-    if (order.entrega === "Lo retiro por el local") {
-      setPrevEntrega(1);
-    } else if (order.entrega === "Envío a domicilio") {
-      setPrevEntrega(2);
-    }
+    setPrevEntrega(getIdEntrega(order.entrega, order.aclaracionEntrega));
     setPrevVendedor(getIdVendedor(order.vendedor));
     setPrevCostoEnvio(order.costoEnvio);
     setPrevAbono(getIdAbono(order.abono));
@@ -943,12 +932,21 @@ function OrderManager() {
   };
   //#endregion
 
+  //#region Función para obtener el id de una forma de entrega de un pedido
+  const getIdEntrega = (nombre, aclaracion) => {
+    const entrega = listaNombresEntregas.find(
+      (f) => f.nombre == nombre && f.aclaracion == aclaracion
+    );
+    return entrega.idEnvio;
+  };
+  //#endregion
+
   //#region Función para obtener el id del medio de pago de un pedido
   const getIdAbono = (nombre) => {
     const abono = listaNombresAbonos.find((a) => a.nombre === nombre);
     return abono.idMetodoPago;
   };
-  //#endregion
+  //#endregiony
 
   //#region Return
   return (
@@ -1056,30 +1054,59 @@ function OrderManager() {
                           <span className="input-group-text">
                             <EntregaInput className="input-group-svg" />
                           </span>
+
                           <select
                             className="input"
                             style={{ cursor: "pointer" }}
                             name="envio"
                             id="envio"
                             value={entrega}
-                            onChange={(e) => {
-                              setEntrega(e.target.value);
-                              ajustarCostoYTotal(e.target.value);
-                            }}
+                            onChange={handleEntregaClick}
                           >
                             <option hidden key={0} value="0">
-                              Seleccione una opción
+                              Seleccione una forma de entrega
                             </option>
-                            <option className="btn-option" value="1">
-                              Lo retiro por el local ($0)
-                            </option>
-                            <option
-                              className="btn-option"
-                              value="2"
-                              hidden={!habilitadoEnvioDomicilio}
-                            >
-                              Envío a domicilio (${costoEnvioDomicilio})
-                            </option>
+                            {listaNombresEntregas &&
+                              Array.from(listaNombresEntregas).map(
+                                (opts, i) => {
+                                  const shouldShowEnvio =
+                                    (nombreEntrega
+                                      .toLowerCase()
+                                      .includes("local") &&
+                                      opts.disponibilidad !== 2) ||
+                                    (nombreEntrega
+                                      .toLowerCase()
+                                      .includes("domicilio") &&
+                                      opts.disponibilidad !== 1) ||
+                                    opts.disponibilidad === 3;
+
+                                  const shouldShowCatalogo =
+                                    (tipo === 1 &&
+                                      opts.disponibilidadCatalogo !== 2) ||
+                                    (tipo === 2 &&
+                                      opts.disponibilidadCatalogo !== 1) ||
+                                    opts.disponibilidadCatalogo === 3;
+
+                                  const shouldShow =
+                                    shouldShowEnvio && shouldShowCatalogo;
+
+                                  return shouldShow ? (
+                                    <option
+                                      className="btn-option"
+                                      key={i}
+                                      value={opts.idEnvio}
+                                      data-nombre={opts.nombre}
+                                      data-costo={opts.costo}
+                                      disabled={!opts.habilitado}
+                                    >
+                                      {opts.nombre} (${opts.costo})
+                                      {opts.aclaracion
+                                        ? ` - ${opts.aclaracion}`
+                                        : ""}
+                                    </option>
+                                  ) : null;
+                                }
+                              )}
                           </select>
                         </div>
 
@@ -1165,9 +1192,13 @@ function OrderManager() {
                             {listaNombresAbonos &&
                               Array.from(listaNombresAbonos).map((opts, i) => {
                                 const shouldShowEnvio =
-                                  (entrega === 1 &&
+                                  (nombreEntrega
+                                    .toLowerCase()
+                                    .includes("local") &&
                                     opts.disponibilidad !== 2) ||
-                                  (entrega === 2 &&
+                                  (nombreEntrega
+                                    .toLowerCase()
+                                    .includes("domicilio") &&
                                     opts.disponibilidad !== 1) ||
                                   opts.disponibilidad === 3;
 
@@ -1520,12 +1551,15 @@ function OrderManager() {
                           className={`table-name table-name-orders ${
                             order.entrega.includes("domicilio")
                               ? "domicilio"
-                              : order.entrega.includes("retiro por el local")
+                              : order.entrega.includes("local")
                               ? "retiro-local"
                               : "domicilio"
                           }`}
                         >
                           {order.entrega}
+                          {order.aclaracionEntrega
+                            ? ` - ${order.aclaracionEntrega}`
+                            : ""}
                         </td>
                         <td
                           className={`table-name table-name-orders ${
@@ -1544,7 +1578,7 @@ function OrderManager() {
                           className={`table-name table-name-orders ${
                             order.costoEnvio > 0
                               ? "domicilio"
-                              : order.entrega.includes("retiro por el local")
+                              : order.entrega.includes("local")
                               ? "retiro-local"
                               : "domicilio"
                           }`}
@@ -1705,7 +1739,12 @@ function OrderManager() {
                       <td>{order.idPedido}</td>
                       <td>{order.tipo}</td>
                       <td>{order.cliente}</td>
-                      <td>{order.entrega}</td>
+                      <td>
+                        {order.entrega}
+                        {order.aclaracionEntrega
+                          ? ` - ${order.aclaracionEntrega}`
+                          : ""}
+                      </td>
                       <td>{order.vendedor === null ? "-" : order.vendedor}</td>
                       <td>{order.cantidadProductos}</td>
                       <td>{order.subtotal.toLocaleString()}</td>

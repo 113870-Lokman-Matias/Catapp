@@ -42,8 +42,7 @@ namespace API.Services.EnvioServices.Commands.UpdateEnvioCommand
                 }
                 else
                 {
-
-                    var EnvioToUpdate = await _context.Envios.FirstAsync();
+                    var EnvioToUpdate = await _context.Envios.FindAsync(request.IdEnvio);
 
                     if (EnvioToUpdate == null)
                     {
@@ -58,9 +57,12 @@ namespace API.Services.EnvioServices.Commands.UpdateEnvioCommand
                     else
                     {
                         EnvioToUpdate.Habilitado = request.Habilitado;
-                        EnvioToUpdate.Precio = request.Precio;
+                        EnvioToUpdate.Costo = request.Costo;
                         EnvioToUpdate.UltimoModificador = _httpContextAccessor.HttpContext?.User?.Identity?.Name;
                         EnvioToUpdate.FechaModificacion = DateTimeOffset.Now.ToUniversalTime();
+                        EnvioToUpdate.Nombre = request.Nombre;
+                        EnvioToUpdate.DisponibilidadCatalogo = request.DisponibilidadCatalogo;
+                        EnvioToUpdate.Aclaracion = request.Aclaracion;
 
                         await _context.SaveChangesAsync();
 

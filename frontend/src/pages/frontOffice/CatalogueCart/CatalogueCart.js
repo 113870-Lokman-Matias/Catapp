@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useRef } from "react";
 import { Helmet } from "react-helmet";
 import $ from "jquery";
 import Swal from "sweetalert2";
@@ -11,7 +11,7 @@ import {
   GetCategoriesMayorista,
 } from "../../../services/CategoryService";
 import { GetCotizacionDolarUnicamente } from "../../../services/DollarService";
-import { GetInfoEnvio } from "../../../services/ShipmentService";
+import { GetFormasEntrega } from "../../../services/ShipmentService";
 import { GetUsersSellers } from "../../../services/UserService";
 import { SaveOrders } from "../../../services/OrderService";
 import { GetPaymentTypes } from "../../../services/PaymentTypeService";
@@ -52,6 +52,7 @@ const CatalogueCart = () => {
 
   const [showWallet, setShowWallet] = useState(false);
   const [preferenceId, setPreferenceId] = useState(null);
+  const [showWalletLoader, setShowWalletLoader] = useState(false);
 
   const pathname = window.location.pathname.toLowerCase();
   const [clientType, setClientType] = useState("");
@@ -95,8 +96,9 @@ const CatalogueCart = () => {
     useState({});
   const [isLoadingSubcategories, setIsLoadingSubcategories] = useState({});
 
-  const [listaNombresVendedores, setListaNombresVendedores] = useState(true);
-  const [listaNombresAbonos, setListaNombresAbonos] = useState(true);
+  const [listaNombresVendedores, setListaNombresVendedores] = useState([]);
+  const [listaNombresAbonos, setListaNombresAbonos] = useState([]);
+  const [listaFormasEntrega, setListaFormasEntrega] = useState([]);
 
   //#region Constantes para el formulario del cliente
   const [nombre, setNombre] = useState("");
@@ -117,8 +119,10 @@ const CatalogueCart = () => {
   const { montoMayorista } = useContext(Context);
   const { codigo } = useContext(Context);
 
-  const [costoEnvioDomicilio, setCostoEnvioDomicilio] = useState("");
-  const [habilitadoEnvioDomicilio, setHabilitadoEnvioDomicilio] = useState("");
+  const [costoEnvioDomicilio, setCostoEnvioDomicilio] = useState(0);
+  const [nombreEnvio, setNombreEnvio] = useState("");
+  const [nombreAbono, setNombreAbono] = useState("");
+  const [aclaracionEnvio, setAclaracionEnvio] = useState("");
 
   const [valorDolar, setvalorDolar] = useState(0);
 
@@ -129,6 +133,10 @@ const CatalogueCart = () => {
 
   const [vendedor, setVendedor] = useState("");
   const [envio, setEnvio] = useState("");
+
+  const envioRef = useRef(envio);
+  const abonoRef = useRef(abono);
+  const vendedorRef = useRef(vendedor);
   //#endregion
 
   //#region Constantes necesarias para el filtro por busqueda
@@ -150,12 +158,23 @@ const CatalogueCart = () => {
   }, [codigo]);
 
   useEffect(() => {
+    envioRef.current = envio;
+  }, [envio]);
+
+  useEffect(() => {
+    vendedorRef.current = vendedor;
+  }, [vendedor]);
+
+  useEffect(() => {
+    abonoRef.current = abono;
+  }, [abono]);
+
+  useEffect(() => {
     // Funciónes asincronas
     (async () => {
       try {
-        const response = await GetInfoEnvio();
-        setCostoEnvioDomicilio(response.precio);
-        setHabilitadoEnvioDomicilio(response.habilitado);
+        const response = await GetFormasEntrega();
+        setListaFormasEntrega(response.envios);
 
         await GetCotizacionDolarUnicamente(setvalorDolar);
         await GetUsersSellers(setListaNombresVendedores);
@@ -476,14 +495,24 @@ const CatalogueCart = () => {
       }
     });
 
-    connection.on("MensajeUpdateEnvio", async () => {
+    connection.on("MensajeCrudEntrega", async () => {
       try {
-        const response = await GetInfoEnvio();
-        setCostoEnvioDomicilio(response.precio);
-        setHabilitadoEnvioDomicilio(response.habilitado);
+        const response = await GetFormasEntrega();
+        setListaFormasEntrega(response.envios);
 
-        if (response.habilitado === false) {
-          setEnvio("");
+        const currentEnvio = envioRef.current;
+
+        if (currentEnvio !== "") {
+          const selectedEnvio = response.envios.find(
+            (opt) => opt.idEnvio == currentEnvio
+          );
+          if (selectedEnvio) {
+            setCostoEnvioDomicilio(Number(selectedEnvio.costo));
+          } else {
+            setEnvio("");
+            setCostoEnvioDomicilio(0);
+            setNombreEnvio("");
+          }
         }
       } catch (error) {
         console.error("Error al obtener el costo de envío: " + error);
@@ -493,6 +522,17 @@ const CatalogueCart = () => {
     connection.on("MensajeCrudVendedor", async () => {
       try {
         await GetUsersSellers(setListaNombresVendedores);
+
+        const currentVendedor = vendedorRef.current;
+
+        if (currentVendedor !== "") {
+          const selectedVendedor = listaNombresVendedores.find(
+            (opt) => opt.idUsuario == currentVendedor
+          );
+          if (!selectedVendedor) {
+            setVendedor("");
+          }
+        }
       } catch (error) {
         console.error("Error al obtener los vendedores: " + error);
       }
@@ -505,6 +545,18 @@ const CatalogueCart = () => {
           (abono) => abono.habilitado
         );
         setListaNombresAbonos(abonosHabilitados);
+
+        const currentAbono = abonoRef.current;
+
+        if (currentAbono !== "") {
+          const selectedAbono = listaNombresAbonos.find(
+            (opt) => opt.idMetodoPago == currentAbono
+          );
+          if (!selectedAbono) {
+            setAbono("");
+            setNombreAbono("");
+          }
+        }
       } catch (error) {
         console.error("Error al obtener los medios de pago: " + error);
       }
@@ -522,7 +574,7 @@ const CatalogueCart = () => {
     envio,
     modalAbierto,
     costoEnvioDomicilio,
-    habilitadoEnvioDomicilio,
+    listaFormasEntrega,
   ]);
 
   useEffect(() => {
@@ -568,8 +620,12 @@ const CatalogueCart = () => {
           setCalles(parsedFormData.calles || "");
           setTelefono(parsedFormData.telefono || "");
           setAbono(parsedFormData.abono || "");
+          setNombreAbono(parsedFormData.nombreAbono || "");
           setVendedor(parsedFormData.vendedor || "");
           setEnvio(parsedFormData.envio || "");
+          setNombreEnvio(parsedFormData.nombreEnvio || "");
+          setAclaracionEnvio(parsedFormData.aclaracionEnvio || "");
+          setCostoEnvioDomicilio(parsedFormData.costoEnvioDomicilio || "");
         }
 
         if (storedCart && storedCart !== "{}") {
@@ -653,8 +709,12 @@ const CatalogueCart = () => {
           setCalles(parsedFormData.calles || "");
           setTelefono(parsedFormData.telefono || "");
           setAbono(parsedFormData.abono || "");
+          setNombreAbono(parsedFormData.nombreAbono || "");
           setVendedor(parsedFormData.vendedor || "");
           setEnvio(parsedFormData.envio || "");
+          setNombreEnvio(parsedFormData.nombreEnvio || "");
+          setAclaracionEnvio(parsedFormData.aclaracionEnvio || "");
+          setCostoEnvioDomicilio(parsedFormData.costoEnvioDomicilio || "");
         }
 
         if (storedCart && storedCart !== "{}") {
@@ -691,8 +751,12 @@ const CatalogueCart = () => {
           setCalles(parsedFormData.calles || "");
           setTelefono(parsedFormData.telefono || "");
           setAbono(parsedFormData.abono || "");
+          setNombreAbono(parsedFormData.nombreAbono || "");
           setVendedor(parsedFormData.vendedor || "");
           setEnvio(parsedFormData.envio || "");
+          setNombreEnvio(parsedFormData.nombreEnvio || "");
+          setAclaracionEnvio(parsedFormData.aclaracionEnvio || "");
+          setCostoEnvioDomicilio(parsedFormData.costoEnvioDomicilio || "");
         }
 
         if (storedCart && storedCart !== "{}") {
@@ -788,6 +852,10 @@ const CatalogueCart = () => {
     }
   }
   //#endregion
+
+  const handleOnReady = () => {
+    setShowWalletLoader(false);
+  };
 
   //#region Función para filtrar los productos por query
   const search = async () => {
@@ -1204,7 +1272,7 @@ const CatalogueCart = () => {
     }
 
     // Agregar el costo de envío si corresponde
-    if (envio == 2 && costoEnvioDomicilio > 0) {
+    if (costoEnvioDomicilio > 0) {
       total += costoEnvioDomicilio;
     }
 
@@ -1268,6 +1336,8 @@ const CatalogueCart = () => {
   const handleSubmitPedidoMercadoPago = async (e) => {
     e.preventDefault();
 
+    setShowWalletLoader(true);
+
     if (IsValid() === true) {
       try {
         e.preventDefault();
@@ -1309,8 +1379,12 @@ const CatalogueCart = () => {
           dni: dni.toString(), // Reemplaza con el DNI real del cliente
           telefono: telefono.toString(), // Reemplaza con el teléfono real del cliente
           tipoCliente: clientType === "Minorista" ? 1 : 2, // 1 para minorista, 2 para mayorista
-          direccion: envio == 2 ? direccion : "",
-          entreCalles: envio == 2 ? calles : "",
+          direccion: nombreEnvio.toLowerCase().includes("domicilio")
+            ? direccion
+            : "",
+          entreCalles: nombreEnvio.toLowerCase().includes("domicilio")
+            ? calles
+            : "",
           idVendedor: vendedor,
         };
 
@@ -1320,8 +1394,7 @@ const CatalogueCart = () => {
           }`,
           productos: productosMp, // Enviar la lista de productos al backend
           cliente: clienteMp,
-          costoEnvio:
-            envio == 2 && costoEnvioDomicilio > 0 ? costoEnvioDomicilio : 0,
+          costoEnvio: costoEnvioDomicilio > 0 ? costoEnvioDomicilio : 0,
         });
 
         if (response.preferenceId !== null) {
@@ -1336,8 +1409,12 @@ const CatalogueCart = () => {
             calles,
             telefono,
             abono,
+            nombreAbono,
             vendedor,
             envio,
+            nombreEnvio,
+            aclaracionEnvio,
+            costoEnvioDomicilio,
           };
 
           // Convert the object to a JSON string and store it in localStorage
@@ -1367,21 +1444,23 @@ const CatalogueCart = () => {
 
         mensaje += `*DNI*:\n_${dni}_\n\n`;
 
-        mensaje += `*Entrega*:\n_${getTipoEnvio(envio)}_\n\n`;
+        mensaje += `*Entrega*:\n_${nombreEnvio} ($${costoEnvioDomicilio})${
+          aclaracionEnvio ? ` - ${aclaracionEnvio}` : ""
+        }_\n\n`;
 
-        if (envio != 1) {
+        if (nombreEnvio.toLowerCase().includes("domicilio")) {
           mensaje += `*Dirección*:\n_${direccion}_\n\n`;
           mensaje += `*Entre calles*:\n_${calles}_\n\n`;
         }
 
         mensaje += `*Número de teléfono*:\n_${telefono}_\n\n`;
 
-        mensaje += `*Abona con*:\n_${getTipoAbono(abono)}_\n\n`;
+        mensaje += `*Abona con*:\n_${nombreAbono}_\n\n`;
 
         mensaje += `*----------------------------------*\n\n`;
         mensaje += "```Datos de la empresa:```\n\n";
 
-        if (envio == 1) {
+        if (nombreEnvio.toLowerCase().includes("local")) {
           if (direccionAuto !== null && direccionAuto !== "") {
             mensaje += `*Dirección*:\n_${direccionAuto}_\n\n`;
           }
@@ -1394,7 +1473,7 @@ const CatalogueCart = () => {
           mensaje += `*Número de teléfono*:\n_${telefonoEmpresa}_\n\n`;
         }
 
-        if (abono == 2) {
+        if (nombreAbono.toLowerCase() == "transferencia") {
           if (cbu !== null && cbu !== "") {
             mensaje += `*CBU*:\n_${cbu}_\n\n`;
           }
@@ -1431,7 +1510,7 @@ const CatalogueCart = () => {
             .replace(/\B(?=(\d{3})+(?!\d))/g, ".")}_\n\n`;
         }
 
-        if (envio == 2 && costoEnvioDomicilio > 0) {
+        if (costoEnvioDomicilio > 0) {
           mensaje += `*SUBTOTAL: $${(calculateTotal() - costoEnvioDomicilio)
             .toLocaleString("es-ES", {
               minimumFractionDigits: 0,
@@ -1508,8 +1587,7 @@ const CatalogueCart = () => {
             direccion.charAt(0).toUpperCase() + direccion.slice(1)
           }`,
           entreCalles: `${calles.charAt(0).toUpperCase() + calles.slice(1)}`,
-          costoEnvio:
-            envio == 2 && costoEnvioDomicilio > 0 ? costoEnvioDomicilio : 0,
+          costoEnvio: costoEnvioDomicilio > 0 ? costoEnvioDomicilio : 0,
           idTipoPedido: clientType === "Minorista" ? 1 : 2,
           idVendedor: vendedor,
           idMetodoPago: abono,
@@ -1524,21 +1602,23 @@ const CatalogueCart = () => {
 
             mensaje += `*DNI*:\n_${dni}_\n\n`;
 
-            mensaje += `*Entrega*:\n_${getTipoEnvio(envio)}_\n\n`;
+            mensaje += `*Entrega*:\n_${nombreEnvio} ($${costoEnvioDomicilio})${
+              aclaracionEnvio ? ` - ${aclaracionEnvio}` : ""
+            }_\n\n`;
 
-            if (envio != 1) {
+            if (nombreEnvio.toLowerCase().includes("domicilio")) {
               mensaje += `*Dirección*:\n_${direccion}_\n\n`;
               mensaje += `*Entre calles*:\n_${calles}_\n\n`;
             }
 
             mensaje += `*Número de teléfono*:\n_${telefono}_\n\n`;
 
-            mensaje += `*Abona con*:\n_${getTipoAbono(abono)}_\n\n`;
+            mensaje += `*Abona con*:\n_${nombreAbono}_\n\n`;
 
             mensaje += `*----------------------------------*\n\n`;
             mensaje += "```Datos de la empresa:```\n\n";
 
-            if (envio == 1) {
+            if (nombreEnvio.toLowerCase().includes("local")) {
               if (direccionAuto !== null && direccionAuto !== "") {
                 mensaje += `*Dirección*:\n_${direccionAuto}_\n\n`;
               }
@@ -1551,7 +1631,7 @@ const CatalogueCart = () => {
               mensaje += `*Número de teléfono*:\n_${telefonoEmpresa}_\n\n`;
             }
 
-            if (abono == 2) {
+            if (nombreAbono.toLowerCase() == "transferencia") {
               if (cbu !== null && cbu !== "") {
                 mensaje += `*CBU*:\n_${cbu}_\n\n`;
               }
@@ -1590,7 +1670,7 @@ const CatalogueCart = () => {
                 .replace(/\B(?=(\d{3})+(?!\d))/g, ".")}_\n\n`;
             }
 
-            if (envio == 2 && costoEnvioDomicilio > 0) {
+            if (costoEnvioDomicilio > 0) {
               mensaje += `*SUBTOTAL: $${(calculateTotal() - costoEnvioDomicilio)
                 .toLocaleString("es-ES", {
                   minimumFractionDigits: 0,
@@ -1641,8 +1721,12 @@ const CatalogueCart = () => {
     setCalles("");
     setTelefono("");
     setAbono("");
+    setNombreAbono("");
     setVendedor("");
     setEnvio("");
+    setNombreEnvio("");
+    setAclaracionEnvio("");
+    setCostoEnvioDomicilio(0);
   }
   //#endregion
 
@@ -1666,6 +1750,15 @@ const CatalogueCart = () => {
       return false;
     }
     return true;
+  }
+  //#endregion
+
+  //#region Funcíon para validar el número de documento
+  // Expresión regular para validar DNI argentino con o sin puntos
+  const dniRegex = /^(?=.*\d)\d{7,8}$|^\d{1,2}\.\d{3}\.\d{3}$/;
+
+  function validarDNI(dni) {
+    return dniRegex.test(dni);
   }
   //#endregion
 
@@ -1697,6 +1790,19 @@ const CatalogueCart = () => {
         }, 500);
       });
       return false;
+    } else if (!validarDNI(dni)) {
+      Swal.fire({
+        icon: "error",
+        title: "Número de documento inválido",
+        text: "Ingrese un DNI válido",
+        confirmButtonText: "Aceptar",
+        confirmButtonColor: "#f27474",
+      }).then(function () {
+        setTimeout(function () {
+          $("#dni").focus();
+        }, 500);
+      });
+      return false;
     } else if (telefono === "") {
       Swal.fire({
         icon: "error",
@@ -1713,14 +1819,16 @@ const CatalogueCart = () => {
     } else if (envio === "") {
       Swal.fire({
         icon: "error",
-        title:
-          "Debe indicar si quiere que se lo enviemos o si lo retira por el local",
+        title: "Debe indicar la forma de entrega",
         text: "Seleccione una opción",
         confirmButtonText: "Aceptar",
         confirmButtonColor: "#f27474",
       });
       return false;
-    } else if (direccion === "" && envio != 1) {
+    } else if (
+      direccion === "" &&
+      nombreEnvio.toLowerCase().includes("domicilio")
+    ) {
       Swal.fire({
         icon: "error",
         title: "Debe indicar su dirección",
@@ -1733,7 +1841,10 @@ const CatalogueCart = () => {
         }, 500);
       });
       return false;
-    } else if (calles === "" && envio != 1) {
+    } else if (
+      calles === "" &&
+      nombreEnvio.toLowerCase().includes("domicilio")
+    ) {
       Swal.fire({
         icon: "error",
         title: "Debe indicar entre que calles se encuentra la dirección",
@@ -1785,49 +1896,40 @@ const CatalogueCart = () => {
   };
   //#endregion
 
+  //#region Función para cuando selecciono un abono
+  const handleAbonoClick = (e) => {
+    const selectedIndex = e.target.selectedIndex;
+    const selectedOption = e.target.options[selectedIndex];
+
+    setAbono(e.target.value);
+    setNombreAbono(selectedOption.getAttribute("data-nombre"));
+  };
+  //#endregion
+
+  //#region Función para cuando selecciono un envio
+  const handleEnvioClick = (e) => {
+    const selectedIndex = e.target.selectedIndex;
+    const selectedOption = e.target.options[selectedIndex];
+
+    setEnvio(e.target.value);
+    setNombreEnvio(selectedOption.getAttribute("data-nombre"));
+    setAclaracionEnvio(selectedOption.getAttribute("data-aclaracion"));
+    setCostoEnvioDomicilio(Number(selectedOption.getAttribute("data-costo")));
+  };
+  //#endregion
+
   //#region Función para borrar que se eliga primero el tipo de entrega antes del abono
-  const handleAbonoClick = () => {
-    if (envio === "" && costoEnvioDomicilio > 0) {
+  const handleAbonoClickVerify = (event) => {
+    event.preventDefault();
+
+    if (envio === "") {
       Swal.fire({
         icon: "warning",
-        title:
-          "Primero debe indicar si quiere que se lo enviemos o si lo retira por el local",
+        title: "Primero debe indicar la forma de entrega",
         text: "Seleccione una opción",
         confirmButtonText: "Aceptar",
         confirmButtonColor: "#f8bb86",
       });
-    }
-  };
-  //#endregion
-
-  //#region Función para obtener el tipo de envío
-  const getTipoEnvio = (id) => {
-    switch (id) {
-      case "1":
-        return "Lo retiro por el local ($0)";
-      case "2":
-        return `Envío a domicilio (${costoEnvioDomicilio})`;
-      default:
-        return "Tipo de envio no especificado";
-    }
-  };
-  //#endregion
-
-  //#region Función para obtener el tipo de abono
-  const getTipoAbono = (id) => {
-    switch (id) {
-      case "1":
-        return "Efectivo";
-      case "2":
-        return "Transferencia";
-      case "3":
-        return "Tarjeta de débito";
-      case "4":
-        return "Tarjeta de crédito";
-      case "5":
-        return "Mercado Pago";
-      default:
-        return "Tipo de abono no especificado";
     }
   };
   //#endregion
@@ -2132,8 +2234,50 @@ const CatalogueCart = () => {
                               )} en productos al carrito para enviar el pedido.`,
                             confirmButtonText: "Aceptar",
                             cancelButtonText: "Ingresar código",
-                            showCancelButton: true,
+                            showCancelButton: codigo && codigo !== "",
                             confirmButtonColor: "#f8bb86",
+                            allowOutsideClick: false,
+                          }).then((result) => {
+                            if (result.isDismissed) {
+                              Swal.fire({
+                                title: "Ingrese el código",
+                                input: "text",
+                                inputAttributes: {
+                                  autocapitalize: "off",
+                                },
+                                showCancelButton: true,
+                                confirmButtonText: "Verificar",
+                                confirmButtonColor: "#40b142",
+                                cancelButtonText: "Cancelar",
+                                showLoaderOnConfirm: true,
+                                allowOutsideClick: false,
+                                preConfirm: (login) => {
+                                  return new Promise((resolve, reject) => {
+                                    if (login === codigo) {
+                                      resolve(); // Resolviendo la promesa para indicar que la validación fue exitosa
+                                    } else if (login === "") {
+                                      reject("Código vacio");
+                                    } else {
+                                      reject("Código incorrecto"); // Rechazando la promesa para indicar que la validación falló
+                                    }
+                                  }).catch((error) => {
+                                    Swal.showValidationMessage(error);
+                                  });
+                                },
+                              }).then((result) => {
+                                if (result.isConfirmed) {
+                                  Swal.fire({
+                                    title: "Código aplicado exitosamente",
+                                    icon: "success",
+                                    confirmButtonText: "Aceptar",
+                                    confirmButtonColor: "#a5dc86",
+                                    allowOutsideClick: true,
+                                  });
+
+                                  setCodigoExcento(true);
+                                }
+                              });
+                            }
                           });
 
                           return; // Detener el proceso si no hay suficientes productos
@@ -3321,28 +3465,40 @@ const CatalogueCart = () => {
                         name="envio"
                         id="envio"
                         value={envio}
-                        onChange={(e) => setEnvio(e.target.value)}
+                        onChange={handleEnvioClick}
                       >
                         <option hidden key={0} value="0">
-                          Seleccione una opción
+                          Seleccione una forma de entrega
                         </option>
-                        <option className="btn-option" value="1">
-                          Lo retiro por el local ($0)
-                        </option>
-                        {habilitadoEnvioDomicilio && (
-                          <option
-                            className="btn-option"
-                            hidden={costoEnvioDomicilio === 0}
-                            value="2"
-                          >
-                            Envío a domicilio (${costoEnvioDomicilio})
-                          </option>
-                        )}
+                        {listaFormasEntrega &&
+                          Array.from(listaFormasEntrega).map((opts, i) => {
+                            const shouldShowCatalogo = pathname.includes(
+                              "minorista"
+                            )
+                              ? opts.disponibilidadCatalogo !== 2
+                              : pathname.includes("mayorista")
+                              ? opts.disponibilidadCatalogo !== 1
+                              : true;
+
+                            return shouldShowCatalogo ? (
+                              <option
+                                className="btn-option"
+                                key={i}
+                                value={opts.idEnvio}
+                                data-nombre={opts.nombre}
+                                data-aclaracion={opts.aclaracion}
+                                data-costo={opts.costo}
+                              >
+                                {opts.nombre} (${opts.costo})
+                                {opts.aclaracion ? ` - ${opts.aclaracion}` : ""}
+                              </option>
+                            ) : null;
+                          })}
                       </select>
                     </div>
 
-                    {/* Renderizar los campos de dirección y entre calles solo si no es "Lo retiro por el local" */}
-                    {envio == 2 && (
+                    {/* Renderizar los campos de dirección y entre calles solo si la forma de entrega es con envio a domicilio */}
+                    {nombreEnvio.toLowerCase().includes("domicilio") && (
                       <>
                         <label className="label">Dirección:</label>
                         <div className="form-group-input desc-input">
@@ -3372,38 +3528,40 @@ const CatalogueCart = () => {
                       </>
                     )}
 
-                    {envio == 1 && direccionAuto && direccionAuto !== "" && (
-                      <>
-                        <label className="label">Dirección:</label>
-                        <div className="form-group-input desc-input">
-                          <input
-                            type="text"
-                            className="input2"
-                            id="direccionAuto"
-                            value={direccionAuto}
-                            style={{
-                              backgroundColor: "#d3d3d3",
-                              cursor: "default",
-                            }}
-                            readOnly
-                          />
+                    {nombreEnvio.toLowerCase().includes("local") &&
+                      direccionAuto &&
+                      direccionAuto !== "" && (
+                        <>
+                          <label className="label">Dirección:</label>
+                          <div className="form-group-input desc-input">
+                            <input
+                              type="text"
+                              className="input2"
+                              id="direccionAuto"
+                              value={direccionAuto}
+                              style={{
+                                backgroundColor: "#d3d3d3",
+                                cursor: "default",
+                              }}
+                              readOnly
+                            />
 
-                          {urlDireccionAuto && urlDireccionAuto !== "" && (
-                            <a
-                              href={urlDireccionAuto ? urlDireccionAuto : "#"}
-                              target={urlDireccionAuto ? "_blank" : ""}
-                              rel={
-                                urlDireccionAuto ? "noopener noreferrer" : ""
-                              }
-                            >
-                              <Location className="location-btn" />
-                            </a>
-                          )}
-                        </div>
-                      </>
-                    )}
+                            {urlDireccionAuto && urlDireccionAuto !== "" && (
+                              <a
+                                href={urlDireccionAuto ? urlDireccionAuto : "#"}
+                                target={urlDireccionAuto ? "_blank" : ""}
+                                rel={
+                                  urlDireccionAuto ? "noopener noreferrer" : ""
+                                }
+                              >
+                                <Location className="location-btn" />
+                              </a>
+                            )}
+                          </div>
+                        </>
+                      )}
 
-                    {envio == 1 &&
+                    {nombreEnvio.toLowerCase().includes("local") &&
                       horariosAtencion &&
                       horariosAtencion !== "" && (
                         <>
@@ -3430,12 +3588,12 @@ const CatalogueCart = () => {
                     <div className="form-group-input nombre-input">
                       <select
                         className="input2"
-                        onClick={handleAbonoClick}
+                        onClick={handleAbonoClickVerify}
                         style={{ cursor: "pointer" }}
                         name="abono"
                         id="abono"
                         value={abono}
-                        onChange={(e) => setAbono(e.target.value)}
+                        onChange={handleAbonoClick}
                       >
                         <option hidden key={0} value="0">
                           Seleccione un medio de pago
@@ -3443,8 +3601,12 @@ const CatalogueCart = () => {
                         {listaNombresAbonos &&
                           Array.from(listaNombresAbonos).map((opts, i) => {
                             const shouldShowEnvio =
-                              (envio === "1" && opts.disponibilidad !== 2) ||
-                              (envio === "2" && opts.disponibilidad !== 1) ||
+                              (nombreEnvio.toLowerCase().includes("local") &&
+                                opts.disponibilidad !== 2) ||
+                              (nombreEnvio
+                                .toLowerCase()
+                                .includes("domicilio") &&
+                                opts.disponibilidad !== 1) ||
                               opts.disponibilidad === 3;
 
                             const shouldShowCatalogo = pathname.includes(
@@ -3462,6 +3624,7 @@ const CatalogueCart = () => {
                               <option
                                 className="btn-option"
                                 key={i}
+                                data-nombre={opts.nombre}
                                 value={opts.idMetodoPago}
                               >
                                 {opts.nombre}
@@ -3471,43 +3634,47 @@ const CatalogueCart = () => {
                       </select>
                     </div>
 
-                    {abono == 2 && cbu && cbu !== "" && (
-                      <>
-                        <label className="label">CBU:</label>
-                        <div className="form-group-input desc-input">
-                          <input
-                            type="text"
-                            className="input2"
-                            id="cbu"
-                            value={cbu}
-                            style={{
-                              backgroundColor: "#d3d3d3",
-                              cursor: "default",
-                            }}
-                            readOnly
-                          />
-                        </div>
-                      </>
-                    )}
+                    {nombreAbono.toLowerCase() == "transferencia" &&
+                      cbu &&
+                      cbu !== "" && (
+                        <>
+                          <label className="label">CBU:</label>
+                          <div className="form-group-input desc-input">
+                            <input
+                              type="text"
+                              className="input2"
+                              id="cbu"
+                              value={cbu}
+                              style={{
+                                backgroundColor: "#d3d3d3",
+                                cursor: "default",
+                              }}
+                              readOnly
+                            />
+                          </div>
+                        </>
+                      )}
 
-                    {abono == 2 && alias && alias !== "" && (
-                      <>
-                        <label className="label">ALIAS:</label>
-                        <div className="form-group-input desc-input">
-                          <input
-                            type="text"
-                            className="input2"
-                            id="alias"
-                            value={alias}
-                            style={{
-                              backgroundColor: "#d3d3d3",
-                              cursor: "default",
-                            }}
-                            readOnly
-                          />
-                        </div>
-                      </>
-                    )}
+                    {nombreAbono.toLowerCase() == "transferencia" &&
+                      alias &&
+                      alias !== "" && (
+                        <>
+                          <label className="label">ALIAS:</label>
+                          <div className="form-group-input desc-input">
+                            <input
+                              type="text"
+                              className="input2"
+                              id="alias"
+                              value={alias}
+                              style={{
+                                backgroundColor: "#d3d3d3",
+                                cursor: "default",
+                              }}
+                              readOnly
+                            />
+                          </div>
+                        </>
+                      )}
 
                     <label className="label selects" htmlFor="vendedor">
                       Vendedor:
@@ -3543,26 +3710,24 @@ const CatalogueCart = () => {
                     <b>Cantidad total de productos: {totalQuantity}</b>
 
                     {/* Mostrar el costo de envío solo si la opción es "Envío a domicilio" */}
-                    {envio == 2 &&
-                      costoEnvioDomicilio > 0 &&
-                      habilitadoEnvioDomicilio === true && (
-                        <>
-                          <b>
-                            Subtotal: $
-                            {(calculateTotal() - costoEnvioDomicilio)
-                              .toLocaleString("es-ES", {
-                                minimumFractionDigits: 0,
-                                maximumFractionDigits: 2,
-                              })
-                              .replace(",", ".")
-                              .replace(/\B(?=(\d{3})+(?!\d))/g, ".")}
-                          </b>
+                    {costoEnvioDomicilio > 0 && (
+                      <>
+                        <b>
+                          Subtotal: $
+                          {(calculateTotal() - costoEnvioDomicilio)
+                            .toLocaleString("es-ES", {
+                              minimumFractionDigits: 0,
+                              maximumFractionDigits: 2,
+                            })
+                            .replace(",", ".")
+                            .replace(/\B(?=(\d{3})+(?!\d))/g, ".")}
+                        </b>
 
-                          <b className="costo-envio">
-                            Costo de envío: ${costoEnvioDomicilio}
-                          </b>
-                        </>
-                      )}
+                        <b className="costo-envio">
+                          Costo de envío: ${costoEnvioDomicilio}
+                        </b>
+                      </>
+                    )}
 
                     <b>
                       Total: $
@@ -3577,10 +3742,20 @@ const CatalogueCart = () => {
                   </div>
                 </form>
 
-                {abono == 5 ? (
+                {nombreAbono.toLowerCase() == "mercado pago" ? (
                   <div>
                     {showWallet ? (
-                      <Wallet initialization={{ preferenceId }} />
+                      <>
+                        {showWalletLoader == true && (
+                          <div className="loading-mercadopago-div">
+                            <Loader />
+                          </div>
+                        )}
+                        <Wallet
+                          initialization={{ preferenceId: preferenceId }}
+                          onReady={handleOnReady}
+                        />
+                      </>
                     ) : (
                       // Display "Pagar y enviar pedido" button
                       <div id="div-btn-save">
@@ -3647,8 +3822,12 @@ const CatalogueCart = () => {
                     calles,
                     telefono,
                     abono,
+                    nombreAbono,
                     vendedor,
                     envio,
+                    nombreEnvio,
+                    aclaracionEnvio,
+                    costoEnvioDomicilio,
                   };
 
                   // Convert the object to a JSON string and store it in localStorage

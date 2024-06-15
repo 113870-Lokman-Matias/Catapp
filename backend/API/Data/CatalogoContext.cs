@@ -25,7 +25,6 @@ namespace API.Data
         public virtual DbSet<DetallesStock> DetallesStocks { get; set; } = null!;
         public virtual DbSet<Divisa> Divisas { get; set; } = null!;
         public virtual DbSet<Envio> Envios { get; set; } = null!;
-        public virtual DbSet<MetodosEntrega> MetodosEntregas { get; set; } = null!;
         public virtual DbSet<MetodosPago> MetodosPagos { get; set; } = null!;
         public virtual DbSet<Pedido> Pedidos { get; set; } = null!;
         public virtual DbSet<Producto> Productos { get; set; } = null!;
@@ -218,25 +217,19 @@ namespace API.Data
 
                 entity.Property(e => e.IdEnvio).HasColumnName("id_envio");
 
+                entity.Property(e => e.Aclaracion).HasColumnName("aclaracion");
+
+                entity.Property(e => e.Costo).HasColumnName("costo");
+
+                entity.Property(e => e.DisponibilidadCatalogo).HasColumnName("disponibilidad_catalogo");
+
                 entity.Property(e => e.FechaModificacion).HasColumnName("fecha_modificacion");
 
                 entity.Property(e => e.Habilitado).HasColumnName("habilitado");
 
-                entity.Property(e => e.Precio).HasColumnName("precio");
+                entity.Property(e => e.Nombre).HasColumnName("nombre");
 
                 entity.Property(e => e.UltimoModificador).HasColumnName("ultimo_modificador");
-            });
-
-            modelBuilder.Entity<MetodosEntrega>(entity =>
-            {
-                entity.HasKey(e => e.IdMetodoEntrega)
-                    .HasName("metodos_entrega_pkey");
-
-                entity.ToTable("metodos_entrega");
-
-                entity.Property(e => e.IdMetodoEntrega).HasColumnName("id_metodo_entrega");
-
-                entity.Property(e => e.Nombre).HasColumnName("nombre");
             });
 
             modelBuilder.Entity<MetodosPago>(entity =>

@@ -296,9 +296,12 @@ ALTER SEQUENCE public.divisas_id_divisa_seq OWNED BY public.divisas.id_divisa;
 CREATE TABLE public.envios (
     id_envio integer NOT NULL,
     habilitado boolean DEFAULT false NOT NULL,
-    precio real DEFAULT 0 NOT NULL,
+    costo real DEFAULT 0 NOT NULL,
     fecha_modificacion timestamp with time zone NOT NULL,
-    ultimo_modificador text NOT NULL
+    ultimo_modificador text NOT NULL,
+    nombre text NOT NULL,
+    disponibilidad_catalogo integer NOT NULL,
+    aclaracion text
 );
 
 
@@ -324,40 +327,6 @@ ALTER TABLE public.envios_id_envio_seq OWNER TO postgres;
 --
 
 ALTER SEQUENCE public.envios_id_envio_seq OWNED BY public.envios.id_envio;
-
-
---
--- Name: metodos_entrega; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public.metodos_entrega (
-    id_metodo_entrega integer NOT NULL,
-    nombre text NOT NULL
-);
-
-
-ALTER TABLE public.metodos_entrega OWNER TO postgres;
-
---
--- Name: metodos_entrega_id_metodo_entrega_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
-CREATE SEQUENCE public.metodos_entrega_id_metodo_entrega_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER TABLE public.metodos_entrega_id_metodo_entrega_seq OWNER TO postgres;
-
---
--- Name: metodos_entrega_id_metodo_entrega_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
---
-
-ALTER SEQUENCE public.metodos_entrega_id_metodo_entrega_seq OWNED BY public.metodos_entrega.id_metodo_entrega;
 
 
 --
@@ -670,13 +639,6 @@ ALTER TABLE ONLY public.envios ALTER COLUMN id_envio SET DEFAULT nextval('public
 
 
 --
--- Name: metodos_entrega id_metodo_entrega; Type: DEFAULT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.metodos_entrega ALTER COLUMN id_metodo_entrega SET DEFAULT nextval('public.metodos_entrega_id_metodo_entrega_seq'::regclass);
-
-
---
 -- Name: metodos_pago id_metodo_pago; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -781,18 +743,10 @@ COPY public.divisas (id_divisa, nombre) FROM stdin;
 -- Data for Name: envios; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.envios (id_envio, habilitado, precio, fecha_modificacion, ultimo_modificador) FROM stdin;
-2	f	0	2024-03-25 14:00:00-03	SuperAdmin
-\.
-
-
---
--- Data for Name: metodos_entrega; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.metodos_entrega (id_metodo_entrega, nombre) FROM stdin;
-1	Lo retiro por el local
-2	Envío a domicilio
+COPY public.envios (id_envio, habilitado, costo, fecha_modificacion, ultimo_modificador, nombre, disponibilidad_catalogo, aclaracion) FROM stdin;
+1	t	0	2024-03-25 14:00:00-03	SuperAdmin	Retiro por el local	3	\N
+2	t	0	2024-03-25 14:00:00-03	SuperAdmin	Envío a domicilio	1	Dentro anillo de circunvalación
+3	t	0	2024-03-25 14:00:00-03	SuperAdmin	Envío a domicilio	1	Fuera anillo de circunvalación
 \.
 
 
@@ -920,14 +874,7 @@ SELECT pg_catalog.setval('public.divisas_id_divisa_seq', 2, true);
 -- Name: envios_id_envio_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.envios_id_envio_seq', 2, true);
-
-
---
--- Name: metodos_entrega_id_metodo_entrega_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('public.metodos_entrega_id_metodo_entrega_seq', 2, true);
+SELECT pg_catalog.setval('public.envios_id_envio_seq', 3, true);
 
 
 --
@@ -1034,14 +981,6 @@ ALTER TABLE ONLY public.divisas
 
 ALTER TABLE ONLY public.envios
     ADD CONSTRAINT envios_pkey PRIMARY KEY (id_envio);
-
-
---
--- Name: metodos_entrega metodos_entrega_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.metodos_entrega
-    ADD CONSTRAINT metodos_entrega_pkey PRIMARY KEY (id_metodo_entrega);
 
 
 --
@@ -1214,7 +1153,7 @@ ALTER TABLE ONLY public.productos
 --
 
 ALTER TABLE ONLY public.pedidos
-    ADD CONSTRAINT fk_metodo_entrega FOREIGN KEY (id_metodo_entrega) REFERENCES public.metodos_entrega(id_metodo_entrega) NOT VALID;
+    ADD CONSTRAINT fk_metodo_entrega FOREIGN KEY (id_metodo_entrega) REFERENCES public.envios(id_envio) NOT VALID;
 
 
 --

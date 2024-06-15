@@ -109,7 +109,7 @@ namespace API.Services.PedidoServices.Commands.CreatePedidoCommand
 
     private async Task<bool> MetodoEntregaExiste(int id, CancellationToken token)
     {
-      bool existe = await _context.MetodosEntregas.AnyAsync(p => p.IdMetodoEntrega == id);
+      bool existe = await _context.Envios.AnyAsync(p => p.IdEnvio == id);
       return existe;
     }
 
