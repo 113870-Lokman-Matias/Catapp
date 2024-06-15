@@ -134,8 +134,22 @@ function SubcategoryManager() {
     setFilterName("");
     setFilterType("");
     setTitle("Detalles de Subcategorías");
-    document.getElementById("clear-filter").style.display = "none";
-    document.getElementById("clear-filter2").style.display = "none"; // esconde del DOM el boton de limpiar filtros
+
+    const clearFilter = document.getElementById("clear-filter");
+    const clearFilter2 = document.getElementById("clear-filter2");
+
+    if (clearFilter) {
+      clearFilter.style.display = "none";
+    } else {
+      console.log("clear-filter element not found");
+    }
+
+    if (clearFilter2) {
+      clearFilter2.style.display = "none";
+    } else {
+      console.log("clear-filter2 element not found");
+    }
+
     setCurrentPage(1);
     if (hidden === true) {
       setHidden(false);
@@ -781,7 +795,7 @@ function SubcategoryManager() {
 
           {isLoading === false && (
             <div className="filters-left2">
-              <div className="info-container">
+              <div className="info-container subcategory-image-text">
                 <img
                   src={category.urlImagen}
                   onClick={() =>
