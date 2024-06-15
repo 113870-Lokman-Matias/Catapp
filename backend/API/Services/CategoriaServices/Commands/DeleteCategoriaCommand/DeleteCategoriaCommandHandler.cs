@@ -5,6 +5,7 @@ using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
 using FluentValidation;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace API.Services.CategoriaServices.Commands.DeleteCategoriaCommand
 {
@@ -39,7 +40,9 @@ namespace API.Services.CategoriaServices.Commands.DeleteCategoriaCommand
         }
         else
         {
-          var CategoriaToDelete = await _context.Categorias.FindAsync(request.IdCategoria);
+          var CategoriaToDelete = await _context.Categorias
+                .Include(c => c.Subcategoria) // Incluir subcategorías para eliminación en cascada
+                .FirstOrDefaultAsync(c => c.IdCategoria == request.IdCategoria);
 
           if (CategoriaToDelete == null)
           {
@@ -69,6 +72,7 @@ namespace API.Services.CategoriaServices.Commands.DeleteCategoriaCommand
             // Verificar si se eliminó correctamente la imagen
             if (deletionResult.StatusCode == System.Net.HttpStatusCode.OK)
             {
+              _context.Subcategorias.RemoveRange(CategoriaToDelete.Subcategoria);
 
               _context.Categorias.Remove(CategoriaToDelete);
               await _context.SaveChangesAsync();
