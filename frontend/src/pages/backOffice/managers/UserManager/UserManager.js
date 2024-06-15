@@ -85,6 +85,7 @@ function UserManager() {
   const [filterType, setFilterType] = useState("");
 
   const [inactive, setInactive] = useState(false);
+  const [rolFiltrado, setRolFiltrado] = useState("");
 
   const token = localStorage.getItem("token"); // Obtener el token del localStorage
   const headers = {
@@ -257,7 +258,21 @@ function UserManager() {
               setFilterName("Inactivo");
               setFilterType("inactive");
               setCurrentPage(1);
+            } else if (filterType === "role") {
+              const result = prevUsers.filter((user) => {
+                return user.rol === rolFiltrado;
+              });
+
+              setTitle(`Detalles de Usuarios con rol ${rolFiltrado}`);
+
+              setUsers(result);
+              document.getElementById("clear-filter").style.display = "flex";
+              document.getElementById("clear-filter2").style.display = "flex";
+              setFilterName(rolFiltrado);
+              setFilterType("role");
+              setCurrentPage(1);
             }
+
             if (filterType === "other") {
               setUsers(prevUsers);
             } else {
@@ -368,6 +383,19 @@ function UserManager() {
               setFilterName("Inactivo");
               setFilterType("inactive");
               setCurrentPage(1);
+            } else if (filterType === "role") {
+              const result = prevUsers.filter((user) => {
+                return user.rol === rolFiltrado;
+              });
+
+              setTitle(`Detalles de Usuarios con rol ${rolFiltrado}`);
+
+              setUsers(result);
+              document.getElementById("clear-filter").style.display = "flex";
+              document.getElementById("clear-filter2").style.display = "flex";
+              setFilterName(rolFiltrado);
+              setFilterType("role");
+              setCurrentPage(1);
             }
             if (filterType === "other") {
               setUsers(prevUsers);
@@ -393,6 +421,7 @@ function UserManager() {
     setUsers(originalUsersList); // trae la lista de usuarios original, sin ningun filtro
     setFilterName("");
     setFilterType("");
+    setRolFiltrado("");
     if (pathname.includes("gerentes")) {
       setTitle("Detalles de Gerentes");
     } else if (pathname.includes("supervisores")) {
@@ -436,8 +465,31 @@ function UserManager() {
       setFilterType("inactive");
       setCurrentPage(1);
       window.scrollTo(0, 0);
+      setRolFiltrado("");
     } else {
       ClearFilter();
+    }
+  };
+  //#endregion
+
+  //#region Función para filtrar pedidos por tipo de pedido
+  const filterResultRole = async (role) => {
+    try {
+      setUsers(originalUsersList);
+      const result = originalUsersList.filter((originalUsersList) => {
+        return originalUsersList.rol === role;
+      });
+      setUsers(result);
+
+      setTitle(`Detalles de usuarios con rol ${role}`);
+      document.getElementById("clear-filter").style.display = "flex";
+      document.getElementById("clear-filter2").style.display = "flex";
+      setFilterName(role);
+      setFilterType("role");
+      setCurrentPage(1);
+      window.scrollTo(0, 0);
+    } catch {
+      console.log("Error al filtrar usuarios por rol");
     }
   };
   //#endregion
@@ -1059,7 +1111,21 @@ function UserManager() {
             setFilterName("Inactivo");
             setFilterType("inactive");
             setCurrentPage(1);
+          } else if (filterType === "role") {
+            const result = prevUsers.filter((user) => {
+              return user.rol === rolFiltrado;
+            });
+
+            setTitle(`Detalles de Usuarios con rol ${rolFiltrado}`);
+
+            setUsers(result);
+            document.getElementById("clear-filter").style.display = "flex";
+            document.getElementById("clear-filter2").style.display = "flex";
+            setFilterName(rolFiltrado);
+            setFilterType("role");
+            setCurrentPage(1);
           }
+
           if (filterType === "other") {
             setUsers(prevUsers);
           } else {
@@ -1527,7 +1593,7 @@ function UserManager() {
               <div className="modal-content">
                 <div className="modal-header2">
                   <h1 className="modal-title2" id="exampleModalLabel">
-                    Filtro
+                    Filtros
                   </h1>
                   <button
                     id="clear-filter2"
@@ -1541,6 +1607,53 @@ function UserManager() {
                 <div className="modal-body">
                   <div className="container">
                     <p className="filter-separator separator-margin"></p>
+
+                    {pathname.includes("usuarios") && (
+                      <>
+                        <div
+                          className="filter-btn-container"
+                          data-bs-toggle="collapse"
+                          href="#collapseCategory"
+                          role="button"
+                          aria-expanded="false"
+                          aria-controls="collapseCategory"
+                        >
+                          <p className="filter-btn-name">ROLES</p>
+
+                          <div className="form-group-input">
+                            <select
+                              className="input2"
+                              style={{ cursor: "pointer" }}
+                              name="tipo"
+                              id="tipo"
+                              value={rolFiltrado}
+                              onChange={(e) => {
+                                setRolFiltrado(e.target.value);
+                                filterResultRole(e.target.value);
+                              }}
+                            >
+                              <option hidden key={0} value="0">
+                                Seleccione un rol
+                              </option>
+                              <option className="btn-option" value="Admin">
+                                Admin
+                              </option>
+                              <option className="btn-option" value="Gerente">
+                                Gerente
+                              </option>
+                              <option className="btn-option" value="Supervisor">
+                                Supervisor
+                              </option>
+                              <option className="btn-option" value="Vendedor">
+                                Vendedor
+                              </option>
+                            </select>
+                          </div>
+                        </div>
+
+                        <p className="filter-separator"></p>
+                      </>
+                    )}
 
                     <div className="filter-btn-container">
                       <p className="filter-btn-name">INACTIVO</p>
@@ -1601,7 +1714,7 @@ function UserManager() {
                     <p className="filter-btn">
                       <Filter className="filter-svg2" />
                     </p>
-                    <p className="filter-title2">Filtro</p>
+                    <p className="filter-title2">Filtros</p>
                   </div>
                 </button>
 
