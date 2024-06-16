@@ -19,6 +19,7 @@ import {
   GetProductsByCategory,
   GetProductsByQuery,
   GetProductsBySubcategory,
+  GetProductById,
 } from "../../../services/ProductService";
 import { GetSubcategoriesByCategory } from "../../../services/SubcategoryService";
 import { PayWithMercadoPago } from "../../../services/PaymentService";
@@ -286,6 +287,93 @@ const CatalogueCart = () => {
             }
           }
         }
+
+        const isMayorista = pathname.includes("mayorista");
+        const isMinorista = pathname.includes("minorista");
+
+        if (isMayorista) {
+          setClientType("Mayorista");
+          await GetCategoriesMayorista(setCategories);
+        } else if (isMinorista) {
+          setClientType("Minorista");
+          await GetCategoriesMinorista(setCategories);
+        }
+
+        const storedCartKey = isMayorista
+          ? "shoppingCartMayorista"
+          : "shoppingCartMinorista";
+        const storedCart = localStorage.getItem(storedCartKey);
+
+        let newTotalQuantity = 0;
+
+        // Actualizar el carrito con los datos más recientes
+        if (storedCart) {
+          const parsedCart = JSON.parse(storedCart);
+          const updatedCart = {};
+
+          for (const productId in parsedCart) {
+            const product = await GetProductById(productId);
+            if (product) {
+              // Verificar si el producto tiene stock transitorio mayor que cero
+              if (product.stockTransitorio > 0) {
+                let updatedQuantity = parsedCart[productId].cantidad;
+
+                // Verificar si la cantidad en el carrito es mayor que la cantidad disponible
+                if (updatedQuantity > product.stockTransitorio) {
+                  // Ajustar la cantidad en el carrito al stock transitorio disponible
+                  updatedQuantity = product.stockTransitorio;
+
+                  // Mostrar mensaje de eliminación con SweetAlert
+                  const quantityToRemove =
+                    parsedCart[productId].cantidad - updatedQuantity;
+                  Swal.fire({
+                    icon: "warning",
+                    title: "Cantidad Ajustada",
+                    imageUrl: product.urlImagen,
+                    imageWidth: 150,
+                    imageHeight: 150,
+                    imageAlt: "Producto ajustado",
+                    text: `Se han eliminado ${quantityToRemove} unidades del producto "${product.nombre}" del carrito debido a falta de stock.`,
+                    confirmButtonText: "Aceptar",
+                    confirmButtonColor: "#f8bb86",
+                    allowOutsideClick: false,
+                  });
+                }
+
+                updatedCart[productId] = {
+                  ...product,
+                  cantidad: updatedQuantity,
+                  aclaraciones: parsedCart[productId].aclaraciones,
+                };
+
+                // Actualizar el totalQuantity sumando la cantidad actualizada de este producto en el carrito
+                newTotalQuantity += updatedQuantity;
+              } else {
+                // Mostrar mensaje de eliminación con SweetAlert
+                Swal.fire({
+                  icon: "warning",
+                  title: "Producto Agotado",
+                  imageUrl: product.urlImagen,
+                  imageWidth: 150,
+                  imageHeight: 150,
+                  imageAlt: "Producto agotado",
+                  text: `El producto "${product.nombre}" ha sido eliminado del carrito debido a falta de stock.`,
+                  confirmButtonText: "Aceptar",
+                  confirmButtonColor: "#f8bb86",
+                  allowOutsideClick: false,
+                });
+              }
+            }
+          }
+
+          // Actualizar el carrito y el local storage con los productos actualizados
+          setCart(updatedCart);
+          updateLocalStorage(updatedCart);
+
+          // Actualizar el totalQuantity en el estado
+          setTotalQuantity(newTotalQuantity);
+        }
+
         // Actualizar las categorías después de actualizar productos
         if (pathname.includes("mayorista")) {
           GetCategoriesMayorista(setCategories);

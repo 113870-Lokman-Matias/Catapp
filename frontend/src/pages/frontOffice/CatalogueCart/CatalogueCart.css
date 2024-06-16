@@ -49,7 +49,7 @@
 }
 
 .sin-stock {
-  background-color: #808080e0;
+  background-color: #808080e0 !important;
   display: flex;
   justify-content: center;
   flex-direction: column;

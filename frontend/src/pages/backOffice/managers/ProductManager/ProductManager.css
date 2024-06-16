@@ -187,14 +187,14 @@
     display: flex;
     flex-direction: column;
   }
+
+  .stock-div {
+    flex-direction: column;
+  }
 }
 
 @media (max-width: 800px) {
   .header-excel {
     width: auto;
-  }
-
-  .stock-div {
-    flex-direction: column;
   }
 }

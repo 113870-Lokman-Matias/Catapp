@@ -43,13 +43,27 @@ namespace API.Services.ProductoServices.Queries.GetProductoByIdQuery
 
                     var producto = await _context.Productos
                     .Where(x => x.IdProducto == productoId)
+                    .Include(x => x.IdDivisaNavigation)
+                    .Include(x => x.IdCategoriaNavigation)
+                    .Include(x => x.IdSubcategoriaNavigation)
                     .Select(x => new ProductoDto
                     {
                         IdProducto = x.IdProducto,
                         Nombre = x.Nombre,
+                        Descripcion = x.Descripcion,
+                        Divisa = x.IdDivisaNavigation.Nombre,
+                        Precio = x.Precio,
+                        PorcentajeMinorista = x.PorcentajeMinorista,
+                        PorcentajeMayorista = x.PorcentajeMayorista,
+                        PrecioMinorista = x.PrecioMinorista,
+                        PrecioMayorista = x.PrecioMayorista,
                         Stock = x.Stock,
+                        NombreCategoria = x.IdCategoriaNavigation.Nombre,
+                        IdImagen = x.IdImagen,
                         UrlImagen = x.UrlImagen,
-                        StockTransitorio = x.StockTransitorio
+                        IdDivisa = x.IdDivisa,
+                        StockTransitorio = x.StockTransitorio,
+                        NombreSubcategoria = x.IdSubcategoriaNavigation.Nombre
                     })
                     .FirstOrDefaultAsync();
 
@@ -66,17 +80,7 @@ namespace API.Services.ProductoServices.Queries.GetProductoByIdQuery
                     }
                     else
                     {
-                        var productoDto = new ProductoDto
-                        {
-                            IdProducto = producto.IdProducto,
-                            Nombre = producto.Nombre,
-                            Stock = producto.Stock,
-                            UrlImagen = producto.UrlImagen,
-                            StockTransitorio = producto.StockTransitorio,
-                            StatusCode = StatusCodes.Status200OK,
-                            IsSuccess = true,
-                            ErrorMessage = ""
-                        };
+                        var productoDto = _mapper.Map<ProductoDto>(producto);
 
                         return productoDto;
                     }
