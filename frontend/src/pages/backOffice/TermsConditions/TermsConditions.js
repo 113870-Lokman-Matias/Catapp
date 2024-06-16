@@ -15,19 +15,14 @@ function TermsConditions() {
       <section className="general-container">
         <div className="general-content">
           <div className="title-header mb">
-            <Link
-              to="/panel"
-              className="btn btn-info btn-back"
-            >
+            <Link to="/panel" className="btn btn-info btn-back">
               <div className="btn-back-content">
                 <Back className="back" />
                 <p className="p-back">Regresar</p>
               </div>
             </Link>
 
-            <h2 className="title title-general">
-              Términos y condiciones
-            </h2>
+            <h2 className="title title-general">Términos y condiciones</h2>
           </div>
           <div className="terms-content">
             <p>
@@ -144,6 +139,23 @@ function TermsConditions() {
                 sobre la privacidad de los Datos Personales y casos en los que
                 será revelada la información personal, se pueden consultar
                 nuestras políticas de privacidad.
+              </p>
+            </div>
+
+            <div className="one-term">
+              <h3 className="subtitle">Protección de Datos Personales:</h3>
+              <p>
+                En Catapp, nos basamos en el concepto de Privacy By Default, lo
+                que significa que la configuración de privacidad está activada
+                de forma predeterminada. Los usuarios tienen la opción de
+                desactivar o eliminar su información personal en cualquier
+                momento. La configuración de privacidad de Catapp está diseñada
+                para minimizar la recopilación de datos personales a lo esencial
+                necesario para el funcionamiento de la aplicación, incluyendo la
+                información básica requerida para autenticar al usuario y
+                proporcionar los servicios de manera segura. Además, Catapp
+                garantiza que los datos personales de los usuarios puedan ser
+                eliminados completamente si deciden dejar de usar la aplicación.
               </p>
             </div>
           </div>
