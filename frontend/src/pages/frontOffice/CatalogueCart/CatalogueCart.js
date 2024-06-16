@@ -310,6 +310,7 @@ const CatalogueCart = () => {
         if (storedCart) {
           const parsedCart = JSON.parse(storedCart);
           const updatedCart = {};
+          const updatedProductQuantities = {};
 
           for (const productId in parsedCart) {
             const product = await GetProductById(productId);
@@ -333,7 +334,13 @@ const CatalogueCart = () => {
                     imageWidth: 150,
                     imageHeight: 150,
                     imageAlt: "Producto ajustado",
-                    text: `Se han eliminado ${quantityToRemove} unidades del producto "${product.nombre}" del carrito debido a falta de stock.`,
+                    text: `Se ha${
+                      quantityToRemove > 1 ? "n" : ""
+                    } eliminado ${quantityToRemove} unidad${
+                      quantityToRemove > 1 ? "es" : ""
+                    } del producto "${
+                      product.nombre
+                    }" del carrito debido a falta de stock.`,
                     confirmButtonText: "Aceptar",
                     confirmButtonColor: "#f8bb86",
                     allowOutsideClick: false,
@@ -345,6 +352,7 @@ const CatalogueCart = () => {
                   cantidad: updatedQuantity,
                   aclaraciones: parsedCart[productId].aclaraciones,
                 };
+                updatedProductQuantities[productId] = updatedQuantity;
 
                 // Actualizar el totalQuantity sumando la cantidad actualizada de este producto en el carrito
                 newTotalQuantity += updatedQuantity;
@@ -362,6 +370,7 @@ const CatalogueCart = () => {
                   confirmButtonColor: "#f8bb86",
                   allowOutsideClick: false,
                 });
+                updatedProductQuantities[productId] = 0;
               }
             }
           }
@@ -372,6 +381,7 @@ const CatalogueCart = () => {
 
           // Actualizar el totalQuantity en el estado
           setTotalQuantity(newTotalQuantity);
+          setProductQuantities(updatedProductQuantities);
         }
 
         // Actualizar las categorías después de actualizar productos
@@ -455,6 +465,93 @@ const CatalogueCart = () => {
           }
         }
         // Actualizar las categorías después de actualizar productos
+        const isMayorista = pathname.includes("mayorista");
+        const isMinorista = pathname.includes("minorista");
+
+        if (isMayorista) {
+          setClientType("Mayorista");
+          await GetCategoriesMayorista(setCategories);
+        } else if (isMinorista) {
+          setClientType("Minorista");
+          await GetCategoriesMinorista(setCategories);
+        }
+
+        const storedCartKey = isMayorista
+          ? "shoppingCartMayorista"
+          : "shoppingCartMinorista";
+        const storedCart = localStorage.getItem(storedCartKey);
+
+        let newTotalQuantity = 0;
+
+        // Actualizar el carrito con los datos más recientes
+        if (storedCart) {
+          const parsedCart = JSON.parse(storedCart);
+          const updatedCart = {};
+          const updatedProductQuantities = {};
+
+          for (const productId in parsedCart) {
+            const product = await GetProductById(productId);
+            if (product) {
+              if (product.stockTransitorio > 0) {
+                let updatedQuantity = parsedCart[productId].cantidad;
+
+                if (updatedQuantity > product.stockTransitorio) {
+                  updatedQuantity = product.stockTransitorio;
+
+                  const quantityToRemove =
+                    parsedCart[productId].cantidad - updatedQuantity;
+                  Swal.fire({
+                    icon: "warning",
+                    title: "Cantidad Ajustada",
+                    imageUrl: product.urlImagen,
+                    imageWidth: 150,
+                    imageHeight: 150,
+                    imageAlt: "Producto ajustado",
+                    text: `Se ha${
+                      quantityToRemove > 1 ? "n" : ""
+                    } eliminado ${quantityToRemove} unidad${
+                      quantityToRemove > 1 ? "es" : ""
+                    } del producto "${
+                      product.nombre
+                    }" del carrito debido a falta de stock.`,
+                    confirmButtonText: "Aceptar",
+                    confirmButtonColor: "#f8bb86",
+                    allowOutsideClick: false,
+                  });
+                }
+
+                updatedCart[productId] = {
+                  ...product,
+                  cantidad: updatedQuantity,
+                  aclaraciones: parsedCart[productId].aclaraciones,
+                };
+                updatedProductQuantities[productId] = updatedQuantity;
+
+                newTotalQuantity += updatedQuantity;
+              } else {
+                Swal.fire({
+                  icon: "warning",
+                  title: "Producto Agotado",
+                  imageUrl: product.urlImagen,
+                  imageWidth: 150,
+                  imageHeight: 150,
+                  imageAlt: "Producto agotado",
+                  text: `El producto "${product.nombre}" ha sido eliminado del carrito debido a falta de stock.`,
+                  confirmButtonText: "Aceptar",
+                  confirmButtonColor: "#f8bb86",
+                  allowOutsideClick: false,
+                });
+                updatedProductQuantities[productId] = 0;
+              }
+            }
+          }
+
+          setCart(updatedCart);
+          updateLocalStorage(updatedCart);
+          setTotalQuantity(newTotalQuantity);
+          setProductQuantities(updatedProductQuantities);
+        }
+
         if (pathname.includes("mayorista")) {
           GetCategoriesMayorista(setCategories);
         } else if (pathname.includes("minorista")) {
@@ -1167,7 +1264,9 @@ const CatalogueCart = () => {
       Swal.fire({
         icon: "warning",
         title: "No hay más unidades de stock para agregar",
-        text: `Lo sentimos, solo hay ${availableStock} unidades disponibles en este momento.`,
+        text: `Lo sentimos, solo hay ${availableStock} unidad${
+          availableStock > 1 ? "es" : ""
+        } disponible${availableStock > 1 ? "s" : ""} en este momento.`,
         confirmButtonText: "Aceptar",
         showCancelButton: false,
         confirmButtonColor: "#f8bb86",
