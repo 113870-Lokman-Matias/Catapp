@@ -61,6 +61,7 @@ namespace API.Services.ProductoServices.Queries.GetProductoByIdQuery
                         NombreCategoria = x.IdCategoriaNavigation.Nombre,
                         IdImagen = x.IdImagen,
                         UrlImagen = x.UrlImagen,
+                        Ocultar = x.Ocultar,
                         IdDivisa = x.IdDivisa,
                         StockTransitorio = x.StockTransitorio,
                         NombreSubcategoria = x.IdSubcategoriaNavigation.Nombre

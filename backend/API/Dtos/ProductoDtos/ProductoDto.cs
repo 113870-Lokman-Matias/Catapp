@@ -17,6 +17,7 @@ public class ProductoDto : RespuestaBase
     public string? NombreCategoria { get; set; }
     public string IdImagen { get; set; } = null!;
     public string UrlImagen { get; set; } = null!;
+    public bool Ocultar { get; set; }
     public int IdDivisa { get; set; }
     public int StockTransitorio { get; set; }
     public string? NombreSubcategoria { get; set; }

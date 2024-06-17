@@ -315,8 +315,30 @@ const CatalogueCart = () => {
           for (const productId in parsedCart) {
             const product = await GetProductById(productId);
             if (product) {
+
+              if (product.ocultar === true) {
+                // Eliminar el producto del carrito
+                updatedProductQuantities[productId] = 0;
+          
+                // Mostrar mensaje de eliminación con SweetAlert
+                Swal.fire({
+                  icon: "warning",
+                  title: "Producto No Disponible",
+                  imageUrl: product.urlImagen,
+                  imageWidth: 150,
+                  imageHeight: 150,
+                  imageAlt: "Producto no disponible",
+                  text: `El producto "${product.nombre}" ha sido eliminado del carrito porque no está disponible actualmente.`,
+                  confirmButtonText: "Aceptar",
+                  confirmButtonColor: "#f8bb86",
+                  allowOutsideClick: false,
+                });
+          
+                continue; // Saltar al siguiente producto en el carrito
+              }
+
               // Verificar si el producto tiene stock transitorio mayor que cero
-              if (product.stockTransitorio > 0) {
+              else if (product.stockTransitorio > 0) {
                 let updatedQuantity = parsedCart[productId].cantidad;
 
                 // Verificar si la cantidad en el carrito es mayor que la cantidad disponible
