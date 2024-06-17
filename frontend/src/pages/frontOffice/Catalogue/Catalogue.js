@@ -100,7 +100,7 @@ const Catalogue = () => {
     connection.on("MensajeCrudProducto", async () => {
       try {
         if (query !== "") {
-          const products = await GetProductsByQuery(query);
+          const products = await GetProductsByQuery(query, 3);
           setProducts(products);
           GetCategories(setCategories);
         } else {
@@ -110,7 +110,7 @@ const Catalogue = () => {
 
             try {
               setIsLoadingProductByCategory(true);
-              products = await GetProductsByCategory(category);
+              products = await GetProductsByCategory(category, 3);
             } catch (error) {
               console.log(
                 "Error al obtener productos para la categoría",
@@ -136,7 +136,8 @@ const Catalogue = () => {
                 try {
                   subcategoryProducts = await GetProductsBySubcategory(
                     subcategory.idCategoria,
-                    subcategory.idSubcategoria
+                    subcategory.idSubcategoria,
+                    3
                   );
                 } catch (error) {
                   console.log(
@@ -252,7 +253,7 @@ const Catalogue = () => {
       try {
         setIsLoadingQuery(true);
 
-        const products = await GetProductsByQuery(searchValue);
+        const products = await GetProductsByQuery(searchValue, 3);
 
         setProducts(products);
         window.scrollTo(0, 0);
@@ -330,7 +331,7 @@ const Catalogue = () => {
         ...prevLoadingState,
         [idCategory]: true,
       }));
-      products = await GetProductsByCategory(category);
+      products = await GetProductsByCategory(category, 3);
     } catch (error) {
       console.log(error);
     } finally {
@@ -391,7 +392,7 @@ const Catalogue = () => {
         ...prevLoadingState,
         [idSubcategory]: true,
       }));
-      products = await GetProductsBySubcategory(idCategory, idSubcategory);
+      products = await GetProductsBySubcategory(idCategory, idSubcategory, 3);
     } catch (error) {
       console.log(error);
     } finally {

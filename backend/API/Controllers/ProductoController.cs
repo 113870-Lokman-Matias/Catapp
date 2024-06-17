@@ -41,32 +41,32 @@ public class ProductoController : ControllerBase
   }
 
 
-  [HttpGet("categoria/{category}")]
-  public Task<ListaProductosDto> GetProductosByCategory(string category)
+  [HttpGet("categoria/{category}/{client}")]
+  public Task<ListaProductosDto> GetProductosByCategory(string category, int client)
   {
-    var productosByCategory = _mediator.Send(new GetProductosByCategoryQuery(category));
+    var productosByCategory = _mediator.Send(new GetProductosByCategoryQuery(category, client));
     return productosByCategory;
   }
 
-  [HttpGet("subcategoria/{idCategory}/{idSubcategory}")]
-  public Task<ListaProductosDto> GetProductosBySubcategory(int idCategory, int idSubcategory)
+  [HttpGet("subcategoria/{idCategory}/{idSubcategory}/{client}")]
+  public Task<ListaProductosDto> GetProductosBySubcategory(int idCategory, int idSubcategory, int client)
   {
-    var productosBySubcategory = _mediator.Send(new GetProductosBySubcategoryQuery(idCategory, idSubcategory));
+    var productosBySubcategory = _mediator.Send(new GetProductosBySubcategoryQuery(idCategory, idSubcategory, client));
     return productosBySubcategory;
   }
 
-  [HttpGet("query/{query}")]
-  public Task<ListaProductosDto> GetProductosByQuery(string query)
+  [HttpGet("query/{query}/{client}")]
+  public Task<ListaProductosDto> GetProductosByQuery(string query, int client)
   {
-    var productosByQuery = _mediator.Send(new GetProductosByQueryQuery(query));
+    var productosByQuery = _mediator.Send(new GetProductosByQueryQuery(query, client));
     return productosByQuery;
   }
 
-  [HttpGet("{id}")]
+  [HttpGet("{id}/{client}")]
   [Authorize(Roles = "SuperAdmin, Supervisor, Vendedor")]
-  public async Task<ProductoDto> GetProductoById(int id)
+  public async Task<ProductoDto> GetProductoById(int id, int client)
   {
-    var producto = await _mediator.Send(new GetProductoByIdQuery(id));
+    var producto = await _mediator.Send(new GetProductoByIdQuery(id, client));
     return producto;
   }
 

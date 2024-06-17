@@ -16,6 +16,9 @@ namespace API.Services.ProductoServices.Queries.GetProductoByIdQuery
           .NotEmpty().WithMessage("El id no puede estar vacío")
           .NotNull().WithMessage("El id no puede ser nulo")
           .MustAsync(ProductoExiste).WithMessage("No hay ningun producto con el id: {PropertyValue}");
+
+      RuleFor(p => p.client)
+            .NotNull().WithMessage("El número de cliente no puede ser nulo");
     }
 
     private async Task<bool> ProductoExiste(int id, CancellationToken token)

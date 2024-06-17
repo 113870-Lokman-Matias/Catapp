@@ -3083,7 +3083,7 @@ function ProductManager() {
                                     }
                                   >
                                     $
-                                    {(
+                                    {Math.ceil(
                                       product.precio *
                                       (1 + product.porcentajeMinorista / 100)
                                     )
@@ -3114,7 +3114,7 @@ function ProductManager() {
                                     }
                                   >
                                     $
-                                    {(
+                                    {Math.ceil(
                                       product.precio *
                                       (1 + product.porcentajeMinorista / 100) *
                                       valorDolar
@@ -3197,7 +3197,7 @@ function ProductManager() {
                                     }
                                   >
                                     $
-                                    {(
+                                    {Math.ceil(
                                       product.precio *
                                       (1 + product.porcentajeMayorista / 100)
                                     )
@@ -3228,7 +3228,7 @@ function ProductManager() {
                                     }
                                   >
                                     $
-                                    {(
+                                    {Math.ceil(
                                       product.precio *
                                       (1 + product.porcentajeMayorista / 100) *
                                       valorDolar

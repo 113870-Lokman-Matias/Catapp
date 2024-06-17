@@ -39,6 +39,9 @@ namespace API.Services.ProductoServices.Queries.GetProductosBySubcategoryQuery
         }
         else
         {
+          var cotizacionDolar = await _context.Cotizaciones.FirstAsync();
+          float valorDolar = cotizacionDolar.Precio;
+
           var productos = await _context.Productos
               .Where(x => x.IdCategoriaNavigation.IdCategoria == request.idCategory && x.IdSubcategoriaNavigation.IdSubcategoria == request.idSubcategory && x.Ocultar == false)
               .Select(x => new ListaProductoDto
@@ -47,11 +50,7 @@ namespace API.Services.ProductoServices.Queries.GetProductosBySubcategoryQuery
                 Nombre = x.Nombre,
                 Descripcion = x.Descripcion,
                 Divisa = x.IdDivisaNavigation.Nombre,
-                Precio = x.Precio,
-                PorcentajeMinorista = x.PorcentajeMinorista,
-                PorcentajeMayorista = x.PorcentajeMayorista,
-                PrecioMinorista = x.PrecioMinorista,
-                PrecioMayorista = x.PrecioMayorista,
+                PrecioPesos = request.client == 3 ? 0 : CalcularPrecioFinalEnPesos(request.client, x.Precio, x.PorcentajeMinorista, x.PorcentajeMayorista, x.IdDivisaNavigation.Nombre, valorDolar, x.PrecioMinorista, x.PrecioMayorista),
                 Stock = x.Stock,
                 NombreCategoria = x.IdCategoriaNavigation.Nombre,
                 UrlImagen = x.UrlImagen,
@@ -95,6 +94,52 @@ namespace API.Services.ProductoServices.Queries.GetProductosBySubcategoryQuery
         return ListaProductosVacia;
       }
     }
+
+    // Definición de la función para calcular el precio final en pesos
+    public static float CalcularPrecioFinalEnPesos(int clientType, float costo, float porcentajeMinorista, float porcentajeMayorista, String divisa, float valorDolar, float precioMinorista, float precioMayorista) {
+    float precioFinal = 0;
+
+    // Verificar si ya hay un precio asignado en PrecioMinorista o PrecioMayorista
+    if (clientType == 1 && precioMinorista > 0) {
+        precioFinal = precioMinorista;
+    } else if (clientType == 2 && precioMayorista > 0) {
+        precioFinal = precioMayorista;
+    } else {
+        // Calcular el precio final en pesos si no hay precio asignado
+        if (clientType == 1) {
+            if (divisa == "Dólar") {
+                if (precioMinorista == 0 && porcentajeMinorista == 0) {
+                    precioFinal = 0;
+                    return precioFinal;
+                }
+                precioFinal = (float) Math.Round(costo * valorDolar * (1 + porcentajeMinorista / 100));
+            } else {
+                if (precioMinorista == 0 && porcentajeMinorista == 0) {
+                    precioFinal = 0;
+                    return precioFinal;
+                }
+                precioFinal = (float) Math.Ceiling(costo * (1 + porcentajeMinorista / 100));
+            }
+        } else // clientType == "Mayorista"
+        {
+            if (divisa == "Dólar") {
+                if (precioMayorista == 0 && porcentajeMayorista == 0) {
+                    precioFinal = 0;
+                    return precioFinal;
+                }
+                precioFinal = (float) Math.Round(costo * valorDolar * (1 + porcentajeMayorista / 100));
+            } else {
+                if (precioMayorista == 0 && porcentajeMayorista == 0) {
+                    precioFinal = 0;
+                    return precioFinal;
+                }
+                precioFinal = (float) Math.Ceiling(costo * (1 + porcentajeMayorista / 100));
+            }
+        }
+    }
+
+    return precioFinal;
+  }
 
   }
 }

@@ -13,6 +13,7 @@ public class ProductoDto : RespuestaBase
     public float PorcentajeMayorista { get; set; }
     public float PrecioMinorista { get; set; }
     public float PrecioMayorista { get; set; }
+    public float PrecioPesos { get; set; }
     public int Stock { get; set; }
     public string? NombreCategoria { get; set; }
     public string IdImagen { get; set; } = null!;

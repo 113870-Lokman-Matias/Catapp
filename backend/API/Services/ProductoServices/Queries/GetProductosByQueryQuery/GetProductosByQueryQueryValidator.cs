@@ -16,6 +16,9 @@ namespace API.Services.ProductoServices.Queries.GetProductosByQueryQuery
           .NotEmpty().WithMessage("La busqueda no puede estar vacía")
           .NotNull().WithMessage("La busqueda no puede ser nula")
           .MustAsync(QueryExiste).WithMessage("No hay productos con la busqueda: {PropertyValue}");
+
+      RuleFor(p => p.client)
+          .NotNull().WithMessage("El número de cliente no puede ser nulo");
     }
 
     private async Task<bool> QueryExiste(string query, CancellationToken token)

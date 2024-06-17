@@ -221,7 +221,10 @@ const CatalogueCart = () => {
     connection.on("MensajeCrudProducto", async () => {
       try {
         if (query !== "") {
-          const products = await GetProductsByQuery(query);
+          const products = await GetProductsByQuery(
+            query,
+            pathname.includes("minorista") ? 1 : 2
+          );
           setProducts(products);
 
           if (pathname.includes("mayorista")) {
@@ -242,7 +245,10 @@ const CatalogueCart = () => {
 
             try {
               setIsLoadingProductByCategory(true);
-              products = await GetProductsByCategory(category);
+              products = await GetProductsByCategory(
+                category,
+                pathname.includes("minorista") ? 1 : 2
+              );
             } catch (error) {
               console.log(
                 "Error al obtener productos para la categoría",
@@ -268,7 +274,8 @@ const CatalogueCart = () => {
                 try {
                   subcategoryProducts = await GetProductsBySubcategory(
                     subcategory.idCategoria,
-                    subcategory.idSubcategoria
+                    subcategory.idSubcategoria,
+                    pathname.includes("minorista") ? 1 : 2
                   );
                 } catch (error) {
                   console.log(
@@ -313,13 +320,15 @@ const CatalogueCart = () => {
           const updatedProductQuantities = {};
 
           for (const productId in parsedCart) {
-            const product = await GetProductById(productId);
+            const product = await GetProductById(
+              productId,
+              pathname.includes("minorista") ? 1 : 2
+            );
             if (product) {
-
               if (product.ocultar === true) {
                 // Eliminar el producto del carrito
                 updatedProductQuantities[productId] = 0;
-          
+
                 // Mostrar mensaje de eliminación con SweetAlert
                 Swal.fire({
                   icon: "warning",
@@ -333,7 +342,7 @@ const CatalogueCart = () => {
                   confirmButtonColor: "#f8bb86",
                   allowOutsideClick: false,
                 });
-          
+
                 continue; // Saltar al siguiente producto en el carrito
               }
 
@@ -420,7 +429,10 @@ const CatalogueCart = () => {
     connection.on("MensajeCreatePedido", async () => {
       try {
         if (query !== "") {
-          const products = await GetProductsByQuery(query);
+          const products = await GetProductsByQuery(
+            query,
+            pathname.includes("minorista") ? 1 : 2
+          );
           setProducts(products);
 
           if (pathname.includes("mayorista")) {
@@ -441,7 +453,10 @@ const CatalogueCart = () => {
 
             try {
               setIsLoadingProductByCategory(true);
-              products = await GetProductsByCategory(category);
+              products = await GetProductsByCategory(
+                category,
+                pathname.includes("minorista") ? 1 : 2
+              );
             } catch (error) {
               console.log(
                 "Error al obtener productos para la categoría",
@@ -467,7 +482,8 @@ const CatalogueCart = () => {
                 try {
                   subcategoryProducts = await GetProductsBySubcategory(
                     subcategory.idCategoria,
-                    subcategory.idSubcategoria
+                    subcategory.idSubcategoria,
+                    pathname.includes("minorista") ? 1 : 2
                   );
                 } catch (error) {
                   console.log(
@@ -512,7 +528,10 @@ const CatalogueCart = () => {
           const updatedProductQuantities = {};
 
           for (const productId in parsedCart) {
-            const product = await GetProductById(productId);
+            const product = await GetProductById(
+              productId,
+              pathname.includes("minorista") ? 1 : 2
+            );
             if (product) {
               if (product.stockTransitorio > 0) {
                 let updatedQuantity = parsedCart[productId].cantidad;
@@ -587,7 +606,10 @@ const CatalogueCart = () => {
     connection.on("MensajeUpdateDeletePedido", async () => {
       try {
         if (query !== "") {
-          const products = await GetProductsByQuery(query);
+          const products = await GetProductsByQuery(
+            query,
+            pathname.includes("minorista") ? 1 : 2
+          );
           setProducts(products);
 
           if (pathname.includes("mayorista")) {
@@ -608,7 +630,10 @@ const CatalogueCart = () => {
 
             try {
               setIsLoadingProductByCategory(true);
-              products = await GetProductsByCategory(category);
+              products = await GetProductsByCategory(
+                category,
+                pathname.includes("minorista") ? 1 : 2
+              );
             } catch (error) {
               console.log(
                 "Error al obtener productos para la categoría",
@@ -634,7 +659,8 @@ const CatalogueCart = () => {
                 try {
                   subcategoryProducts = await GetProductsBySubcategory(
                     subcategory.idCategoria,
-                    subcategory.idSubcategoria
+                    subcategory.idSubcategoria,
+                    pathname.includes("minorista") ? 1 : 2
                   );
                 } catch (error) {
                   console.log(
@@ -1090,7 +1116,10 @@ const CatalogueCart = () => {
       setQuery(searchValue);
       try {
         setIsLoadingQuery(true);
-        const products = await GetProductsByQuery(searchValue);
+        const products = await GetProductsByQuery(
+          searchValue,
+          pathname.includes("minorista") ? 1 : 2
+        );
 
         setProducts(products);
         window.scrollTo(0, 0);
@@ -1169,7 +1198,10 @@ const CatalogueCart = () => {
         ...prevLoadingState,
         [idCategory]: true,
       }));
-      products = await GetProductsByCategory(category);
+      products = await GetProductsByCategory(
+        category,
+        pathname.includes("minorista") ? 1 : 2
+      );
     } catch (error) {
       console.log(error);
     } finally {
@@ -1230,7 +1262,11 @@ const CatalogueCart = () => {
         ...prevLoadingState,
         [idSubcategory]: true,
       }));
-      products = await GetProductsBySubcategory(idCategory, idSubcategory);
+      products = await GetProductsBySubcategory(
+        idCategory,
+        idSubcategory,
+        pathname.includes("minorista") ? 1 : 2
+      );
     } catch (error) {
       console.log(error);
     } finally {
@@ -1432,43 +1468,7 @@ const CatalogueCart = () => {
   const calculateSubtotal = (product) => {
     const quantity = productQuantities[product.idProducto] || 0;
 
-    if (
-      (clientType === "Mayorista"
-        ? product.precioMayorista
-        : product.precioMinorista) > 0
-    ) {
-      // Si se estableció un precio manual, usar ese precio directamente sin aplicar porcentaje ni valor del dólar
-      return Math.round(
-        (clientType === "Mayorista"
-          ? product.precioMayorista
-          : product.precioMinorista) * quantity
-      );
-    } else if (product.divisa === "Dólar") {
-      // Si la divisa es Dólar, realiza el cálculo multiplicando por el valor del dólar
-      return Math.round(
-        product.precio *
-          valorDolar *
-          (1 +
-            (clientType === "Mayorista"
-              ? product.porcentajeMayorista
-              : product.porcentajeMinorista) /
-              100) *
-          quantity
-      );
-    } else if (product.divisa === "Peso") {
-      // Si la divisa es Peso, realiza el cálculo sin multiplicar por el valor del dólar
-      return Math.round(
-        product.precio *
-          (1 +
-            (clientType === "Mayorista"
-              ? product.porcentajeMayorista
-              : product.porcentajeMinorista) /
-              100) *
-          quantity
-      );
-    } else {
-      return 0;
-    }
+    return product.precioPesos * quantity;
   };
   //#endregion
 
@@ -1554,25 +1554,7 @@ const CatalogueCart = () => {
         const productosMp = Object.values(cart).map((producto) => {
           let precio;
 
-          if (clientType === "Mayorista" && producto.precioMayorista > 0) {
-            precio = Math.ceil(producto.precioMayorista);
-          } else if (
-            clientType === "Minorista" &&
-            producto.precioMinorista > 0
-          ) {
-            precio = Math.ceil(producto.precioMinorista);
-          } else {
-            precio = Math.round(
-              (producto.divisa === "Dólar"
-                ? producto.precio * valorDolar
-                : producto.precio) *
-                (1 +
-                  (clientType === "Mayorista"
-                    ? producto.porcentajeMayorista
-                    : producto.porcentajeMinorista) /
-                    100)
-            );
-          }
+          precio = producto.precioPesos;
 
           return {
             IdProducto: producto.idProducto.toString(),
@@ -1768,23 +1750,7 @@ const CatalogueCart = () => {
             idProducto: producto.idProducto,
             cantidad: productQuantities[producto.idProducto],
             aclaracion: producto.aclaraciones,
-            precioUnitario:
-              clientType === "Mayorista" && producto.precioMayorista > 0
-                ? `${Math.ceil(producto.precioMayorista)}`
-                : clientType === "Minorista" && producto.precioMinorista > 0
-                ? `${Math.ceil(producto.precioMinorista)}`
-                : // producto.precioMayorista > 0
-                  // ? `${Math.ceil(producto.precioMayorista)}`
-                  `${Math.round(
-                    (producto.divisa === "Dólar"
-                      ? producto.precio * valorDolar
-                      : producto.precio) *
-                      (1 +
-                        (clientType === "Mayorista"
-                          ? producto.porcentajeMayorista
-                          : producto.porcentajeMinorista) /
-                          100)
-                  )}`,
+            precioUnitario: producto.precioPesos,
           };
         });
 
@@ -2246,36 +2212,14 @@ const CatalogueCart = () => {
 
                         <div className="product-3-col2">
                           <p className="product-price">
-                            {(clientType === "Minorista"
-                              ? product.precioMinorista
-                              : product.precioMayorista) > 0
-                              ? `$${Math.ceil(
-                                  clientType === "Minorista"
-                                    ? product.precioMinorista
-                                    : product.precioMayorista
-                                )
-                                  .toLocaleString("es-ES", {
-                                    minimumFractionDigits: 0,
-                                    maximumFractionDigits: 2,
-                                  })
-                                  .replace(",", ".")
-                                  .replace(/\B(?=(\d{3})+(?!\d))/g, ".")}`
-                              : `$${Math.round(
-                                  (product.divisa === "Dólar"
-                                    ? product.precio * valorDolar
-                                    : product.precio) *
-                                    (1 +
-                                      (clientType === "Minorista"
-                                        ? product.porcentajeMinorista
-                                        : product.porcentajeMayorista) /
-                                        100)
-                                )
-                                  .toLocaleString("es-ES", {
-                                    minimumFractionDigits: 0,
-                                    maximumFractionDigits: 2,
-                                  })
-                                  .replace(",", ".")
-                                  .replace(/\B(?=(\d{3})+(?!\d))/g, ".")}`}
+                            $
+                            {Math.ceil(product.precioPesos)
+                              .toLocaleString("es-ES", {
+                                minimumFractionDigits: 0,
+                                maximumFractionDigits: 2,
+                              })
+                              .replace(",", ".")
+                              .replace(/\B(?=(\d{3})+(?!\d))/g, ".")}
                           </p>
                           <button
                             type="button"
@@ -2649,14 +2593,7 @@ const CatalogueCart = () => {
                                 productQuantities[product.idProducto] || 0;
                               const subtotal = calculateSubtotal(product);
 
-                              if (
-                                (clientType === "Minorista" &&
-                                  product.porcentajeMinorista === 0 &&
-                                  product.precioMinorista === 0) ||
-                                (clientType === "Mayorista" &&
-                                  product.porcentajeMayorista === 0 &&
-                                  product.precioMayorista === 0)
-                              ) {
+                              if (product.precioPesos === 0) {
                                 return <></>; // No renderizar el producto
                               }
 
@@ -2711,42 +2648,17 @@ const CatalogueCart = () => {
                                     </div>
                                     <div className="product-3-col">
                                       <p className="product-price">
-                                        {(clientType === "Minorista"
-                                          ? product.precioMinorista
-                                          : product.precioMayorista) > 0
-                                          ? `$${Math.ceil(
-                                              clientType === "Minorista"
-                                                ? product.precioMinorista
-                                                : product.precioMayorista
-                                            )
-                                              .toLocaleString("es-ES", {
-                                                minimumFractionDigits: 0,
-                                                maximumFractionDigits: 2,
-                                              })
-                                              .replace(",", ".")
-                                              .replace(
-                                                /\B(?=(\d{3})+(?!\d))/g,
-                                                "."
-                                              )}`
-                                          : `$${Math.round(
-                                              (product.divisa === "Dólar"
-                                                ? product.precio * valorDolar
-                                                : product.precio) *
-                                                (1 +
-                                                  (clientType === "Minorista"
-                                                    ? product.porcentajeMinorista
-                                                    : product.porcentajeMayorista) /
-                                                    100)
-                                            )
-                                              .toLocaleString("es-ES", {
-                                                minimumFractionDigits: 0,
-                                                maximumFractionDigits: 2,
-                                              })
-                                              .replace(",", ".")
-                                              .replace(
-                                                /\B(?=(\d{3})+(?!\d))/g,
-                                                "."
-                                              )}`}
+                                        $
+                                        {Math.ceil(product.precioPesos)
+                                          .toLocaleString("es-ES", {
+                                            minimumFractionDigits: 0,
+                                            maximumFractionDigits: 2,
+                                          })
+                                          .replace(",", ".")
+                                          .replace(
+                                            /\B(?=(\d{3})+(?!\d))/g,
+                                            "."
+                                          )}
                                       </p>
                                     </div>
                                   </div>
@@ -2975,18 +2887,7 @@ const CatalogueCart = () => {
                                                       );
 
                                                     if (
-                                                      (clientType ===
-                                                        "Minorista" &&
-                                                        product.porcentajeMinorista ===
-                                                          0 &&
-                                                        product.precioMinorista ===
-                                                          0) ||
-                                                      (clientType ===
-                                                        "Mayorista" &&
-                                                        product.porcentajeMayorista ===
-                                                          0 &&
-                                                        product.precioMayorista ===
-                                                          0)
+                                                      product.precioPesos === 0
                                                     ) {
                                                       return <></>; // No renderizar el producto
                                                     }
@@ -3052,60 +2953,25 @@ const CatalogueCart = () => {
                                                           </div>
                                                           <div className="product-3-col">
                                                             <p className="product-price">
-                                                              {(clientType ===
-                                                              "Minorista"
-                                                                ? product.precioMinorista
-                                                                : product.precioMayorista) >
-                                                              0
-                                                                ? `$${Math.ceil(
-                                                                    clientType ===
-                                                                      "Minorista"
-                                                                      ? product.precioMinorista
-                                                                      : product.precioMayorista
-                                                                  )
-                                                                    .toLocaleString(
-                                                                      "es-ES",
-                                                                      {
-                                                                        minimumFractionDigits: 0,
-                                                                        maximumFractionDigits: 2,
-                                                                      }
-                                                                    )
-                                                                    .replace(
-                                                                      ",",
-                                                                      "."
-                                                                    )
-                                                                    .replace(
-                                                                      /\B(?=(\d{3})+(?!\d))/g,
-                                                                      "."
-                                                                    )}`
-                                                                : `$${Math.round(
-                                                                    (product.divisa ===
-                                                                    "Dólar"
-                                                                      ? product.precio *
-                                                                        valorDolar
-                                                                      : product.precio) *
-                                                                      (1 +
-                                                                        (clientType ===
-                                                                        "Minorista"
-                                                                          ? product.porcentajeMinorista
-                                                                          : product.porcentajeMayorista) /
-                                                                          100)
-                                                                  )
-                                                                    .toLocaleString(
-                                                                      "es-ES",
-                                                                      {
-                                                                        minimumFractionDigits: 0,
-                                                                        maximumFractionDigits: 2,
-                                                                      }
-                                                                    )
-                                                                    .replace(
-                                                                      ",",
-                                                                      "."
-                                                                    )
-                                                                    .replace(
-                                                                      /\B(?=(\d{3})+(?!\d))/g,
-                                                                      "."
-                                                                    )}`}
+                                                              $
+                                                              {Math.ceil(
+                                                                product.precioPesos
+                                                              )
+                                                                .toLocaleString(
+                                                                  "es-ES",
+                                                                  {
+                                                                    minimumFractionDigits: 0,
+                                                                    maximumFractionDigits: 2,
+                                                                  }
+                                                                )
+                                                                .replace(
+                                                                  ",",
+                                                                  "."
+                                                                )
+                                                                .replace(
+                                                                  /\B(?=(\d{3})+(?!\d))/g,
+                                                                  "."
+                                                                )}
                                                             </p>
                                                           </div>
                                                         </div>
@@ -3260,14 +3126,7 @@ const CatalogueCart = () => {
                                     productQuantities[product.idProducto] || 0;
                                   const subtotal = calculateSubtotal(product);
 
-                                  if (
-                                    (clientType === "Minorista" &&
-                                      product.porcentajeMinorista === 0 &&
-                                      product.precioMinorista === 0) ||
-                                    (clientType === "Mayorista" &&
-                                      product.porcentajeMayorista === 0 &&
-                                      product.precioMayorista === 0)
-                                  ) {
+                                  if (product.precioPesos === 0) {
                                     return <></>; // No renderizar el producto
                                   }
 
@@ -3322,44 +3181,17 @@ const CatalogueCart = () => {
                                         </div>
                                         <div className="product-3-col">
                                           <p className="product-price">
-                                            {(clientType === "Minorista"
-                                              ? product.precioMinorista
-                                              : product.precioMayorista) > 0
-                                              ? `$${Math.ceil(
-                                                  clientType === "Minorista"
-                                                    ? product.precioMinorista
-                                                    : product.precioMayorista
-                                                )
-                                                  .toLocaleString("es-ES", {
-                                                    minimumFractionDigits: 0,
-                                                    maximumFractionDigits: 2,
-                                                  })
-                                                  .replace(",", ".")
-                                                  .replace(
-                                                    /\B(?=(\d{3})+(?!\d))/g,
-                                                    "."
-                                                  )}`
-                                              : `$${Math.round(
-                                                  (product.divisa === "Dólar"
-                                                    ? product.precio *
-                                                      valorDolar
-                                                    : product.precio) *
-                                                    (1 +
-                                                      (clientType ===
-                                                      "Minorista"
-                                                        ? product.porcentajeMinorista
-                                                        : product.porcentajeMayorista) /
-                                                        100)
-                                                )
-                                                  .toLocaleString("es-ES", {
-                                                    minimumFractionDigits: 0,
-                                                    maximumFractionDigits: 2,
-                                                  })
-                                                  .replace(",", ".")
-                                                  .replace(
-                                                    /\B(?=(\d{3})+(?!\d))/g,
-                                                    "."
-                                                  )}`}
+                                            $
+                                            {Math.ceil(product.precioPesos)
+                                              .toLocaleString("es-ES", {
+                                                minimumFractionDigits: 0,
+                                                maximumFractionDigits: 2,
+                                              })
+                                              .replace(",", ".")
+                                              .replace(
+                                                /\B(?=(\d{3})+(?!\d))/g,
+                                                "."
+                                              )}
                                           </p>
                                         </div>
                                       </div>

@@ -27,42 +27,50 @@ async function GetProductsManage(Query = null, Category = null, Hidden = null) {
 //#endregion
 
 //#region Funcion para obtener todos los productos por categoria
-async function GetProductsByCategory(category) {
+async function GetProductsByCategory(category, client) {
   const result = await axios.get(
-    "https://localhost:7207/producto/categoria/" + category
+    "https://localhost:7207/producto/categoria/" + category + "/" + client
   );
   return result.data.productos || [];
 }
 //#endregion
 
 //#region Funcion para obtener todos los productos por categoria
-async function GetProductsBySubcategory(idCategory, idSubcategory) {
+async function GetProductsBySubcategory(idCategory, idSubcategory, client) {
   const result = await axios.get(
-    "https://localhost:7207/producto/subcategoria/" + idCategory + "/" + idSubcategory
+    "https://localhost:7207/producto/subcategoria/" +
+      idCategory +
+      "/" +
+      idSubcategory +
+      "/" +
+      client
   );
   return result.data.productos || [];
 }
 //#endregion
 
 //#region Funcion para obtener todos los productos por query
-async function GetProductsByQuery(query) {
+async function GetProductsByQuery(query, client) {
   const result = await axios.get(
-    "https://localhost:7207/producto/query/" + query
+    "https://localhost:7207/producto/query/" + query + "/" + client
   );
   return result.data.productos || [];
 }
 //#endregion
 
 //#region Función para obtener un producto por su ID
-async function GetProductById(id) {
+async function GetProductById(id, client) {
   const token = localStorage.getItem("token"); // Obtener el token almacenado en el localStorage
   const headers = {
     Authorization: `Bearer ${token}`, // Agregar el encabezado Authorization con el valor del token
   };
 
-  const response = await axios.get(`https://localhost:7207/producto/${id}`, {
-    headers,
-  });
+  const response = await axios.get(
+    `https://localhost:7207/producto/${id}/${client}`,
+    {
+      headers,
+    }
+  );
   return response.data;
 }
 //#endregion

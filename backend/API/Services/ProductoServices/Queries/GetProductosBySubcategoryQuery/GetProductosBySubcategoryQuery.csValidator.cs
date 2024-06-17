@@ -22,6 +22,9 @@ namespace API.Services.ProductoServices.Queries.GetProductosBySubcategoryQuery
             .NotNull().WithMessage("La subcategoría no puede ser nula")
             .MustAsync((query, idSubcategory, cancellationToken) => SubcategoriaExiste(query.idCategory, idSubcategory, cancellationToken))
             .WithMessage((query, idSubcategory) => $"No hay productos con la subcategoría de id: '{idSubcategory}' en la categoría de id: '{query.idCategory}'");
+    
+      RuleFor(p => p.client)
+            .NotNull().WithMessage("El número de cliente no puede ser nulo");
     }
 
     private async Task<bool> CategoriaExiste(int idCategory, CancellationToken token)

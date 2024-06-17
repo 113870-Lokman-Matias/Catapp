@@ -17,6 +17,9 @@ namespace API.Services.ProductoServices.Queries.GetProductosByCategoryQuery
             .NotEmpty().WithMessage("La categoría no puede estar vacía")
             .NotNull().WithMessage("La categoría no puede ser nula")
             .MustAsync(CategoriaExiste).WithMessage("No hay productos con la categoría: {PropertyValue}");
+      
+      RuleFor(p => p.client)
+            .NotNull().WithMessage("El número de cliente no puede ser nulo");
     }
 
     private async Task<bool> CategoriaExiste(string category, CancellationToken token)
