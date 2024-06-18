@@ -1,7 +1,7 @@
 import axios from "axios";
 
 //#region Función para obtener los productos para la lista administrativa con filtros opcionales de Query, Category y Hidden
-async function GetProductsManage(Query = null, Category = null, Hidden = null) {
+async function GetProductsManage(Query = null, Category = null, Hidden = null, Stock = null) {
   const token = localStorage.getItem("token"); // Obtener el token almacenado en el localStorage
   const headers = {
     Authorization: `Bearer ${token}`, // Agregar el encabezado Authorization con el valor del token
@@ -18,6 +18,9 @@ async function GetProductsManage(Query = null, Category = null, Hidden = null) {
   }
   if (Hidden !== null) {
     url += `&Hidden=${Hidden}`;
+  }
+  if (Stock !== null) {
+    url += `&Stock=${Stock}`;
   }
 
   const result = await axios.get(url, { headers });

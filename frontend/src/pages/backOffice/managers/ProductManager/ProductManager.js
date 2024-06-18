@@ -157,6 +157,7 @@ function ProductManager() {
   const [searchValue, setSearchValue] = useState("");
 
   const [hidden, setHidden] = useState(false);
+  const [nostock, setNostock] = useState(false);
 
   const tableRef = useRef(null);
 
@@ -409,6 +410,10 @@ function ProductManager() {
     if (hidden === true && filterName !== "Oculto") {
       setHidden(false);
     }
+
+    if (nostock === true && filterName !== "Stock") {
+      setNostock(false);
+    }
   };
   //#endregion
 
@@ -432,6 +437,10 @@ function ProductManager() {
     if (hidden === true) {
       setHidden(false);
     }
+
+    if (nostock === true) {
+      setNostock(false);
+    }
   };
   //#endregion
 
@@ -445,6 +454,8 @@ function ProductManager() {
 
       setTitle(`Detalles de Productos de ${category}`);
       setQuery("");
+      setHidden(false);
+      setNostock(false);
       document.getElementById("clear-filter").style.display = "flex";
       document.getElementById("clear-filter2").style.display = "flex";
       setFilterName(category);
@@ -467,10 +478,37 @@ function ProductManager() {
         setProducts(hiddenProducts);
         setTitle("Detalles de Productos ocultos");
         setQuery("");
+        setNostock(false);
         document.getElementById("clear-filter").style.display = "flex";
         document.getElementById("clear-filter2").style.display = "flex";
         setFilterName("Oculto");
         setFilterType("hidden");
+        ClearBold();
+        setCurrentPage(1);
+        window.scrollTo(0, 0);
+      } else {
+        ClearFilter();
+      }
+      setIsLoading(false);
+    } catch {
+      setIsLoading(false);
+    }
+  };
+
+  const filterResultStock = async (stock) => {
+    setIsLoading(true);
+
+    try {
+      if (stock === false) {
+        const nostockProducts = await GetProductsManage("", "", "", true);
+        setProducts(nostockProducts);
+        setTitle("Detalles de Productos sin stock");
+        setQuery("");
+        setHidden(false);
+        document.getElementById("clear-filter").style.display = "flex";
+        document.getElementById("clear-filter2").style.display = "flex";
+        setFilterName("Sin Stock");
+        setFilterType("nostock");
         ClearBold();
         setCurrentPage(1);
         window.scrollTo(0, 0);
@@ -525,6 +563,8 @@ function ProductManager() {
         );
         setFilterType("search");
         ClearBold();
+        setHidden(false);
+        setNostock(false);
         setCurrentPage(1);
         window.scrollTo(0, 0);
         if (searchValue === "") {
@@ -1363,6 +1403,21 @@ function ProductManager() {
             document.getElementById("clear-filter2").style.display = "flex";
             setFilterName("Oculto");
             setFilterType("hidden");
+            ClearBold();
+            setCurrentPage(1);
+          }
+
+          if (filterType === "nostock") {
+            const result = prevProducts.filter((product) => {
+              return product.stockTransitorio === 0;
+            });
+            setTitle("Detalles de Productos sin stock");
+            setProducts(result);
+            setQuery("");
+            document.getElementById("clear-filter").style.display = "flex";
+            document.getElementById("clear-filter2").style.display = "flex";
+            setFilterName("Sin Stock");
+            setFilterType("nostock");
             ClearBold();
             setCurrentPage(1);
           }
@@ -2705,6 +2760,25 @@ function ProductManager() {
                         <label htmlFor="hidden" className="lbl-switch"></label>
                       </p>
                     </div>
+
+                    <p className="filter-separator"></p>
+
+                    <div className="filter-btn-container">
+                      <p className="filter-btn-name">SIN STOCK</p>
+                      <p className="filter-btn">
+                        <input
+                          type="checkbox"
+                          className="form-check-input tick"
+                          id="nostock"
+                          checked={nostock}
+                          onChange={() => {
+                            setNostock(!nostock);
+                            filterResultStock(nostock);
+                          }}
+                        />
+                        <label htmlFor="nostock" className="lbl-switch"></label>
+                      </p>
+                    </div>
                   </div>
                 </div>
                 <div className="modal-footer">
@@ -2731,7 +2805,8 @@ function ProductManager() {
           </div>
 
           {(products.length > 0 ||
-            (products.length === 0 && (hidden === true || query !== ""))) && (
+            (products.length === 0 &&
+              (hidden === true || nostock === true || query !== ""))) && (
             <div className="filters-left2">
               <div className="pagination-count3">
                 <div className="search-container">
@@ -3085,7 +3160,7 @@ function ProductManager() {
                                     $
                                     {Math.ceil(
                                       product.precio *
-                                      (1 + product.porcentajeMinorista / 100)
+                                        (1 + product.porcentajeMinorista / 100)
                                     )
                                       .toLocaleString("es-ES", {
                                         minimumFractionDigits: 0,
@@ -3116,8 +3191,9 @@ function ProductManager() {
                                     $
                                     {Math.ceil(
                                       product.precio *
-                                      (1 + product.porcentajeMinorista / 100) *
-                                      valorDolar
+                                        (1 +
+                                          product.porcentajeMinorista / 100) *
+                                        valorDolar
                                     )
                                       .toLocaleString("es-ES", {
                                         minimumFractionDigits: 0,
@@ -3199,7 +3275,7 @@ function ProductManager() {
                                     $
                                     {Math.ceil(
                                       product.precio *
-                                      (1 + product.porcentajeMayorista / 100)
+                                        (1 + product.porcentajeMayorista / 100)
                                     )
                                       .toLocaleString("es-ES", {
                                         minimumFractionDigits: 0,
@@ -3230,8 +3306,9 @@ function ProductManager() {
                                     $
                                     {Math.ceil(
                                       product.precio *
-                                      (1 + product.porcentajeMayorista / 100) *
-                                      valorDolar
+                                        (1 +
+                                          product.porcentajeMayorista / 100) *
+                                        valorDolar
                                     )
                                       .toLocaleString("es-ES", {
                                         minimumFractionDigits: 0,

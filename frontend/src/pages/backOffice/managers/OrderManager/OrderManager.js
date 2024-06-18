@@ -346,12 +346,15 @@ function OrderManager() {
                 const result = prevOrders.filter((order) => {
                   // Verificar si filterName tiene un guion seguido de texto adicional
                   const match = filterName.match(/^(.*)\s*-\s*(.*)$/);
-                  
+
                   if (match) {
                     // Si hay coincidencia con el patrón de guion, comparar entrega y aclaracionEntrega
                     const entregaPart = match[1].trim();
                     const aclaracionPart = match[2].trim();
-                    return order.entrega === entregaPart && order.aclaracionEntrega === aclaracionPart;
+                    return (
+                      order.entrega === entregaPart &&
+                      order.aclaracionEntrega === aclaracionPart
+                    );
                   } else {
                     // Si no hay guion, comparar solo con entrega
                     return order.entrega === filterName;
@@ -531,12 +534,15 @@ function OrderManager() {
                 const result = prevOrders.filter((order) => {
                   // Verificar si filterName tiene un guion seguido de texto adicional
                   const match = filterName.match(/^(.*)\s*-\s*(.*)$/);
-                  
+
                   if (match) {
                     // Si hay coincidencia con el patrón de guion, comparar entrega y aclaracionEntrega
                     const entregaPart = match[1].trim();
                     const aclaracionPart = match[2].trim();
-                    return order.entrega === entregaPart && order.aclaracionEntrega === aclaracionPart;
+                    return (
+                      order.entrega === entregaPart &&
+                      order.aclaracionEntrega === aclaracionPart
+                    );
                   } else {
                     // Si no hay guion, comparar solo con entrega
                     return order.entrega === filterName;
@@ -860,6 +866,10 @@ function OrderManager() {
           setFilterName(selectedQuery);
           setFilterType("search");
           ClearPending();
+          setTipo("");
+          setFiltroEntrega("");
+          setFiltroAbono("");
+          setFiltroVendedor("");
           setCurrentPage(1);
           window.scrollTo(0, 0);
           if (selectedQuery === "") {
@@ -1163,12 +1173,15 @@ function OrderManager() {
               const result = prevOrders.filter((order) => {
                 // Verificar si filterName tiene un guion seguido de texto adicional
                 const match = filterName.match(/^(.*)\s*-\s*(.*)$/);
-                
+
                 if (match) {
                   // Si hay coincidencia con el patrón de guion, comparar entrega y aclaracionEntrega
                   const entregaPart = match[1].trim();
                   const aclaracionPart = match[2].trim();
-                  return order.entrega === entregaPart && order.aclaracionEntrega === aclaracionPart;
+                  return (
+                    order.entrega === entregaPart &&
+                    order.aclaracionEntrega === aclaracionPart
+                  );
                 } else {
                   // Si no hay guion, comparar solo con entrega
                   return order.entrega === filterName;

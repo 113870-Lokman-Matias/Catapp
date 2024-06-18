@@ -33,9 +33,9 @@ public class ProductoController : ControllerBase
   [HttpGet]
   [Route("manage")]
   [Authorize(Roles = "SuperAdmin, Supervisor, Vendedor")]
-  public async Task<ListaProductosManageDto> GetProductosManage(string? Query = null, string? Category = null, bool? Hidden = null)
+  public async Task<ListaProductosManageDto> GetProductosManage(string? Query = null, string? Category = null, bool? Hidden = null, bool? Stock = null)
   {
-    var query = new GetProductosManageQuery(Query, Category, Hidden);
+    var query = new GetProductosManageQuery(Query, Category, Hidden, Stock);
     var productosManage = await _mediator.Send(query);
     return productosManage;
   }

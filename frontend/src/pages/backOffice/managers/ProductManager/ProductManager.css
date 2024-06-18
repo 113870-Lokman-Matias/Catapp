@@ -182,6 +182,18 @@
   padding: 1px;
 }
 
+#nostock:checked ~ .lbl-switch {
+  background-color: #198754;
+}
+
+#nostock:checked ~ .lbl-switch:after {
+  left: 28px;
+}
+
+#nostock {
+  display: none;
+}
+
 @media (max-width: 1350px) {
   .table-name-prom-dest {
     display: flex;

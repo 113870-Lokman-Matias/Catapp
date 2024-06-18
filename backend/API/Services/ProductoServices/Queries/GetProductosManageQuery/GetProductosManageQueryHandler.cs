@@ -52,6 +52,11 @@ namespace API.Services.ProductoServices.Queries.GetProductosManageQuery
           query = query.Where(x => x.Ocultar == request.Hidden.Value);
         }
 
+        if (request.Stock.HasValue)
+        {
+          query = query.Where(x => x.StockTransitorio == 0);
+        }
+
         var productosManage = await query
             .Select(x => new ProductoManageDto
             {
