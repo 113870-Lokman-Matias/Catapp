@@ -109,7 +109,7 @@ function DetailManager() {
   //#region Funcion para obtener el producto seleccionado
   async function fetchProduct() {
     try {
-      const productData = await GetProductById(id);
+      const productData = await GetProductById(id, 3);
       setProduct(productData);
     } catch (error) {
       console.error("Error fetching product:", error);
