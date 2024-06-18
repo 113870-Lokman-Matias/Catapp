@@ -1190,7 +1190,7 @@ function UserManager() {
   return (
     <div>
       <Helmet>
-        <title>Catapp | Administrar Usuarios</title>
+        <title>Catapp | Gestionar Usuarios</title>
       </Helmet>
 
       <section className="general-container">

@@ -474,7 +474,7 @@ function DetailManager() {
   return (
     <div>
       <Helmet>
-        <title>Catapp | Administrar Detalles de stock</title>
+        <title>Catapp | Gestionar Detalles de stock</title>
       </Helmet>
 
       <section className="general-container">
@@ -482,7 +482,7 @@ function DetailManager() {
           <div className="general-title">
             <div className="title-header">
               <Link
-                to="/administrar-productos"
+                to="/gestionar-productos"
                 className="btn btn-info btn-back"
               >
                 <div className="btn-back-content">

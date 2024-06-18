@@ -186,7 +186,7 @@ function DollarManager() {
   return (
     <div>
       <Helmet>
-        <title>Catapp | Administrar Cotización del Dolar</title>
+        <title>Catapp | Gestionar Cotización del Dolar</title>
       </Helmet>
 
       <section className="general-container">

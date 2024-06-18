@@ -62,7 +62,7 @@ function App() {
           <Route path="preguntas-frecuentes" element={<Faqs />} />
 
           <Route
-            path="administrar-usuarios"
+            path="gestionar-usuarios"
             element={
               <RoleProtectedRoute allowedRoles={["SuperAdmin"]}>
                 <UserManager />
@@ -70,7 +70,7 @@ function App() {
             }
           />
           <Route
-            path="administrar-gerentes"
+            path="gestionar-gerentes"
             element={
               <RoleProtectedRoute allowedRoles={["Admin"]}>
                 <UserManager />
@@ -78,7 +78,7 @@ function App() {
             }
           />
           <Route
-            path="administrar-supervisores"
+            path="gestionar-supervisores"
             element={
               <RoleProtectedRoute allowedRoles={["Gerente"]}>
                 <UserManager />
@@ -86,7 +86,7 @@ function App() {
             }
           />
           <Route
-            path="administrar-vendedores"
+            path="gestionar-vendedores"
             element={
               <RoleProtectedRoute allowedRoles={["Supervisor"]}>
                 <UserManager />
@@ -94,7 +94,7 @@ function App() {
             }
           />
           <Route
-            path="administrar-categorias"
+            path="gestionar-categorias"
             element={
               <RoleProtectedRoute
                 allowedRoles={["SuperAdmin", "Admin", "Supervisor", "Vendedor"]}
@@ -104,7 +104,7 @@ function App() {
             }
           />
           <Route
-            path="administrar-subcategorias/:id"
+            path="gestionar-subcategorias/:id"
             element={
               <RoleProtectedRoute
                 allowedRoles={["SuperAdmin", "Admin", "Supervisor", "Vendedor"]}
@@ -114,7 +114,7 @@ function App() {
             }
           />
           <Route
-            path="administrar-cotizacion"
+            path="gestionar-cotizacion"
             element={
               <RoleProtectedRoute allowedRoles={["Supervisor", "SuperAdmin"]}>
                 <DollarManager />
@@ -122,7 +122,7 @@ function App() {
             }
           />
           <Route
-            path="administrar-productos"
+            path="gestionar-productos"
             element={
               <RoleProtectedRoute
                 allowedRoles={["SuperAdmin", "Admin", "Supervisor", "Vendedor"]}
@@ -142,7 +142,7 @@ function App() {
             }
           />
           <Route
-            path="administrar-entregas"
+            path="gestionar-entregas"
             element={
               <RoleProtectedRoute allowedRoles={["Supervisor", "SuperAdmin"]}>
                 <ShipmentManager />
@@ -150,7 +150,7 @@ function App() {
             }
           />
           <Route
-            path="administrar-configuraciones"
+            path="gestionar-configuraciones"
             element={
               <RoleProtectedRoute allowedRoles={["Supervisor", "SuperAdmin"]}>
                 <SettingManager />
@@ -158,7 +158,7 @@ function App() {
             }
           />
           <Route
-            path="administrar-medios-pago"
+            path="gestionar-medios-pago"
             element={
               <RoleProtectedRoute allowedRoles={["Supervisor", "SuperAdmin"]}>
                 <PaymentTypeManager />
@@ -166,7 +166,7 @@ function App() {
             }
           />
           <Route
-            path="administrar-pedidos"
+            path="gestionar-pedidos"
             element={
               <RoleProtectedRoute
                 allowedRoles={["SuperAdmin", "Admin", "Supervisor", "Vendedor"]}

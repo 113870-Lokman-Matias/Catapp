@@ -1289,7 +1289,7 @@ function OrderManager() {
   return (
     <div>
       <Helmet>
-        <title>Catapp | Administrar Pedidos</title>
+        <title>Catapp | Gestionar Pedidos</title>
       </Helmet>
 
       <section className="general-container">

@@ -364,7 +364,7 @@ function SettingManager() {
   return (
     <div>
       <Helmet>
-        <title>Catapp | Administrar Configuraciones</title>
+        <title>Catapp | Gestionar Configuraciones</title>
       </Helmet>
 
       <section className="general-container">

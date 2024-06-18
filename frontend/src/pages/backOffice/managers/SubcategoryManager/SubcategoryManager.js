@@ -502,7 +502,7 @@ function SubcategoryManager() {
   return (
     <div>
       <Helmet>
-        <title>Catapp | Administrar Subcategorías</title>
+        <title>Catapp | Gestionar Subcategorías</title>
       </Helmet>
 
       <section className="general-container">
@@ -510,7 +510,7 @@ function SubcategoryManager() {
           <div className="general-title">
             <div className="title-header">
               <Link
-                to="/administrar-categorias"
+                to="/gestionar-categorias"
                 className="btn btn-info btn-back"
               >
                 <div className="btn-back-content">

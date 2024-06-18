@@ -219,7 +219,7 @@ function AdminPanel() {
               </button>
 
               <Link
-                to="/administrar-configuraciones"
+                to="/gestionar-configuraciones"
                 className="btn-logout"
                 aria-label="Configuraciones"
               >
@@ -352,7 +352,7 @@ function AdminPanel() {
           </div>
 
           <h2 className="title-error">
-            Cliqué en la sección que desee administrar
+            Cliqué en la sección que desee gestionar
           </h2>
 
           <div className="secciones antes-faqs-terms">
@@ -361,7 +361,7 @@ function AdminPanel() {
                 rolUsuario === "Supervisor" ||
                 rolUsuario === "SuperAdmin") && (
                 <Link
-                  to="/administrar-productos"
+                  to="/gestionar-productos"
                   className="btn btn-dark category-btn"
                 >
                   <Products className="category-svg" />
@@ -373,7 +373,7 @@ function AdminPanel() {
                 rolUsuario === "Supervisor" ||
                 rolUsuario === "SuperAdmin") && (
                 <Link
-                  to="/administrar-categorias"
+                  to="/gestionar-categorias"
                   className="btn btn-dark category-btn"
                 >
                   <Categories className="category-svg" />
@@ -385,7 +385,7 @@ function AdminPanel() {
                 rolUsuario === "Supervisor" ||
                 rolUsuario === "SuperAdmin") && (
                 <Link
-                  to="/administrar-pedidos"
+                  to="/gestionar-pedidos"
                   className="btn btn-dark category-btn"
                 >
                   <Orders className="category-svg" />
@@ -405,7 +405,7 @@ function AdminPanel() {
 
               {rolUsuario === "SuperAdmin" && (
                 <Link
-                  to="/administrar-usuarios"
+                  to="/gestionar-usuarios"
                   className="btn btn-dark category-btn"
                 >
                   <Users className="category-svg" />
@@ -415,7 +415,7 @@ function AdminPanel() {
 
               {rolUsuario === "Admin" && (
                 <Link
-                  to="/administrar-gerentes"
+                  to="/gestionar-gerentes"
                   className="btn btn-dark category-btn"
                 >
                   <Manager className="category-svg" />
@@ -425,7 +425,7 @@ function AdminPanel() {
 
               {rolUsuario === "Gerente" && (
                 <Link
-                  to="/administrar-supervisores"
+                  to="/gestionar-supervisores"
                   className="btn btn-dark category-btn"
                 >
                   <Supervisor className="category-svg" />
@@ -435,7 +435,7 @@ function AdminPanel() {
 
               {rolUsuario === "Supervisor" && (
                 <Link
-                  to="/administrar-vendedores"
+                  to="/gestionar-vendedores"
                   className="btn btn-dark category-btn"
                 >
                   <Seller className="category-svg" />
@@ -445,7 +445,7 @@ function AdminPanel() {
 
               {(rolUsuario === "Supervisor" || rolUsuario === "SuperAdmin") && (
                 <Link
-                  to="/administrar-entregas"
+                  to="/gestionar-entregas"
                   className="btn btn-dark category-btn"
                 >
                   <Shipment className="category-svg" />
@@ -455,7 +455,7 @@ function AdminPanel() {
 
               {(rolUsuario === "Supervisor" || rolUsuario === "SuperAdmin") && (
                 <Link
-                  to="/administrar-cotizacion"
+                  to="/gestionar-cotizacion"
                   className="btn btn-dark category-btn"
                 >
                   <Dolar className="category-svg" />
@@ -465,7 +465,7 @@ function AdminPanel() {
 
               {(rolUsuario === "Supervisor" || rolUsuario === "SuperAdmin") && (
                 <Link
-                  to="/administrar-medios-pago"
+                  to="/gestionar-medios-pago"
                   className="btn btn-dark category-btn"
                 >
                   <Payment className="category-svg" />

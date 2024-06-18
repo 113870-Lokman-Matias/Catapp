@@ -570,7 +570,7 @@ function CategoryManager() {
   return (
     <div>
       <Helmet>
-        <title>Catapp | Administrar Categorías</title>
+        <title>Catapp | Gestionar Categorías</title>
       </Helmet>
 
       <section className="general-container">
@@ -985,7 +985,7 @@ function CategoryManager() {
 
                         <td className="table-name">
                           <Link
-                            to={`/administrar-subcategorias/${category.idCategoria}`}
+                            to={`/gestionar-subcategorias/${category.idCategoria}`}
                             title="Gestionar subcategorías"
                             type="button"
                             className="btn btn-secondary btn-subcategories"

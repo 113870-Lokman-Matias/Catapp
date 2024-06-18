@@ -609,7 +609,7 @@ function ShipmentManager() {
   return (
     <div>
       <Helmet>
-        <title>Catapp | Administrar Formas de entrega</title>
+        <title>Catapp | Gestionar Formas de entrega</title>
       </Helmet>
 
       <section className="general-container">

@@ -1589,7 +1589,7 @@ function ProductManager() {
   return (
     <div>
       <Helmet>
-        <title>Catapp | Administrar Productos</title>
+        <title>Catapp | Gestionar Productos</title>
       </Helmet>
 
       <section id="products" className="general-container">
@@ -1634,7 +1634,7 @@ function ProductManager() {
 
             {categories.length === 0 && isLoading === false && (
               <Link
-                to="/administrar-categorias"
+                to="/gestionar-categorias"
                 className="btn btn-add-disabled"
               >
                 Para añadir un producto, agregue al menos una categoría.
@@ -1755,7 +1755,7 @@ function ProductManager() {
                                 hidden={valorDolar > 0}
                               >
                                 <Link
-                                  to="/administrar-cotizacion"
+                                  to="/gestionar-cotizacion"
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   className="forgot-password"

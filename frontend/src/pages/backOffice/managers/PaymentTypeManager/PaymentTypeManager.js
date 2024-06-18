@@ -635,7 +635,7 @@ function PaymentTypeManager() {
   return (
     <div>
       <Helmet>
-        <title>Catapp | Administrar Medios de pago</title>
+        <title>Catapp | Gestionar Medios de pago</title>
       </Helmet>
 
       <section className="general-container">
