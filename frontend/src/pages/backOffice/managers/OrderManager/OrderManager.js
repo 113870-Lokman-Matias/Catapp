@@ -47,6 +47,9 @@ function OrderManager() {
   const [idPedido, setIdPedido] = useState("");
 
   const [tipo, setTipo] = useState("");
+  const [filtroEntrega, setFiltroEntrega] = useState("");
+  const [filtroAbono, setFiltroAbono] = useState("");
+  const [filtroVendedor, setFiltroVendedor] = useState("");
 
   const [entrega, setEntrega] = useState("");
   const [prevEntrega, setPrevEntrega] = useState("");
@@ -60,9 +63,13 @@ function OrderManager() {
   const [abono, setAbono] = useState("");
   const [prevAbono, setPrevAbono] = useState("");
 
-  const [listaNombresVendedores, setListaNombresVendedores] = useState([]);
-  const [listaNombresAbonos, setListaNombresAbonos] = useState([]);
-  const [listaNombresEntregas, setListaNombresEntregas] = useState([]);
+  const [listaVendedores, setListaVendedores] = useState([]);
+  const [listaAbonos, setListaAbonos] = useState([]);
+  const [listaEntregas, setListaEntregas] = useState([]);
+
+  const [nombreSelectedVendedor, setNombreSelectedVendedor] = useState("");
+  const [nombreSelectedEntrega, setNombreSelectedEntrega] = useState("");
+  const [nombreSelectedAbono, setNombreSelectedAbono] = useState("");
 
   const [nombreEntrega, setNombreEntrega] = useState("");
 
@@ -123,13 +130,13 @@ function OrderManager() {
         setOriginalOrdersList(resultOrders);
 
         const responseSellers = await GetUsersByRole("Vendedor");
-        setListaNombresVendedores(responseSellers);
+        setListaVendedores(responseSellers);
 
         const responsePaymentTypes = await GetPaymentTypes();
-        setListaNombresAbonos(responsePaymentTypes);
+        setListaAbonos(responsePaymentTypes);
 
         const response = await GetFormasEntregaManage();
-        setListaNombresEntregas(response);
+        setListaEntregas(response);
 
         setIsLoading(false);
       } catch (error) {
@@ -187,7 +194,7 @@ function OrderManager() {
     connection.on("MensajeCrudEntrega", async () => {
       try {
         const response = await GetFormasEntregaManage();
-        setListaNombresEntregas(response);
+        setListaEntregas(response);
       } catch (error) {
         console.error("Error al obtener el costo de envío: " + error);
       }
@@ -196,7 +203,7 @@ function OrderManager() {
     connection.on("MensajeCrudVendedor", async () => {
       try {
         const responseSellers = await GetUsersByRole("Vendedor");
-        setListaNombresVendedores(responseSellers);
+        setListaVendedores(responseSellers);
       } catch (error) {
         console.error("Error al obtener los vendedores: " + error);
       }
@@ -215,7 +222,7 @@ function OrderManager() {
     connection.on("MensajeCrudMetodoPago", async () => {
       try {
         const responsePaymentTypes = await GetPaymentTypes();
-        setListaNombresAbonos(responsePaymentTypes);
+        setListaAbonos(responsePaymentTypes);
       } catch (error) {
         console.error("Error al obtener los medios de pago: " + error);
       }
@@ -315,6 +322,65 @@ function OrderManager() {
                 document.getElementById("clear-filter2").style.display = "flex";
                 setFilterName(filterName);
                 setFilterType("type");
+                ClearPending();
+                setCurrentPage(1);
+              }
+
+              if (filterType === "seller") {
+                const result = prevOrders.filter((order) => {
+                  return order.vendedor === filterName;
+                });
+
+                setTitle(`Detalles de Pedidos del vendedor: ${filterName}`);
+                setOrders(result);
+                setQuery("");
+                document.getElementById("clear-filter").style.display = "flex";
+                document.getElementById("clear-filter2").style.display = "flex";
+                setFilterName(filterName);
+                setFilterType("seller");
+                ClearPending();
+                setCurrentPage(1);
+              }
+
+              if (filterType === "shipment") {
+                const result = prevOrders.filter((order) => {
+                  // Verificar si filterName tiene un guion seguido de texto adicional
+                  const match = filterName.match(/^(.*)\s*-\s*(.*)$/);
+                  
+                  if (match) {
+                    // Si hay coincidencia con el patrón de guion, comparar entrega y aclaracionEntrega
+                    const entregaPart = match[1].trim();
+                    const aclaracionPart = match[2].trim();
+                    return order.entrega === entregaPart && order.aclaracionEntrega === aclaracionPart;
+                  } else {
+                    // Si no hay guion, comparar solo con entrega
+                    return order.entrega === filterName;
+                  }
+                });
+
+                setTitle(`Detalles de Pedidos con retiro ${filterName}`);
+                setOrders(result);
+                setQuery("");
+                document.getElementById("clear-filter").style.display = "flex";
+                document.getElementById("clear-filter2").style.display = "flex";
+                setFilterName(filterName);
+                setFilterType("shipment");
+                ClearPending();
+                setCurrentPage(1);
+              }
+
+              if (filterType === "payment") {
+                const result = prevOrders.filter((order) => {
+                  return order.abono === filterName;
+                });
+
+                setTitle(`Detalles de Pedidos pagados con ${filterName}`);
+                setOrders(result);
+                setQuery("");
+                document.getElementById("clear-filter").style.display = "flex";
+                document.getElementById("clear-filter2").style.display = "flex";
+                setFilterName(filterName);
+                setFilterType("payment");
                 ClearPending();
                 setCurrentPage(1);
               }
@@ -445,6 +511,65 @@ function OrderManager() {
                 setCurrentPage(1);
               }
 
+              if (filterType === "seller") {
+                const result = prevOrders.filter((order) => {
+                  return order.vendedor === filterName;
+                });
+
+                setTitle(`Detalles de Pedidos del vendedor: ${filterName}`);
+                setOrders(result);
+                setQuery("");
+                document.getElementById("clear-filter").style.display = "flex";
+                document.getElementById("clear-filter2").style.display = "flex";
+                setFilterName(filterName);
+                setFilterType("seller");
+                ClearPending();
+                setCurrentPage(1);
+              }
+
+              if (filterType === "shipment") {
+                const result = prevOrders.filter((order) => {
+                  // Verificar si filterName tiene un guion seguido de texto adicional
+                  const match = filterName.match(/^(.*)\s*-\s*(.*)$/);
+                  
+                  if (match) {
+                    // Si hay coincidencia con el patrón de guion, comparar entrega y aclaracionEntrega
+                    const entregaPart = match[1].trim();
+                    const aclaracionPart = match[2].trim();
+                    return order.entrega === entregaPart && order.aclaracionEntrega === aclaracionPart;
+                  } else {
+                    // Si no hay guion, comparar solo con entrega
+                    return order.entrega === filterName;
+                  }
+                });
+
+                setTitle(`Detalles de Pedidos con retiro ${filterName}`);
+                setOrders(result);
+                setQuery("");
+                document.getElementById("clear-filter").style.display = "flex";
+                document.getElementById("clear-filter2").style.display = "flex";
+                setFilterName(filterName);
+                setFilterType("shipment");
+                ClearPending();
+                setCurrentPage(1);
+              }
+
+              if (filterType === "payment") {
+                const result = prevOrders.filter((order) => {
+                  return order.abono === filterName;
+                });
+
+                setTitle(`Detalles de Pedidos pagados con ${filterName}`);
+                setOrders(result);
+                setQuery("");
+                document.getElementById("clear-filter").style.display = "flex";
+                document.getElementById("clear-filter2").style.display = "flex";
+                setFilterName(filterName);
+                setFilterType("payment");
+                ClearPending();
+                setCurrentPage(1);
+              }
+
               if (filterType === "pending") {
                 const result = prevOrders.filter((order) => {
                   return order.verificado === false;
@@ -491,6 +616,9 @@ function OrderManager() {
   const ClearFilter = () => {
     setOrders(originalOrdersList); // trae la lista de pedidos original, sin ningun filtro
     setTipo("");
+    setFiltroVendedor("");
+    setFiltroEntrega("");
+    setFiltroAbono("");
     setQuery("");
     setFilterName("");
     setFilterType("");
@@ -524,9 +652,140 @@ function OrderManager() {
       setCurrentPage(1);
       ClearPending();
       window.scrollTo(0, 0);
-
+      setFiltroVendedor("");
+      setFiltroEntrega("");
+      setFiltroAbono("");
       setIsLoading(false);
     } catch {
+      setIsLoading(false);
+    }
+  };
+  //#endregion
+
+  //#region Función para filtrar pedidos por vendedor
+  const filterResultSeller = async (seller) => {
+    setIsLoading(true);
+
+    try {
+      const selectedOption = listaVendedores.find(
+        (opt) => opt.idUsuario === parseInt(seller)
+      ); // Encontrar la opción seleccionada en la lista de vendedores
+
+      if (selectedOption) {
+        setNombreSelectedVendedor(selectedOption.nombre);
+
+        const ordersData = await GetOrders("", seller);
+        setOrders(ordersData);
+
+        setTitle(`Detalles de Pedidos del vendedor: ${selectedOption.nombre}`);
+        setQuery("");
+        document.getElementById("clear-filter").style.display = "flex";
+        document.getElementById("clear-filter2").style.display = "flex";
+        setFilterName(selectedOption.nombre);
+        setFilterType("seller");
+        setCurrentPage(1);
+        ClearPending();
+        window.scrollTo(0, 0);
+        setTipo("");
+        setFiltroEntrega("");
+        setFiltroAbono("");
+      } else {
+        setTitle("Detalles de Pedidos del vendedor: -");
+        setOrders([]);
+        setFilterName("-");
+        setFilterType("seller");
+      }
+
+      setIsLoading(false);
+    } catch (error) {
+      console.error("Error al filtrar resultados:", error);
+      setIsLoading(false);
+    }
+  };
+  //#endregion
+
+  //#region Función para filtrar pedidos por forma de entrega
+  const filterResultShipment = async (shipment) => {
+    setIsLoading(true);
+
+    try {
+      const selectedOption = listaEntregas.find(
+        (opt) => opt.idEnvio === parseInt(shipment)
+      );
+
+      if (selectedOption) {
+        const nombreEntrega = `${selectedOption.nombre}${
+          selectedOption.aclaracion ? ` - ${selectedOption.aclaracion}` : ""
+        }`;
+        setNombreSelectedEntrega(nombreEntrega);
+
+        const ordersData = await GetOrders("", "", shipment);
+        setOrders(ordersData);
+
+        setTitle(`Detalles de Pedidos con ${nombreEntrega}`);
+        setQuery("");
+        document.getElementById("clear-filter").style.display = "flex";
+        document.getElementById("clear-filter2").style.display = "flex";
+        setFilterName(nombreEntrega);
+        setFilterType("shipment");
+        setCurrentPage(1);
+        ClearPending();
+        window.scrollTo(0, 0);
+        setTipo("");
+        setFiltroVendedor("");
+        setFiltroAbono("");
+      } else {
+        setTitle("Detalles de Pedidos con -");
+        setOrders([]);
+        setFilterName("-");
+        setFilterType("shipment");
+      }
+
+      setIsLoading(false);
+    } catch (error) {
+      console.error("Error al filtrar resultados por envío:", error);
+      setIsLoading(false);
+    }
+  };
+  //#endregion
+
+  //#region Función para filtrar pedidos por metodo de pago
+  const filterResultPayment = async (payment) => {
+    setIsLoading(true);
+
+    try {
+      const selectedOption = listaAbonos.find(
+        (opt) => opt.idMetodoPago === parseInt(payment)
+      );
+
+      if (selectedOption) {
+        setNombreSelectedAbono(selectedOption.nombre);
+
+        const ordersData = await GetOrders("", "", "", payment);
+        setOrders(ordersData);
+
+        setTitle(`Detalles de Pedidos pagados con ${selectedOption.nombre}`);
+        setQuery("");
+        document.getElementById("clear-filter").style.display = "flex";
+        document.getElementById("clear-filter2").style.display = "flex";
+        setFilterName(selectedOption.nombre);
+        setFilterType("payment");
+        setCurrentPage(1);
+        ClearPending();
+        window.scrollTo(0, 0);
+        setTipo("");
+        setFiltroVendedor("");
+        setFiltroEntrega("");
+      } else {
+        setTitle("Detalles de Pedidos pagados con -");
+        setOrders([]);
+        setFilterName("-");
+        setFilterType("payment");
+      }
+
+      setIsLoading(false);
+    } catch (error) {
+      console.error("Error al filtrar resultados por método de pago:", error);
       setIsLoading(false);
     }
   };
@@ -537,7 +796,7 @@ function OrderManager() {
     setIsLoading(true);
     try {
       if (pending === false) {
-        const ordersData = await GetOrders("", pending);
+        const ordersData = await GetOrders("", "", "", "", pending);
         setOrders(ordersData);
         // Hacer una copia de la lista original
 
@@ -550,6 +809,9 @@ function OrderManager() {
         setCurrentPage(1);
         window.scrollTo(0, 0);
         setTipo("");
+        setFiltroVendedor("");
+        setFiltroEntrega("");
+        setFiltroAbono("");
       } else {
         ClearFilter();
       }
@@ -619,6 +881,9 @@ function OrderManager() {
 
           setOrders(originalOrdersList); // trae la lista de pedidos original, sin ningun filtro
           setTipo("");
+          setFiltroVendedor("");
+          setFiltroEntrega("");
+          setFiltroAbono("");
           setFilterName("");
           setFilterType("");
           setTitle("Detalles de Pedidos");
@@ -878,6 +1143,65 @@ function OrderManager() {
               setCurrentPage(1);
             }
 
+            if (filterType === "seller") {
+              const result = prevOrders.filter((order) => {
+                return order.vendedor === filterName;
+              });
+
+              setTitle(`Detalles de Pedidos del vendedor: ${filterName}`);
+              setOrders(result);
+              setQuery("");
+              document.getElementById("clear-filter").style.display = "flex";
+              document.getElementById("clear-filter2").style.display = "flex";
+              setFilterName(filterName);
+              setFilterType("seller");
+              ClearPending();
+              setCurrentPage(1);
+            }
+
+            if (filterType === "shipment") {
+              const result = prevOrders.filter((order) => {
+                // Verificar si filterName tiene un guion seguido de texto adicional
+                const match = filterName.match(/^(.*)\s*-\s*(.*)$/);
+                
+                if (match) {
+                  // Si hay coincidencia con el patrón de guion, comparar entrega y aclaracionEntrega
+                  const entregaPart = match[1].trim();
+                  const aclaracionPart = match[2].trim();
+                  return order.entrega === entregaPart && order.aclaracionEntrega === aclaracionPart;
+                } else {
+                  // Si no hay guion, comparar solo con entrega
+                  return order.entrega === filterName;
+                }
+              });
+
+              setTitle(`Detalles de Pedidos con retiro ${filterName}`);
+              setOrders(result);
+              setQuery("");
+              document.getElementById("clear-filter").style.display = "flex";
+              document.getElementById("clear-filter2").style.display = "flex";
+              setFilterName(filterName);
+              setFilterType("shipment");
+              ClearPending();
+              setCurrentPage(1);
+            }
+
+            if (filterType === "payment") {
+              const result = prevOrders.filter((order) => {
+                return order.abono === filterName;
+              });
+
+              setTitle(`Detalles de Pedidos pagados con ${filterName}`);
+              setOrders(result);
+              setQuery("");
+              document.getElementById("clear-filter").style.display = "flex";
+              document.getElementById("clear-filter2").style.display = "flex";
+              setFilterName(filterName);
+              setFilterType("payment");
+              ClearPending();
+              setCurrentPage(1);
+            }
+
             if (filterType === "pending") {
               const result = prevOrders.filter((order) => {
                 return order.verificado === false;
@@ -927,14 +1251,14 @@ function OrderManager() {
 
   //#region Función para obtener el id del vendedor de un pedido
   const getIdVendedor = (nombre) => {
-    const vendedor = listaNombresVendedores.find((v) => v.nombre === nombre);
+    const vendedor = listaVendedores.find((v) => v.nombre === nombre);
     return vendedor ? vendedor.idUsuario : "-1";
   };
   //#endregion
 
   //#region Función para obtener el id de una forma de entrega de un pedido
   const getIdEntrega = (nombre, aclaracion) => {
-    const entrega = listaNombresEntregas.find(
+    const entrega = listaEntregas.find(
       (f) => f.nombre == nombre && f.aclaracion == aclaracion
     );
     return entrega.idEnvio;
@@ -943,7 +1267,7 @@ function OrderManager() {
 
   //#region Función para obtener el id del medio de pago de un pedido
   const getIdAbono = (nombre) => {
-    const abono = listaNombresAbonos.find((a) => a.nombre === nombre);
+    const abono = listaAbonos.find((a) => a.nombre === nombre);
     return abono.idMetodoPago;
   };
   //#endregiony
@@ -1066,47 +1390,45 @@ function OrderManager() {
                             <option hidden key={0} value="0">
                               Seleccione una forma de entrega
                             </option>
-                            {listaNombresEntregas &&
-                              Array.from(listaNombresEntregas).map(
-                                (opts, i) => {
-                                  const shouldShowEnvio =
-                                    (nombreEntrega
-                                      .toLowerCase()
-                                      .includes("local") &&
-                                      opts.disponibilidad !== 2) ||
-                                    (nombreEntrega
-                                      .toLowerCase()
-                                      .includes("domicilio") &&
-                                      opts.disponibilidad !== 1) ||
-                                    opts.disponibilidad === 3;
+                            {listaEntregas &&
+                              Array.from(listaEntregas).map((opts, i) => {
+                                const shouldShowEnvio =
+                                  (nombreEntrega
+                                    .toLowerCase()
+                                    .includes("local") &&
+                                    opts.disponibilidad !== 2) ||
+                                  (nombreEntrega
+                                    .toLowerCase()
+                                    .includes("domicilio") &&
+                                    opts.disponibilidad !== 1) ||
+                                  opts.disponibilidad === 3;
 
-                                  const shouldShowCatalogo =
-                                    (tipo === 1 &&
-                                      opts.disponibilidadCatalogo !== 2) ||
-                                    (tipo === 2 &&
-                                      opts.disponibilidadCatalogo !== 1) ||
-                                    opts.disponibilidadCatalogo === 3;
+                                const shouldShowCatalogo =
+                                  (tipo === 1 &&
+                                    opts.disponibilidadCatalogo !== 2) ||
+                                  (tipo === 2 &&
+                                    opts.disponibilidadCatalogo !== 1) ||
+                                  opts.disponibilidadCatalogo === 3;
 
-                                  const shouldShow =
-                                    shouldShowEnvio && shouldShowCatalogo;
+                                const shouldShow =
+                                  shouldShowEnvio && shouldShowCatalogo;
 
-                                  return shouldShow ? (
-                                    <option
-                                      className="btn-option"
-                                      key={i}
-                                      value={opts.idEnvio}
-                                      data-nombre={opts.nombre}
-                                      data-costo={opts.costo}
-                                      disabled={!opts.habilitado}
-                                    >
-                                      {opts.nombre} (${opts.costo})
-                                      {opts.aclaracion
-                                        ? ` - ${opts.aclaracion}`
-                                        : ""}
-                                    </option>
-                                  ) : null;
-                                }
-                              )}
+                                return shouldShow ? (
+                                  <option
+                                    className="btn-option"
+                                    key={i}
+                                    value={opts.idEnvio}
+                                    data-nombre={opts.nombre}
+                                    data-costo={opts.costo}
+                                    disabled={!opts.habilitado}
+                                  >
+                                    {opts.nombre} (${opts.costo})
+                                    {opts.aclaracion
+                                      ? ` - ${opts.aclaracion}`
+                                      : ""}
+                                  </option>
+                                ) : null;
+                              })}
                           </select>
                         </div>
 
@@ -1128,19 +1450,17 @@ function OrderManager() {
                             <option hidden key={0} value="0">
                               Seleccione un vendedor
                             </option>
-                            {listaNombresVendedores &&
-                              Array.from(listaNombresVendedores).map(
-                                (opts, i) => (
-                                  <option
-                                    className="btn-option"
-                                    key={i}
-                                    value={opts.idUsuario}
-                                    disabled={!opts.activo}
-                                  >
-                                    {opts.nombre}
-                                  </option>
-                                )
-                              )}
+                            {listaVendedores &&
+                              Array.from(listaVendedores).map((opts, i) => (
+                                <option
+                                  className="btn-option"
+                                  key={i}
+                                  value={opts.idUsuario}
+                                  disabled={!opts.activo}
+                                >
+                                  {opts.nombre}
+                                </option>
+                              ))}
                             <option className="no-vendedor" value="-1">
                               No recibió atención
                             </option>
@@ -1189,8 +1509,8 @@ function OrderManager() {
                               Seleccione un medio de pago
                             </option>
 
-                            {listaNombresAbonos &&
-                              Array.from(listaNombresAbonos).map((opts, i) => {
+                            {listaAbonos &&
+                              Array.from(listaAbonos).map((opts, i) => {
                                 const shouldShowEnvio =
                                   (nombreEntrega
                                     .toLowerCase()
@@ -1303,7 +1623,7 @@ function OrderManager() {
           >
             <div className="modal-dialog modal-dialog2">
               <div className="modal-content">
-                <div className="modal-header2">
+                <div className="modal-header2 wrap-modal">
                   <h1 className="modal-title2" id="exampleModalLabel">
                     Filtros
                   </h1>
@@ -1343,7 +1663,7 @@ function OrderManager() {
                           }}
                         >
                           <option hidden key={0} value="0">
-                            Seleccione una opción
+                            Seleccione un tipo de pedido
                           </option>
                           <option className="btn-option" value="Minorista">
                             Minorista
@@ -1351,6 +1671,133 @@ function OrderManager() {
                           <option className="btn-option" value="Mayorista">
                             Mayorista
                           </option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <p className="filter-separator"></p>
+
+                    <div
+                      className="filter-btn-container"
+                      data-bs-toggle="collapse"
+                      href="#collapseCategory"
+                      role="button"
+                      aria-expanded="false"
+                      aria-controls="collapseCategory"
+                    >
+                      <p className="filter-btn-name">VENDEDORES</p>
+                      <div className="form-group-input">
+                        <select
+                          className="input2"
+                          aria-label="Vendedor"
+                          style={{ cursor: "pointer" }}
+                          name="vendedor"
+                          id="vendedor"
+                          value={filtroVendedor}
+                          onChange={(e) => {
+                            setFiltroVendedor(e.target.value);
+                            filterResultSeller(e.target.value);
+                          }}
+                        >
+                          <option hidden key={0} value="">
+                            Seleccione un vendedor
+                          </option>
+                          {listaVendedores &&
+                            Array.from(listaVendedores).map((opts, i) => (
+                              <option
+                                className="btn-option"
+                                key={i}
+                                value={opts.idUsuario}
+                              >
+                                {opts.nombre}
+                              </option>
+                            ))}
+                          <option className="no-vendedor" value={"-1"}>
+                            No recibió atención
+                          </option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <p className="filter-separator"></p>
+
+                    <div
+                      className="filter-btn-container"
+                      data-bs-toggle="collapse"
+                      href="#collapseCategory"
+                      role="button"
+                      aria-expanded="false"
+                      aria-controls="collapseCategory"
+                    >
+                      <p className="filter-btn-name">F. ENTREGAS</p>
+                      <div className="form-group-input">
+                        <select
+                          className="input2"
+                          aria-label="Entrega"
+                          style={{ cursor: "pointer" }}
+                          name="entrega"
+                          id="entrega"
+                          value={filtroEntrega}
+                          onChange={(e) => {
+                            setFiltroEntrega(e.target.value);
+                            filterResultShipment(e.target.value);
+                          }}
+                        >
+                          <option hidden key={0} value="">
+                            Seleccione una forma de entrega
+                          </option>
+                          {listaEntregas &&
+                            Array.from(listaEntregas).map((opts, i) => (
+                              <option
+                                className="btn-option"
+                                key={i}
+                                value={opts.idEnvio}
+                              >
+                                {opts.nombre}{" "}
+                                {opts.aclaracion ? ` - ${opts.aclaracion}` : ""}
+                              </option>
+                            ))}
+                        </select>
+                      </div>
+                    </div>
+
+                    <p className="filter-separator"></p>
+
+                    <div
+                      className="filter-btn-container"
+                      data-bs-toggle="collapse"
+                      href="#collapseCategory"
+                      role="button"
+                      aria-expanded="false"
+                      aria-controls="collapseCategory"
+                    >
+                      <p className="filter-btn-name">MEDIOS DE PAGO</p>
+                      <div className="form-group-input">
+                        <select
+                          className="input2"
+                          aria-label="Abono"
+                          style={{ cursor: "pointer" }}
+                          name="abono"
+                          id="abono"
+                          value={filtroAbono}
+                          onChange={(e) => {
+                            setFiltroAbono(e.target.value);
+                            filterResultPayment(e.target.value);
+                          }}
+                        >
+                          <option hidden key={0} value="">
+                            Seleccione un medio de pago
+                          </option>
+                          {listaAbonos &&
+                            Array.from(listaAbonos).map((opts, i) => (
+                              <option
+                                className="btn-option"
+                                key={i}
+                                value={opts.idMetodoPago}
+                              >
+                                {opts.nombre}
+                              </option>
+                            ))}
                         </select>
                       </div>
                     </div>
@@ -1400,7 +1847,12 @@ function OrderManager() {
 
           {(orders.length > 0 ||
             (orders.length === 0 &&
-              (pending === true || tipo !== "" || query !== ""))) && (
+              (pending === true ||
+                tipo !== "" ||
+                filtroVendedor !== "" ||
+                filtroEntrega !== "" ||
+                filtroAbono !== "" ||
+                query !== ""))) && (
             <div className="filters-left2">
               <div className="pagination-count3">
                 <div className="search-container">

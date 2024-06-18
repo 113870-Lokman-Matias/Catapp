@@ -30,6 +30,21 @@ namespace API.Services.PedidoServices.Queries.GetPedidosQuery
           query = query.Where(x => x.IdTipoPedidoNavigation.Nombre == request.Type);
         }
 
+         if (request.Seller.HasValue)
+        {
+          query = query.Where(x => x.IdVendedor == request.Seller.Value);
+        }
+
+        if (request.Shipment.HasValue)
+        {
+          query = query.Where(x => x.IdMetodoEntrega == request.Shipment.Value);
+        }
+
+        if (request.Payment.HasValue)
+        {
+          query = query.Where(x => x.IdMetodoPago == request.Payment.Value);
+        }
+
         if (request.Status.HasValue)
         {
           query = query.Where(x => x.Verificado == request.Status.Value);

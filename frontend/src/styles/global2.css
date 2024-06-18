@@ -620,6 +620,10 @@ input[type="number"] {
   margin-top: 20px;
 }
 
+.wrap-modal{
+  flex-wrap: wrap;
+}
+
 .modal-title2 {
   position: relative;
   max-width: 100%;

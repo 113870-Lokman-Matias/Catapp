@@ -1,7 +1,13 @@
 import axios from "axios";
 
 //#region Función para obtener los pedidos para la lista administrativa con filtros opcionales de Type y Pending
-async function GetOrders(Type = null, Status = null) {
+async function GetOrders(
+  Type = null,
+  Seller = null,
+  Shipment = null,
+  Payment = null,
+  Status = null
+) {
   const token = localStorage.getItem("token"); // Obtener el token almacenado en el localStorage
   const headers = {
     Authorization: `Bearer ${token}`, // Agregar el encabezado Authorization con el valor del token
@@ -12,6 +18,15 @@ async function GetOrders(Type = null, Status = null) {
   // Agregar los parámetros de los filtros opcionales a la URL si están presentes
   if (Type !== null) {
     url += `?Type=${Type}`;
+  }
+  if (Seller !== null) {
+    url += `&Seller=${Seller}`;
+  }
+  if (Shipment !== null) {
+    url += `&Shipment=${Shipment}`;
+  }
+  if (Payment !== null) {
+    url += `&Payment=${Payment}`;
   }
   if (Status !== null) {
     url += `&Status=${Status}`;

@@ -32,9 +32,9 @@ public class PedidoController : ControllerBase
 
   [HttpGet]
   [Authorize(Roles = "SuperAdmin, Supervisor, Vendedor")]
-  public async Task<ListaPedidosDto> GetPedidos(string? Type = null, bool? Status = null)
+  public async Task<ListaPedidosDto> GetPedidos(string? Type = null, int? Seller = null, int? Shipment = null, int? Payment = null, bool? Status = null)
   {
-    var query = new GetPedidosQuery(Type, Status);
+    var query = new GetPedidosQuery(Type, Seller, Shipment, Payment, Status);
     var pedidos = await _mediator.Send(query);
     return pedidos;
   }
