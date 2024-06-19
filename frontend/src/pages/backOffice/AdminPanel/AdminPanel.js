@@ -218,13 +218,15 @@ function AdminPanel() {
                 <ResetPassword className="logout" />
               </button>
 
-              <Link
-                to="/gestionar-configuraciones"
-                className="btn-logout"
-                aria-label="Configuraciones"
-              >
-                <Settings className="logout" />
-              </Link>
+              {(rolUsuario === "Supervisor" || rolUsuario === "SuperAdmin") && (
+                <Link
+                  to="/gestionar-configuraciones"
+                  className="btn-logout"
+                  aria-label="Configuraciones"
+                >
+                  <Settings className="logout" />
+                </Link>
+              )}
 
               <Link to="/login" className="btn-logout" aria-label="Logout">
                 <Logout className="logout" />

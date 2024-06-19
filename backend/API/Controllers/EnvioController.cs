@@ -28,7 +28,7 @@ namespace API.Controllers
 
         [HttpGet]
         [Route("manage")]
-        [Authorize(Roles = "SuperAdmin, Supervisor")]
+        [Authorize(Roles = "SuperAdmin, Supervisor, Vendedor")]
         public Task<ListaEnviosDto> GetFormasEntregaManage()
         {
             var enviosManage = _mediator.Send(new GetEnviosManageQuery());

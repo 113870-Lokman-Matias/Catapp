@@ -71,7 +71,7 @@ public class PedidoController : ControllerBase
   }
 
   [HttpGet("id/{id}")]
-  [Authorize(Roles = "SuperAdmin, Gerente")]
+  [Authorize(Roles = "SuperAdmin, Gerente, Vendedor")]
   public async Task<PedidoDto> GetPedidoById(Guid id)
   {
     var pedido = await _mediator.Send(new GetPedidoByIdQuery(id));

@@ -43,7 +43,7 @@ public class UsuarioController : ControllerBase
 
 
   [HttpGet("manage/{role}")]
-  [Authorize(Roles = "SuperAdmin, Admin, Gerente, Supervisor")]
+  [Authorize(Roles = "SuperAdmin, Admin, Gerente, Supervisor, Vendedor")]
   public Task<ListaUsuariosDto> GetUsuariosByRoleManage(string role)
   {
     var usuariosByRoleManage = _mediator.Send(new GetUsuariosByRolManageQuery(role));

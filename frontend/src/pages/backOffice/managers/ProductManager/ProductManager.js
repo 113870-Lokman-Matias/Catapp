@@ -1633,10 +1633,7 @@ function ProductManager() {
             </div>
 
             {categories.length === 0 && isLoading === false && (
-              <Link
-                to="/gestionar-categorias"
-                className="btn btn-add-disabled"
-              >
+              <Link to="/gestionar-categorias" className="btn btn-add-disabled">
                 Para añadir un producto, agregue al menos una categoría.
               </Link>
             )}
