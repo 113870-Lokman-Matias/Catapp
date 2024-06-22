@@ -726,6 +726,146 @@ const CatalogueCart = () => {
       } catch (error) {
         console.error("Error al obtener la cotización: " + error);
       }
+
+      try {
+        if (query !== "") {
+          const products = await GetProductsByQuery(
+            query,
+            pathname.includes("minorista") ? 1 : 2
+          );
+          setProducts(products);
+
+          if (pathname.includes("mayorista")) {
+            GetCategoriesMayorista(setCategories);
+          } else if (pathname.includes("minorista")) {
+            GetCategoriesMinorista(setCategories);
+          }
+        } else {
+          // Iterar sobre las categorías abiertas en openCategories
+          if (pathname.includes("mayorista")) {
+            GetCategoriesMayorista(setCategories);
+          } else if (pathname.includes("minorista")) {
+            GetCategoriesMinorista(setCategories);
+          }
+
+          for (const category of openCategories) {
+            let products;
+
+            try {
+              setIsLoadingProductByCategory(true);
+              products = await GetProductsByCategory(
+                category,
+                pathname.includes("minorista") ? 1 : 2
+              );
+            } catch (error) {
+              console.log(
+                "Error al obtener productos para la categoría",
+                category,
+                error
+              );
+            } finally {
+              setIsLoadingProductByCategory(false);
+            }
+
+            // Actualizar los productos para la categoría en categoryProducts
+            setCategoryProducts((prevProducts) => ({
+              ...prevProducts,
+              [category]: products,
+            }));
+
+            // Obtener las subcategorías para la categoría
+            const subcategories = categorySubcategories[category] || [];
+            for (const subcategory of subcategories) {
+              if (openSubcategories.includes(subcategory.nombre)) {
+                let subcategoryProducts;
+
+                try {
+                  subcategoryProducts = await GetProductsBySubcategory(
+                    subcategory.idCategoria,
+                    subcategory.idSubcategoria,
+                    pathname.includes("minorista") ? 1 : 2
+                  );
+                } catch (error) {
+                  console.log(
+                    "Error al obtener productos para la subcategoría",
+                    subcategory.nombre,
+                    error
+                  );
+                }
+
+                // Actualizar los productos para la subcategoría en subcategoryProducts
+                setSubcategoryProducts((prevProducts) => ({
+                  ...prevProducts,
+                  [subcategory.nombre]: subcategoryProducts,
+                }));
+              }
+            }
+          }
+        }
+
+        const isMayorista = pathname.includes("mayorista");
+        const isMinorista = pathname.includes("minorista");
+
+        if (isMayorista) {
+          setClientType("Mayorista");
+          await GetCategoriesMayorista(setCategories);
+        } else if (isMinorista) {
+          setClientType("Minorista");
+          await GetCategoriesMinorista(setCategories);
+        }
+
+        const storedCartKey = isMayorista
+          ? "shoppingCartMayorista"
+          : "shoppingCartMinorista";
+        const storedCart = localStorage.getItem(storedCartKey);
+
+        let newTotalQuantity = 0;
+
+        // Actualizar el carrito con los datos más recientes
+        if (storedCart) {
+          const parsedCart = JSON.parse(storedCart);
+          const updatedCart = {};
+          const updatedProductQuantities = {};
+
+          for (const productId in parsedCart) {
+            const product = await GetProductById(
+              productId,
+              pathname.includes("minorista") ? 1 : 2
+            );
+            if (product) {
+              // Verificar si el producto tiene stock transitorio mayor que cero
+              let updatedQuantity = parsedCart[productId].cantidad;
+
+              updatedCart[productId] = {
+                ...product,
+                cantidad: updatedQuantity,
+                aclaraciones: parsedCart[productId].aclaraciones,
+              };
+              updatedProductQuantities[productId] = updatedQuantity;
+
+              // Actualizar el totalQuantity sumando la cantidad actualizada de este producto en el carrito
+              newTotalQuantity += updatedQuantity;
+            }
+          }
+
+          // Actualizar el carrito y el local storage con los productos actualizados
+          setCart(updatedCart);
+          updateLocalStorage(updatedCart);
+
+          // Actualizar el totalQuantity en el estado
+          setTotalQuantity(newTotalQuantity);
+          setProductQuantities(updatedProductQuantities);
+        }
+
+        // Actualizar las categorías después de actualizar productos
+        if (pathname.includes("mayorista")) {
+          GetCategoriesMayorista(setCategories);
+        } else if (pathname.includes("minorista")) {
+          GetCategoriesMinorista(setCategories);
+        }
+      } catch (error) {
+        console.error("Error al obtener los productos: " + error);
+      }
     });
 
     connection.on("MensajeCrudEntrega", async () => {
