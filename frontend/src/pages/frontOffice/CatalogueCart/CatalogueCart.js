@@ -1775,7 +1775,7 @@ const CatalogueCart = () => {
 
         mensaje += `*DNI*:\n_${dni}_\n\n`;
 
-        mensaje += `*Entrega*:\n_${nombreEnvio} ($${costoEnvioDomicilio})${
+        mensaje += `*Entrega*:\n_${nombreEnvio} ($${costoEnvioDomicilio || costoEnvioDomicilio === 0 ? costoEnvioDomicilio : 0})${
           aclaracionEnvio ? ` - ${aclaracionEnvio}` : ""
         }_\n\n`;
 
