@@ -146,6 +146,9 @@ function ProductManager() {
   const [title, setTitle] = useState(["Detalles de Productos"]);
 
   const [categorySign, setCategorySign] = useState("+");
+  const [subcategorySigns, setSubcategorySigns] = useState({});
+  const [openSubcategory, setOpenSubcategory] = useState(null);
+  const [isOpen, setIsOpen] = useState({});
 
   const [filterName, setFilterName] = useState("");
 
@@ -328,6 +331,48 @@ function ProductManager() {
   };
   //#endregion
 
+  //#region Función para mostrar '+' o '-' cuando se toca en el 'collapse' del filtro de subcategoría
+  const handleSubcategoryClick = (subcategoryName) => {
+    setSubcategorySigns((prevSigns) => ({
+      ...prevSigns,
+      [subcategoryName]: prevSigns[subcategoryName] === "-" ? "+" : "-",
+    }));
+
+    // Actualiza el estado de la subcategoría actualmente abierta
+    setOpenSubcategory(subcategoryName);
+
+    // Actualiza el estado isOpen de cada subcategoría
+    setIsOpen((prevState) => ({
+      ...prevState,
+      [subcategoryName]: !prevState[subcategoryName],
+    }));
+
+    if (openSubcategory === subcategoryName) {
+      setOpenSubcategory(null);
+      setSubcategorySigns((prevSigns) => ({
+        ...prevSigns,
+        [subcategoryName]: "+",
+      }));
+    } else {
+      // Cierra cualquier otro collapse abierto
+      setOpenSubcategory(subcategoryName);
+      // Cambia el signo de la subcategoría actualmente abierta, si hay alguna
+      if (openSubcategory) {
+        setSubcategorySigns((prevSigns) => ({
+          ...prevSigns,
+          [openSubcategory]: "+",
+          [subcategoryName]: "-",
+        }));
+      } else {
+        setSubcategorySigns((prevSigns) => ({
+          ...prevSigns,
+          [subcategoryName]: "-",
+        }));
+      }
+    }
+  };
+  //#endregion
+
   //#region Función para actualizar el stock según la cantidad de unidades a quitar
   const handleUnidadesQuitarChange = (event) => {
     const unidades = event.target.value;
@@ -407,6 +452,16 @@ function ProductManager() {
       }
     }
 
+    const itemsSubcategory = document.getElementsByClassName("items-collapse2"); // identificamos el boton con el nombre de la categoria
+    for (let i = 0; i < itemsSubcategory.length; i++) {
+      //recorremos los botones con las opciones de subcategorías
+      if (itemsSubcategory[i].classList.contains("active")) {
+        // reconoce la subcategoria clickeada
+        itemsSubcategory[i].classList.remove("active"); // le remueve la clase 'active' a la categoria que se clickeo anterioremnte para filtrar y asi luego de limpiar el filtro ya no tiene mas la clase 'active'
+        break;
+      }
+    }
+
     if (hidden === true && filterName !== "Oculto") {
       setHidden(false);
     }
@@ -460,6 +515,36 @@ function ProductManager() {
       document.getElementById("clear-filter2").style.display = "flex";
       setFilterName(category);
       setFilterType("category");
+      setCurrentPage(1);
+      window.scrollTo(0, 0);
+
+      setIsLoading(false);
+    } catch {
+      setIsLoading(false);
+    }
+  };
+
+  const filterResultSubcategory = async (subcategory) => {
+    setIsLoading(true);
+
+    try {
+      const subcategoryProducts = await GetProductsManage(
+        "",
+        "",
+        "",
+        "",
+        subcategory
+      );
+      setProducts(subcategoryProducts);
+
+      setTitle(`Detalles de Productos de ${subcategory}`);
+      setQuery("");
+      setHidden(false);
+      setNostock(false);
+      document.getElementById("clear-filter").style.display = "flex";
+      document.getElementById("clear-filter2").style.display = "flex";
+      setFilterName(subcategory);
+      setFilterType("subcategory");
       setCurrentPage(1);
       window.scrollTo(0, 0);
 
@@ -2706,6 +2791,21 @@ function ProductManager() {
                       <div className="card-collapse">
                         {categories.map((category, index) => {
                           const handleClick = () => {
+                            const itemsSubcategory =
+                              document.getElementsByClassName(
+                                "items-collapse2"
+                              ); // identificamos el boton con el nombre de la categoria
+                            for (let i = 0; i < itemsSubcategory.length; i++) {
+                              //recorremos los botones con las opciones de subcategorías
+                              if (
+                                itemsSubcategory[i].classList.contains("active")
+                              ) {
+                                // reconoce la subcategoria clickeada
+                                itemsSubcategory[i].classList.remove("active"); // le remueve la clase 'active' a la categoria que se clickeo anterioremnte para filtrar y asi luego de limpiar el filtro ya no tiene mas la clase 'active'
+                                break;
+                              }
+                            }
+
                             if (!category.isActive) {
                               filterResultCategory(category.nombre);
                               setCategories((prevState) =>
@@ -2719,21 +2819,128 @@ function ProductManager() {
                           };
 
                           return (
-                            <p
-                              key={index}
-                              id="items-collapse"
-                              className={`items-collapse ${
-                                category.isActive ? "active" : ""
-                              }`}
-                              onClick={handleClick}
-                              style={{
-                                cursor: category.isActive
-                                  ? "not-allowed"
-                                  : "pointer",
-                              }}
-                            >
-                              {category.nombre}
-                            </p>
+                            <div className="subcategory-collapse">
+                              <p
+                                key={index}
+                                id="items-collapse"
+                                className={`filter-btn-name-subcategory items-collapse ${
+                                  category.isActive ? "active" : ""
+                                }`}
+                                onClick={handleClick}
+                                style={{
+                                  cursor: category.isActive
+                                    ? "not-allowed"
+                                    : "pointer",
+                                }}
+                              >
+                                {category.nombre}
+                              </p>
+
+                              {category.nombre !== "Promociones" &&
+                                category.nombre !== "Destacados" && (
+                                  <div
+                                    className="filter-btn-container"
+                                    onClick={() => {
+                                      handleSubcategoryClick(category.nombre);
+                                      RetrieveCategorySubcategories(
+                                        category.idCategoria
+                                      );
+                                    }}
+                                    data-bs-toggle="collapse"
+                                    href={`#collapseSubcategory-${category.nombre}`}
+                                    role="button"
+                                    aria-expanded="false"
+                                    aria-controls={`collapseSubcategory-${category.nombre}`}
+                                  >
+                                    <p className="filter-btn-subcategory">
+                                      {subcategorySigns[category.nombre] || "+"}
+                                    </p>
+                                  </div>
+                                )}
+
+                              {category.nombre !== "Promociones" &&
+                                category.nombre !== "Destacados" && (
+                                  <div
+                                    className={`collapse ${
+                                      openSubcategory === category.nombre
+                                        ? "show"
+                                        : ""
+                                    }`}
+                                    id={`collapseSubcategory-${category.nombre}`}
+                                  >
+                                    <div className="card-collapse">
+                                      {subcategories.map(
+                                        (subcategory, index) => {
+                                          const handleClickSubcategory = () => {
+                                            if (!subcategory.isActive) {
+                                              filterResultSubcategory(
+                                                subcategory.nombre
+                                              );
+                                              setSubcategories((prevState) =>
+                                                prevState.map((subcat) =>
+                                                  subcat.nombre ===
+                                                  subcategory.nombre
+                                                    ? {
+                                                        ...subcat,
+                                                        isActive: true,
+                                                      }
+                                                    : {
+                                                        ...subcat,
+                                                        isActive: false,
+                                                      }
+                                                )
+                                              );
+
+                                              const items =
+                                                document.getElementsByClassName(
+                                                  "items-collapse"
+                                                ); // identificamos el boton con el nombre de la categoria
+                                              for (
+                                                let i = 0;
+                                                i < items.length;
+                                                i++
+                                              ) {
+                                                //recorremos los botones con las opciones de categorías
+                                                if (
+                                                  items[i].classList.contains(
+                                                    "active"
+                                                  )
+                                                ) {
+                                                  // reconoce la categoria clickeada
+                                                  items[i].classList.remove(
+                                                    "active"
+                                                  ); // le remueve la clase 'active' a la categoria que se clickeo anterioremnte para filtrar y asi luego de limpiar el filtro ya no tiene mas la clase 'active'
+                                                  break;
+                                                }
+                                              }
+                                            }
+                                          };
+
+                                          return (
+                                            <p
+                                              key={index}
+                                              id="items-collapse"
+                                              className={`items-collapse2 ${
+                                                subcategory.isActive
+                                                  ? "active"
+                                                  : ""
+                                              }`}
+                                              onClick={handleClickSubcategory}
+                                              style={{
+                                                cursor: subcategory.isActive
+                                                  ? "not-allowed"
+                                                  : "pointer",
+                                              }}
+                                            >
+                                              {subcategory.nombre}
+                                            </p>
+                                          );
+                                        }
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
+                            </div>
                           );
                         })}
                       </div>

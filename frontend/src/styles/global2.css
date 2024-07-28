@@ -620,7 +620,7 @@ input[type="number"] {
   margin-top: 20px;
 }
 
-.wrap-modal{
+.wrap-modal {
   flex-wrap: wrap;
 }
 
@@ -758,10 +758,28 @@ input[type="number"] {
   margin: 0;
 }
 
+.filter-btn-subcategory {
+  background-color: transparent;
+  border: none;
+  font-weight: 600;
+  text-align: left;
+  padding: 0;
+  margin: 0;
+}
+
 .filter-btn-name {
   background-color: transparent;
   border: none;
   color: #074465;
+  font-weight: 600;
+  text-align: left;
+  padding: 0;
+  width: 100px;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.filter-btn-name-subcategory {
   font-weight: 600;
   text-align: left;
   padding: 0;
