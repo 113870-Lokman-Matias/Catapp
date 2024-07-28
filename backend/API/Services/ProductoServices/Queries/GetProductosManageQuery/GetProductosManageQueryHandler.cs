@@ -47,6 +47,11 @@ namespace API.Services.ProductoServices.Queries.GetProductosManageQuery
             }
         }
 
+        if (!string.IsNullOrEmpty(request.Subcategory))
+        {
+              query = query.Where(x => x.IdSubcategoriaNavigation.Nombre == request.Subcategory);
+        }
+
         if (request.Hidden.HasValue)
         {
           query = query.Where(x => x.Ocultar == request.Hidden.Value);
