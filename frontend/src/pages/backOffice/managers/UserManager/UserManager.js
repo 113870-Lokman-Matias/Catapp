@@ -1769,7 +1769,7 @@ function UserManager() {
 
               {users.length > 0 ? (
                 usersTable
-                  .filter((user) => user.nombre !== "Super Admin")
+                  .filter((user) => user.rol !== "SuperAdmin")
                   .map(function fn(user, index) {
                     return (
                       <tbody key={1 + user.idUsuario}>
