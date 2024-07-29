@@ -701,6 +701,7 @@ COPY public.clientes (id_cliente, nombre_completo, dni, telefono, direccion, ent
 --
 
 COPY public.configuraciones (id_configuracion, direccion, url_direccion, horarios, cbu, alias, whatsapp, telefono, facebook, url_facebook, instagram, url_instagram, monto_mayorista, url_logo, codigo) FROM stdin;
+1	\N	\N	\N	\N	\N	0	\N	\N	\N	\N	\N	0	\N	\N
 \.
 
 
@@ -839,7 +840,7 @@ SELECT pg_catalog.setval('public.clientes_id_cliente_seq', 1, false);
 -- Name: configuraciones_id_configuracion_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.configuraciones_id_configuracion_seq', 1, false);
+SELECT pg_catalog.setval('public.configuraciones_id_configuracion_seq', 1, true);
 
 
 --
