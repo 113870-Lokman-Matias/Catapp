@@ -454,9 +454,7 @@ function ShipmentManager() {
                   ? 1
                   : 2
                 : 3,
-            aclaracion: `${
-              aclaracion.charAt(0).toUpperCase() + aclaracion.slice(1)
-            }`,
+                aclaracion: `${(aclaracion ?? '').charAt(0).toUpperCase() + (aclaracion ?? '').slice(1)}`,
           },
           headers
         );
@@ -517,9 +515,7 @@ function ShipmentManager() {
                   ? 1
                   : 2
                 : 3,
-            aclaracion: `${
-              aclaracion.charAt(0).toUpperCase() + aclaracion.slice(1)
-            }`,
+                aclaracion: `${(aclaracion ?? '').charAt(0).toUpperCase() + (aclaracion ?? '').slice(1)}`,
           },
           headers
         );
