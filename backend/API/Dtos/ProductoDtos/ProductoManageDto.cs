@@ -17,7 +17,11 @@
     public string IdImagen { get; set; } = null!;
     public string UrlImagen { get; set; } = null!;
     public bool Ocultar { get; set; }
+    public bool EnPromocion { get; set; }
+    public bool EnDestacado { get; set; }
     public int IdDivisa { get; set; }
     public int StockTransitorio { get; set; }
+    public int? IdSubcategoria { get; set; }
+    public string? NombreSubcategoria { get; set; }
   }
 }

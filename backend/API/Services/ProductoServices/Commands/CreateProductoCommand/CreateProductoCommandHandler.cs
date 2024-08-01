@@ -41,6 +41,14 @@ namespace API.Services.ProductoServices.Commands.CreateProductoCommand
           var productoToCreate = _mapper.Map<Producto>(request);
 
           productoToCreate.StockTransitorio = request.Stock;
+          if (request.IdSubcategoria == -1)
+          {
+            productoToCreate.IdSubcategoria = null; // Asignar null si el valor es -1 (representando "ninguno")
+          }
+          else
+          {
+            productoToCreate.IdSubcategoria = request.IdSubcategoria; // Asignar el valor normal
+          }
 
           _context.Attach(productoToCreate);
 

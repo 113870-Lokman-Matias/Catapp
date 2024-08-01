@@ -3,10 +3,14 @@ using Microsoft.AspNetCore.Mvc;
 using MediatR;
 using API.Dtos.CategoriaDtos;
 using API.Services.CategoriaServices.Queries.GetCategoriasQuery;
+using API.Services.CategoriaServices.Queries.GetCategoriasMinoristaQuery;
+using API.Services.CategoriaServices.Queries.GetCategoriasMayoristaQuery;
+using API.Services.CategoriaServices.Queries.GetCategoriaByIdQuery;
 using API.Services.CategoriaServices.Commands.CreateCategoriaCommand;
 using API.Services.CategoriaServices.Commands.UpdateCategoriaCommand;
 using API.Services.CategoriaServices.Commands.DeleteCategoriaCommand;
 using API.Services.CategoriaServices.Queries.GetCategoriasManageQuery;
+using Microsoft.AspNetCore.SignalR;
 
 namespace API.Controllers;
 
@@ -15,10 +19,12 @@ namespace API.Controllers;
 public class CategoriaController : ControllerBase
 {
   private readonly IMediator _mediator;
+  private readonly IHubContext<GeneralHub> _hubContext;
 
-  public CategoriaController(IMediator mediator)
+  public CategoriaController(IMediator mediator, IHubContext<GeneralHub> hubContext)
   {
     _mediator = mediator;
+    _hubContext = hubContext;
   }
 
 
@@ -39,12 +45,39 @@ public class CategoriaController : ControllerBase
     return categorias;
   }
 
+  [HttpGet]
+  [Route("minorista")]
+  public Task<ListaCategoriasDto> GetCategoriasMinoristas()
+  {
+    var categoriasMinoristas = _mediator.Send(new GetCategoriasMinoristaQuery());
+    return categoriasMinoristas;
+  }
+
+  [HttpGet]
+  [Route("mayorista")]
+  public Task<ListaCategoriasDto> GetCategoriasMayoristas()
+  {
+    var categoriasMayoristas = _mediator.Send(new GetCategoriasMayoristaQuery());
+    return categoriasMayoristas;
+  }
+
+  [HttpGet("id/{id}")]
+  [Authorize(Roles = "SuperAdmin, Supervisor, Vendedor")]
+  public async Task<CategoriaDto> GetCategoriaById(int id)
+  {
+    var categoria = await _mediator.Send(new GetCategoriaByIdQuery(id));
+    return categoria;
+  }
+
 
   [HttpPost]
   [Authorize(Roles = "SuperAdmin, Supervisor, Vendedor")]
   public async Task<CategoriaDto> CreateCategoria(CreateCategoriaCommand command)
   {
     var categoriaCreada = await _mediator.Send(command);
+
+    await _hubContext.Clients.All.SendAsync("MensajeCrudCategoria", "Se ha creado una nueva categoria");
+
     return categoriaCreada;
   }
 
@@ -55,6 +88,9 @@ public class CategoriaController : ControllerBase
   {
     command.IdCategoria = id;
     var categoriaActualizada = await _mediator.Send(command);
+
+    await _hubContext.Clients.All.SendAsync("MensajeCrudCategoria", "Se ha actualizado una categoria existente");
+
     return categoriaActualizada;
   }
 
@@ -64,6 +100,9 @@ public class CategoriaController : ControllerBase
   public async Task<CategoriaDto> DeleteCategoria(int id)
   {
     var categoriaEliminada = await _mediator.Send(new DeleteCategoriaCommand { IdCategoria = id });
+
+    await _hubContext.Clients.All.SendAsync("MensajeCrudCategoria", "Se ha eliminado una categoria existente");
+
     return categoriaEliminada;
   }
 

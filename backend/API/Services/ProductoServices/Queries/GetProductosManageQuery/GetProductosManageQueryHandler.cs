@@ -1,6 +1,7 @@
 ﻿using API.Data;
 using API.Dtos.CategoriaDtos;
 using API.Dtos.ProductoDtos;
+using API.Models;
 using AutoMapper;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -22,7 +23,46 @@ namespace API.Services.ProductoServices.Queries.GetProductosManageQuery
     {
       try
       {
-        var productosManage = await _context.Productos
+        IQueryable<Producto> query = _context.Productos;
+
+        // Apply filters based on the request parameters
+        if (!string.IsNullOrEmpty(request.Query))
+        {
+          query = query.Where(x => x.Nombre.ToLower().Contains(request.Query.ToLower()) || x.Descripcion.ToLower().Contains(request.Query.ToLower()));
+        }
+
+        if (!string.IsNullOrEmpty(request.Category))
+        {
+            if (request.Category.Equals("Promociones", StringComparison.OrdinalIgnoreCase))
+            {
+                query = query.Where(x => x.EnPromocion == true);
+            }
+            else if (request.Category.Equals("Destacados", StringComparison.OrdinalIgnoreCase))
+            {
+                query = query.Where(x => x.EnDestacado == true);
+            }
+            else
+            {
+                query = query.Where(x => x.IdCategoriaNavigation.Nombre == request.Category);
+            }
+        }
+
+        if (!string.IsNullOrEmpty(request.Subcategory))
+        {
+              query = query.Where(x => x.IdSubcategoriaNavigation.Nombre == request.Subcategory);
+        }
+
+        if (request.Hidden.HasValue)
+        {
+          query = query.Where(x => x.Ocultar == request.Hidden.Value);
+        }
+
+        if (request.Stock.HasValue)
+        {
+          query = query.Where(x => x.StockTransitorio == 0);
+        }
+
+        var productosManage = await query
             .Select(x => new ProductoManageDto
             {
               IdProducto = x.IdProducto,
@@ -40,8 +80,12 @@ namespace API.Services.ProductoServices.Queries.GetProductosManageQuery
               IdImagen = x.IdImagen,
               UrlImagen = x.UrlImagen,
               Ocultar = x.Ocultar,
+              EnPromocion = x.EnPromocion,
+              EnDestacado = x.EnDestacado,
               IdDivisa = x.IdDivisa,
-              StockTransitorio = x.StockTransitorio
+              StockTransitorio = x.StockTransitorio,
+              IdSubcategoria = x.IdSubcategoria,
+              NombreSubcategoria = x.IdSubcategoriaNavigation.Nombre
             })
             .OrderBy(x => x.Ocultar)
             .ThenBy(x => x.StockTransitorio)

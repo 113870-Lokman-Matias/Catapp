@@ -4,6 +4,7 @@ using API.Services.CotizacionServices.Queries.GetCotizacionDolarQuery;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 
 namespace API.Controllers
 {
@@ -12,10 +13,12 @@ namespace API.Controllers
     public class CotizacionController : ControllerBase
     {
         private readonly IMediator _mediator;
+        private readonly IHubContext<GeneralHub> _hubContext;
 
-        public CotizacionController(IMediator mediator)
+        public CotizacionController(IMediator mediator, IHubContext<GeneralHub> hubContext)
         {
             _mediator = mediator;
+            _hubContext = hubContext;
         }
 
         [HttpGet]
@@ -31,6 +34,9 @@ namespace API.Controllers
         public async Task<CotizacionDto> UpdateCotizacionDolar(UpdateCotizacionDolarCommand command)
         {
             var cotizacionDolarActualizada = await _mediator.Send(command);
+
+            await _hubContext.Clients.All.SendAsync("MensajeUpdateCotizacion", "Se ha actualizado la cotización dolar");
+
             return cotizacionDolarActualizada;
         }
     }

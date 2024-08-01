@@ -60,11 +60,29 @@ namespace API.Services.ProductoServices.Commands.UpdateProductoCommand
 
       RuleFor(p => p.Ocultar)
           .NotNull().WithMessage("Ocultar no puede ser nulo");
+
+      RuleFor(p => p.EnPromocion)
+          .NotNull().WithMessage("En promocion no puede ser nulo");
+
+      RuleFor(p => p.EnDestacado)
+          .NotNull().WithMessage("En destacado no puede ser nulo");
+
+      RuleFor(p => p.IdSubcategoria)
+          .NotEmpty().WithMessage("El id de la subcategoria no puede estar vacío")
+          .NotNull().WithMessage("El id de la subcategoria no puede ser nulo")
+          .MustAsync(SubcategoriaExiste).WithMessage("El id: {PropertyValue} no existe, ingrese un id de una subcategoria existente")
+          .Unless(p => p.IdSubcategoria == -1);
     }
 
     private async Task<bool> ProductoExiste(int id, CancellationToken token)
     {
       bool existe = await _context.Productos.AnyAsync(p => p.IdProducto == id);
+      return existe;
+    }
+
+    private async Task<bool> SubcategoriaExiste(int? id, CancellationToken token)
+    {
+      bool existe = await _context.Subcategorias.AnyAsync(p => p.IdSubcategoria == id);
       return existe;
     }
 

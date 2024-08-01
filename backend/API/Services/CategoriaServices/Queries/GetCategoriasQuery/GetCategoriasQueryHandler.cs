@@ -21,7 +21,8 @@ namespace API.Services.CategoriaServices.Queries.GetCategoriasQuery
       try
       {
         var categorias = await _context.Categorias
-            .Where(x => x.Ocultar == false)
+            .Include(c => c.Productos) // Incluir productos para contar
+            .Where(c => c.Ocultar == false && c.Productos.Any(p => p.Ocultar == false)) // Filtrar categorías y productos no ocultos
             .Select(x => new ListaCategoriaDto { 
                 IdCategoria = x.IdCategoria,
                 Nombre = x.Nombre,
@@ -29,6 +30,39 @@ namespace API.Services.CategoriaServices.Queries.GetCategoriasQuery
             })
             .OrderBy(x => x.Nombre)
             .ToListAsync();
+
+         var categoriasManuales = new List<ListaCategoriaDto>
+        {
+            new ListaCategoriaDto { IdCategoria = 9991, Nombre = "Promociones", UrlImagen = "https://yourfiles.cloud/uploads/4d751b925be85e50416ad5d00ae1369a/promociones.jpg" },
+            new ListaCategoriaDto { IdCategoria = 9992, Nombre = "Destacados", UrlImagen = "https://yourfiles.cloud/uploads/df67f39e67d6040d65e038dcf37226b9/destacados.png" }
+        };
+
+        // Agregar Promociones primero si hay productos en promoción
+        if (_context.Productos.Any(p => p.Ocultar == false && p.EnPromocion == true))
+        {
+            var promocionesCategoria = categoriasManuales.FirstOrDefault(c => c.IdCategoria == 9991);
+            if (!categorias.Any(c => c.IdCategoria == 9991))
+            {
+                categorias.Insert(0, promocionesCategoria);
+            }
+        }
+
+        // Agregar Destacados después de Promociones si hay productos destacados
+        if (_context.Productos.Any(p => p.Ocultar == false && p.EnDestacado == true))
+        {
+            var destacadosCategoria = categoriasManuales.FirstOrDefault(c => c.IdCategoria == 9992);
+            if (!categorias.Any(c => c.IdCategoria == 9992))
+            {
+                var indexPromociones = categorias.FindIndex(c => c.IdCategoria == 9991);
+                categorias.Insert(indexPromociones + 1, destacadosCategoria);
+            }
+        }
+
+        // Eliminar categorías manuales ya agregadas condicionalmente
+        categoriasManuales.RemoveAll(c => c.IdCategoria == 9991 || c.IdCategoria == 9992);
+
+        // Unir las categorías manuales y las categorías obtenidas de la base de datos
+        categoriasManuales.AddRange(categorias);
 
         if (categorias.Count > 0)
         {

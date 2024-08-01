@@ -1,8 +1,7 @@
 import Swal from "sweetalert2";
 import { ReactComponent as Filter } from "../../../../assets/svgs/filter.svg";
 import $ from "jquery";
-import { useNavigate } from "react-router-dom";
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet";
 
@@ -30,6 +29,8 @@ import { ReactComponent as RolInput } from "../../../../assets/svgs/rol.svg";
 import { ReactComponent as PasswordInput } from "../../../../assets/svgs/password.svg";
 //#endregion
 
+import Loader from "../../../../components/Loaders/LoaderCircle";
+
 import {
   GetUsers,
   GetUsersByRole,
@@ -41,6 +42,8 @@ import {
 
 function UserManager() {
   //#region Constantes
+  const [isLoading, setIsLoading] = useState(false);
+
   const pathname = window.location.pathname.toLowerCase();
 
   const [idUsuario, setIdUsuario] = useState("");
@@ -75,22 +78,19 @@ function UserManager() {
 
   const [originalUsersList, setOriginalUsersList] = useState(users);
 
-  const [title, setTitle] = useState("");
+  const [title, setTitle] = useState("Detalles de Usuarios");
 
   const [filterName, setFilterName] = useState("");
 
   const [filterType, setFilterType] = useState("");
 
   const [inactive, setInactive] = useState(false);
-
-  const tableRef = useRef(null);
+  const [rolFiltrado, setRolFiltrado] = useState("");
 
   const token = localStorage.getItem("token"); // Obtener el token del localStorage
   const headers = {
     Authorization: `Bearer ${token}`, // Agregar el encabezado Authorization con el valor del token
   };
-
-  const navigate = useNavigate();
 
   //#region Constantes de la paginacion
   const [currentPage, setCurrentPage] = useState(1);
@@ -109,34 +109,44 @@ function UserManager() {
   //#region UseEffect
   useEffect(() => {
     (async () => {
-      await GetUsers(setAllUsers);
-    })();
+      setIsLoading(true);
+      try {
+        const result = await GetUsers();
+        setAllUsers(result);
 
-    if (pathname.includes("gerentes")) {
-      (async () => {
-        await GetUsersByRole("Gerente", setUsers);
-        await GetUsersByRole("Gerente", setOriginalUsersList);
-        setTitle("Detalles de Gerentes");
-      })();
-    } else if (pathname.includes("supervisores")) {
-      (async () => {
-        await GetUsersByRole("Supervisor", setUsers);
-        await GetUsersByRole("Supervisor", setOriginalUsersList);
-        setTitle("Detalles de Supervisores");
-      })();
-    } else if (pathname.includes("vendedores")) {
-      (async () => {
-        await GetUsersByRole("Vendedor", setUsers);
-        await GetUsersByRole("Vendedor", setOriginalUsersList);
-        setTitle("Detalles de Vendedores");
-      })();
-    } else if (pathname.includes("usuarios")) {
-      (async () => {
-        await GetUsers(setUsers);
-        await GetUsers(setOriginalUsersList);
-        setTitle("Detalles de Usuarios");
-      })();
-    }
+        if (pathname.includes("gerentes")) {
+          (async () => {
+            const gerentes = await GetUsersByRole("Gerente");
+            setUsers(gerentes);
+            setOriginalUsersList(gerentes);
+            setTitle("Detalles de Gerentes");
+          })();
+        } else if (pathname.includes("supervisores")) {
+          (async () => {
+            const supervisores = await GetUsersByRole("Supervisor");
+            setUsers(supervisores);
+            setOriginalUsersList(supervisores);
+            setTitle("Detalles de Supervisores");
+          })();
+        } else if (pathname.includes("vendedores")) {
+          (async () => {
+            const vendedores = await GetUsersByRole("Vendedor");
+            setUsers(vendedores);
+            setOriginalUsersList(vendedores);
+            setTitle("Detalles de Vendedores");
+          })();
+        } else if (pathname.includes("usuarios")) {
+          setUsers(result);
+          setOriginalUsersList(result);
+          setTitle("Detalles de Usuarios");
+        }
+
+        setIsLoading(false);
+      } catch (error) {
+        // Manejar errores aquí si es necesario
+        setIsLoading(false);
+      }
+    })();
 
     if (window.matchMedia("(max-width: 500px)").matches) {
       setUsersPerPage(1);
@@ -163,51 +173,7 @@ function UserManager() {
       setUsersPerPage(10);
       setMaxPageNumbersToShow(9);
     }
-
-    const token = localStorage.getItem("token");
-
-    if (token) {
-      const expiracionEnSegundos = JSON.parse(atob(token.split(".")[1])).exp;
-      const expiracionEnMilisegundos = expiracionEnSegundos * 1000;
-      const fechaExpiracion = new Date(expiracionEnMilisegundos);
-      const fechaActual = new Date();
-
-      if (fechaExpiracion <= fechaActual) {
-        localStorage.removeItem("token");
-        navigate("/login");
-      }
-
-      const temporizador = setInterval(() => {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          clearInterval(temporizador);
-          return;
-        }
-
-        const expiracionEnSegundos = JSON.parse(atob(token.split(".")[1])).exp;
-        const expiracionEnMilisegundos = expiracionEnSegundos * 1000;
-        const fechaExpiracion = new Date(expiracionEnMilisegundos);
-        const fechaActual = new Date();
-
-        if (fechaExpiracion <= fechaActual) {
-          localStorage.removeItem("token");
-          Swal.fire({
-            icon: "warning",
-            title: "Tu sesión ha expirado",
-            text: "Te estamos redirigiendo a la página de autenticación...",
-            timer: 4500,
-            timerProgressBar: true,
-            showConfirmButton: false,
-          });
-          navigate("/login");
-        }
-      }, 3 * 60 * 60 * 1000); // 3 horas
-
-      return () => {
-        clearInterval(temporizador);
-      };
-    }
-  }, [navigate]);
+  }, []);
   //#endregion
 
   //#region Función para desactivar un usuario
@@ -255,14 +221,19 @@ function UserManager() {
             showConfirmButton: false,
             timer: 2000,
           });
+
           if (pathname.includes("gerentes")) {
-            await GetUsersByRole("Gerente", setUsers);
+            const gerentes = await GetUsersByRole("Gerente");
+            setUsers(gerentes);
           } else if (pathname.includes("supervisores")) {
-            await GetUsersByRole("Supervisor", setUsers);
+            const supervisores = await GetUsersByRole("Supervisor");
+            setUsers(supervisores);
           } else if (pathname.includes("vendedores")) {
-            await GetUsersByRole("Vendedor", setUsers);
+            const vendedores = await GetUsersByRole("Vendedor");
+            setUsers(vendedores);
           } else if (pathname.includes("usuarios")) {
-            await GetUsers(setUsers);
+            const result = await GetUsers();
+            setUsers(result);
           }
 
           setUsers((prevUsers) => {
@@ -287,7 +258,21 @@ function UserManager() {
               setFilterName("Inactivo");
               setFilterType("inactive");
               setCurrentPage(1);
+            } else if (filterType === "role") {
+              const result = prevUsers.filter((user) => {
+                return user.rol === rolFiltrado;
+              });
+
+              setTitle(`Detalles de Usuarios con rol ${rolFiltrado}`);
+
+              setUsers(result);
+              document.getElementById("clear-filter").style.display = "flex";
+              document.getElementById("clear-filter2").style.display = "flex";
+              setFilterName(rolFiltrado);
+              setFilterType("role");
+              setCurrentPage(1);
             }
+
             if (filterType === "other") {
               setUsers(prevUsers);
             } else {
@@ -361,14 +346,19 @@ function UserManager() {
             showConfirmButton: false,
             timer: 2000,
           });
+
           if (pathname.includes("gerentes")) {
-            await GetUsersByRole("Gerente", setUsers);
+            const gerentes = await GetUsersByRole("Gerente");
+            setUsers(gerentes);
           } else if (pathname.includes("supervisores")) {
-            await GetUsersByRole("Supervisor", setUsers);
+            const supervisores = await GetUsersByRole("Supervisor");
+            setUsers(supervisores);
           } else if (pathname.includes("vendedores")) {
-            await GetUsersByRole("Vendedor", setUsers);
+            const vendedores = await GetUsersByRole("Vendedor");
+            setUsers(vendedores);
           } else if (pathname.includes("usuarios")) {
-            await GetUsers(setUsers);
+            const result = await GetUsers();
+            setUsers(result);
           }
 
           setUsers((prevUsers) => {
@@ -392,6 +382,19 @@ function UserManager() {
               document.getElementById("clear-filter2").style.display = "flex";
               setFilterName("Inactivo");
               setFilterType("inactive");
+              setCurrentPage(1);
+            } else if (filterType === "role") {
+              const result = prevUsers.filter((user) => {
+                return user.rol === rolFiltrado;
+              });
+
+              setTitle(`Detalles de Usuarios con rol ${rolFiltrado}`);
+
+              setUsers(result);
+              document.getElementById("clear-filter").style.display = "flex";
+              document.getElementById("clear-filter2").style.display = "flex";
+              setFilterName(rolFiltrado);
+              setFilterType("role");
               setCurrentPage(1);
             }
             if (filterType === "other") {
@@ -418,6 +421,7 @@ function UserManager() {
     setUsers(originalUsersList); // trae la lista de usuarios original, sin ningun filtro
     setFilterName("");
     setFilterType("");
+    setRolFiltrado("");
     if (pathname.includes("gerentes")) {
       setTitle("Detalles de Gerentes");
     } else if (pathname.includes("supervisores")) {
@@ -461,8 +465,31 @@ function UserManager() {
       setFilterType("inactive");
       setCurrentPage(1);
       window.scrollTo(0, 0);
+      setRolFiltrado("");
     } else {
       ClearFilter();
+    }
+  };
+  //#endregion
+
+  //#region Función para filtrar pedidos por tipo de pedido
+  const filterResultRole = async (role) => {
+    try {
+      setUsers(originalUsersList);
+      const result = originalUsersList.filter((originalUsersList) => {
+        return originalUsersList.rol === role;
+      });
+      setUsers(result);
+
+      setTitle(`Detalles de usuarios con rol ${role}`);
+      document.getElementById("clear-filter").style.display = "flex";
+      document.getElementById("clear-filter2").style.display = "flex";
+      setFilterName(role);
+      setFilterType("role");
+      setCurrentPage(1);
+      window.scrollTo(0, 0);
+    } catch {
+      console.log("Error al filtrar usuarios por rol");
     }
   };
   //#endregion
@@ -560,23 +587,27 @@ function UserManager() {
   //#endregion
 
   //#region Función para volver el formulario a su estado inicial, borrando los valores de los inputs, cargando los selects y refrezcando la lista de usuarios
-  function InitialState() {
+  async function InitialState() {
     ClearUserInputs();
 
-    GetUsers(setAllUsers);
+    const result = await GetUsers();
+    setAllUsers(result);
 
     if (pathname.includes("gerentes")) {
-      GetUsersByRole("Gerente", setUsers);
-      GetUsersByRole("Gerente", setOriginalUsersList);
+      const gerentes = await GetUsersByRole("Gerente");
+      setUsers(gerentes);
+      setOriginalUsersList(gerentes);
     } else if (pathname.includes("supervisores")) {
-      GetUsersByRole("Supervisor", setUsers);
-      GetUsersByRole("Supervisor", setOriginalUsersList);
+      const supervisores = await GetUsersByRole("Supervisor");
+      setUsers(supervisores);
+      setOriginalUsersList(supervisores);
     } else if (pathname.includes("vendedores")) {
-      GetUsersByRole("Vendedor", setUsers);
-      GetUsersByRole("Vendedor", setOriginalUsersList);
+      const vendedores = await GetUsersByRole("Vendedor");
+      setUsers(vendedores);
+      setOriginalUsersList(vendedores);
     } else {
-      GetUsers(setUsers);
-      GetUsers(setOriginalUsersList);
+      setUsers(result);
+      setOriginalUsersList(result);
     }
   }
   //#endregion
@@ -762,7 +793,7 @@ function UserManager() {
           $("#nombre").focus();
         }, 500);
       });
-      ShowSaveButton();
+
       return false;
     } else if (username === "") {
       Swal.fire({
@@ -776,7 +807,7 @@ function UserManager() {
           $("#username").focus();
         }, 500);
       });
-      ShowSaveButton();
+
       return false;
     } else if (email === "") {
       Swal.fire({
@@ -790,7 +821,7 @@ function UserManager() {
           $("#email").focus();
         }, 500);
       });
-      ShowSaveButton();
+
       return false;
     } else if (
       !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email)
@@ -815,7 +846,7 @@ function UserManager() {
         confirmButtonText: "Aceptar",
         confirmButtonColor: "#f27474",
       });
-      ShowSaveButton();
+
       return false;
     } else if (activo === "") {
       Swal.fire({
@@ -825,7 +856,7 @@ function UserManager() {
         confirmButtonText: "Aceptar",
         confirmButtonColor: "#f27474",
       });
-      ShowSaveButton();
+
       return false;
     }
     return true;
@@ -851,7 +882,9 @@ function UserManager() {
           }, 500);
         });
 
-        ShowSaveButton();
+        if (modalTitle.includes("Registrar")) {
+          ShowSaveButton();
+        }
 
         return true;
       } else if (
@@ -870,7 +903,9 @@ function UserManager() {
           }, 500);
         });
 
-        ShowSaveButton();
+        if (modalTitle.includes("Registrar")) {
+          ShowSaveButton();
+        }
 
         return true;
       }
@@ -986,7 +1021,7 @@ function UserManager() {
           ? "No puede actualizar el supervisor sin modificar ningun campo"
           : pathname.includes("gerentes")
           ? "No puede actualizar el gerente sin modificar ningun campo"
-          : "No puede actulizar el usuario sin modificar ningun campo",
+          : "No puede actualizar el usuario sin modificar ningun campo",
         text: "Modifique al menos un campo para poder actualizarlo",
         confirmButtonText: "Aceptar",
         confirmButtonColor: "#F27474",
@@ -1015,6 +1050,7 @@ function UserManager() {
           },
           headers
         );
+
         Swal.fire({
           icon: "success",
           title: pathname.includes("vendedores")
@@ -1023,23 +1059,34 @@ function UserManager() {
             ? "Supervisor actualizado exitosamente!"
             : pathname.includes("gerentes")
             ? "Gerente actualizado exitosamente!"
-            : "Usuario actulizado exitosamente!",
+            : "Usuario actualizado exitosamente!",
           showConfirmButton: false,
           timer: 2000,
         });
-        CloseModal();
 
+        CloseModal();
         // InitialState();
-        await GetUsers(setAllUsers);
+
         ClearUserInputs();
+
+        const result = await GetUsers();
+        setAllUsers(result);
+
         if (pathname.includes("gerentes")) {
-          await GetUsersByRole("Gerente", setUsers);
+          const gerentes = await GetUsersByRole("Gerente");
+          setUsers(gerentes);
+          setOriginalUsersList(gerentes);
         } else if (pathname.includes("supervisores")) {
-          await GetUsersByRole("Supervisor", setUsers);
+          const supervisores = await GetUsersByRole("Supervisor");
+          setUsers(supervisores);
+          setOriginalUsersList(supervisores);
         } else if (pathname.includes("vendedores")) {
-          await GetUsersByRole("Vendedor", setUsers);
+          const vendedores = await GetUsersByRole("Vendedor");
+          setUsers(vendedores);
+          setOriginalUsersList(vendedores);
         } else if (pathname.includes("usuarios")) {
-          await GetUsers(setUsers);
+          setUsers(result);
+          setOriginalUsersList(result);
         }
 
         setUsers((prevUsers) => {
@@ -1064,7 +1111,21 @@ function UserManager() {
             setFilterName("Inactivo");
             setFilterType("inactive");
             setCurrentPage(1);
+          } else if (filterType === "role") {
+            const result = prevUsers.filter((user) => {
+              return user.rol === rolFiltrado;
+            });
+
+            setTitle(`Detalles de Usuarios con rol ${rolFiltrado}`);
+
+            setUsers(result);
+            document.getElementById("clear-filter").style.display = "flex";
+            document.getElementById("clear-filter2").style.display = "flex";
+            setFilterName(rolFiltrado);
+            setFilterType("role");
+            setCurrentPage(1);
           }
+
           if (filterType === "other") {
             setUsers(prevUsers);
           } else {
@@ -1129,17 +1190,14 @@ function UserManager() {
   return (
     <div>
       <Helmet>
-        <title>Catapp | Administrar Usuarios</title>
+        <title>Catapp | Gestionar Usuarios</title>
       </Helmet>
 
       <section className="general-container">
         <div className="general-content">
           <div className="general-title">
             <div className="title-header">
-              <Link
-                to="/panel-de-administrador"
-                className="btn btn-info btn-back"
-              >
+              <Link to="/panel" className="btn btn-info btn-back">
                 <div className="btn-back-content">
                   <Back className="back" />
                   <p className="p-back">Regresar</p>
@@ -1147,62 +1205,66 @@ function UserManager() {
               </Link>
 
               <h2 className="title title-general">{title}</h2>
-              <button
-                type="button"
-                className="btn btn-success btn-add"
-                data-bs-toggle="modal"
-                data-bs-target="#modal"
-                onClick={() => {
-                  ClearUserInputs();
-                  setModalTitle(() => {
-                    if (pathname.includes("vendedores")) {
-                      return "Registrar Vendedor";
-                    } else if (pathname.includes("supervisores")) {
-                      return "Registrar Supervisor";
-                    } else if (pathname.includes("gerentes")) {
-                      return "Registrar Gerente";
-                    } else {
-                      return "Registrar Usuario";
-                    }
-                  });
-                  setTimeout(function () {
-                    $("#nombre").focus();
-                  }, 500);
-                  setActivo(true);
-                }}
-              >
-                <div className="btn-add-content">
-                  <Add className="add" />
-                  <p className="p-add">Añadir</p>
-                </div>
-              </button>
+
+              {isLoading === false && (
+                <button
+                  type="button"
+                  className="btn btn-success btn-add"
+                  data-bs-toggle="modal"
+                  data-bs-target="#modal"
+                  onClick={() => {
+                    ClearUserInputs();
+                    setModalTitle(() => {
+                      if (pathname.includes("vendedores")) {
+                        return "Registrar Vendedor";
+                      } else if (pathname.includes("supervisores")) {
+                        return "Registrar Supervisor";
+                      } else if (pathname.includes("gerentes")) {
+                        return "Registrar Gerente";
+                      } else {
+                        return "Registrar Usuario";
+                      }
+                    });
+                    setTimeout(function () {
+                      $("#nombre").focus();
+                    }, 500);
+                    setActivo(true);
+                  }}
+                >
+                  <div className="btn-add-content">
+                    <Add className="add" />
+                    <p className="p-add">Añadir</p>
+                  </div>
+                </button>
+              )}
             </div>
 
-            {users.length > 1 || users.length === 0 ? (
-              <p className="total">
-                Hay {users.length}{" "}
-                {pathname.includes("vendedores")
-                  ? "vendedores"
-                  : pathname.includes("supervisores")
-                  ? "supervisores"
-                  : pathname.includes("gerentes")
-                  ? "gerentes"
-                  : "usuarios"}
-                .
-              </p>
-            ) : (
-              <p className="total">
-                Hay {users.length}{" "}
-                {pathname.includes("vendedores")
-                  ? "vendedor"
-                  : pathname.includes("supervisores")
-                  ? "supervisor"
-                  : pathname.includes("gerentes")
-                  ? "gerente"
-                  : "usuario"}
-                .
-              </p>
-            )}
+            {isLoading === false &&
+              (users.length > 1 || users.length === 0 ? (
+                <p className="total">
+                  Hay {users.length}{" "}
+                  {pathname.includes("vendedores")
+                    ? "vendedores"
+                    : pathname.includes("supervisores")
+                    ? "supervisores"
+                    : pathname.includes("gerentes")
+                    ? "gerentes"
+                    : "usuarios"}
+                  .
+                </p>
+              ) : (
+                <p className="total">
+                  Hay {users.length}{" "}
+                  {pathname.includes("vendedores")
+                    ? "vendedor"
+                    : pathname.includes("supervisores")
+                    ? "supervisor"
+                    : pathname.includes("gerentes")
+                    ? "gerente"
+                    : "usuario"}
+                  .
+                </p>
+              ))}
           </div>
 
           {/* modal con el formulario para registrar un usuario */}
@@ -1531,7 +1593,7 @@ function UserManager() {
               <div className="modal-content">
                 <div className="modal-header2">
                   <h1 className="modal-title2" id="exampleModalLabel">
-                    Filtro
+                    Filtros
                   </h1>
                   <button
                     id="clear-filter2"
@@ -1545,6 +1607,53 @@ function UserManager() {
                 <div className="modal-body">
                   <div className="container">
                     <p className="filter-separator separator-margin"></p>
+
+                    {pathname.includes("usuarios") && (
+                      <>
+                        <div
+                          className="filter-btn-container"
+                          data-bs-toggle="collapse"
+                          href="#collapseCategory"
+                          role="button"
+                          aria-expanded="false"
+                          aria-controls="collapseCategory"
+                        >
+                          <p className="filter-btn-name">ROLES</p>
+
+                          <div className="form-group-input">
+                            <select
+                              className="input2"
+                              style={{ cursor: "pointer" }}
+                              name="tipo"
+                              id="tipo"
+                              value={rolFiltrado}
+                              onChange={(e) => {
+                                setRolFiltrado(e.target.value);
+                                filterResultRole(e.target.value);
+                              }}
+                            >
+                              <option hidden key={0} value="0">
+                                Seleccione un rol
+                              </option>
+                              <option className="btn-option" value="Admin">
+                                Admin
+                              </option>
+                              <option className="btn-option" value="Gerente">
+                                Gerente
+                              </option>
+                              <option className="btn-option" value="Supervisor">
+                                Supervisor
+                              </option>
+                              <option className="btn-option" value="Vendedor">
+                                Vendedor
+                              </option>
+                            </select>
+                          </div>
+                        </div>
+
+                        <p className="filter-separator"></p>
+                      </>
+                    )}
 
                     <div className="filter-btn-container">
                       <p className="filter-btn-name">INACTIVO</p>
@@ -1590,211 +1699,226 @@ function UserManager() {
             </div>
           </div>
 
-          <div className="filters-left3">
-            <div className="pagination-count-filter">
-              <button
-                className="btn btn-secondary btn-filters"
-                data-bs-toggle="modal"
-                data-bs-target="#modal-filters"
-              >
-                <div
-                  className="filter-btn-title-container-2"
-                  id="filter-btn-title-container"
+          {(users.length > 0 || (users.length === 0 && inactive === true)) && (
+            <div className="filters-left3">
+              <div className="pagination-count-filter">
+                <button
+                  className="btn btn-secondary btn-filters"
+                  data-bs-toggle="modal"
+                  data-bs-target="#modal-filters"
                 >
-                  <p className="filter-btn">
-                    <Filter className="filter-svg2" />
-                  </p>
-                  <p className="filter-title2">Filtro</p>
-                </div>
-              </button>
+                  <div
+                    className="filter-btn-title-container-2"
+                    id="filter-btn-title-container"
+                  >
+                    <p className="filter-btn">
+                      <Filter className="filter-svg2" />
+                    </p>
+                    <p className="filter-title2">Filtros</p>
+                  </div>
+                </button>
 
-              <button
-                id="clear-filter"
-                className="clear-filter2"
-                onClick={ClearFilter}
-              >
-                <Close className="close-svg2" />
-                <p className="clear-filter-p">{filterName}</p>
-              </button>
+                <button
+                  id="clear-filter"
+                  className="clear-filter2"
+                  onClick={ClearFilter}
+                >
+                  <Close className="close-svg2" />
+                  <p className="clear-filter-p">{filterName}</p>
+                </button>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* tabla de usuarios */}
-          <table
-            className="table table-dark table-bordered table-hover table-list"
-            align="center"
-          >
-            <thead>
-              <tr className="table-header">
-                <th className="table-title" scope="col">
-                  #
-                </th>
-                <th className="table-title" scope="col">
-                  Nombre completo
-                </th>
-                <th className="table-title" scope="col">
-                  Usuario
-                </th>
-                <th className="table-title" scope="col">
-                  Email
-                </th>
-                <th className="table-title" scope="col">
-                  Rol
-                </th>
-                <th className="table-title" scope="col">
-                  Activo
-                </th>
-                <th className="table-title" scope="col">
-                  Acciones
-                </th>
-              </tr>
-            </thead>
-
-            {users.length > 0 ? (
-              usersTable
-                .filter((user) => user.nombre !== "Super Admin")
-                .map(function fn(user, index) {
-                  return (
-                    <tbody key={1 + user.idUsuario}>
-                      <tr>
-                        <th scope="row" className="table-name">
-                          {index + 1}
-                        </th>
-                        <td className="table-name">{user.nombre}</td>
-                        <td className="table-name">{user.username}</td>
-                        <td className="table-name">{user.email}</td>
-                        <td
-                          className={`table-name ${
-                            user.rol === "Predeterminado"
-                              ? "predeterminado"
-                              : ""
-                          }`}
-                        >
-                          {user.rol}
-                        </td>
-
-                        {user.activo ? (
-                          <td className="table-name">
-                            <div className="status-btns">
-                              <div className="circulo-verificado"></div>
-                              <p className="status-name">Si</p>
-                              {(user.rol !== "Predeterminado" ||
-                                (user.rol === "Predeterminado" &&
-                                  (pathname.includes("vendedores") ||
-                                    pathname.includes("gerentes") ||
-                                    pathname.includes("supervisores")))) && (
-                                <button
-                                  type="button"
-                                  className="btn btn-light btn-delete4"
-                                  onClick={() => {
-                                    Pending(user);
-                                  }}
-                                >
-                                  <Pendiente className="edit3" />
-                                </button>
-                              )}
-                            </div>
-                          </td>
-                        ) : (
-                          <td className="table-name">
-                            <div className="status-btns">
-                              <div className="circulo-pendiente"></div>
-                              <p className="status-name">No</p>
-                              {(user.rol !== "Predeterminado" ||
-                                (user.rol === "Predeterminado" &&
-                                  (pathname.includes("vendedores") ||
-                                    pathname.includes("gerentes") ||
-                                    pathname.includes("supervisores")))) && (
-                                <button
-                                  type="button"
-                                  className="btn btn-light btn-delete4"
-                                  onClick={() => {
-                                    Verify(user);
-                                  }}
-                                >
-                                  <Verificar className="edit3" />
-                                </button>
-                              )}
-                            </div>
-                          </td>
-                        )}
-
-                        <td className="table-name">
-                          <button
-                            type="button"
-                            className="btn btn-warning btn-edit"
-                            data-bs-toggle="modal"
-                            data-bs-target="#modal"
-                            onClick={() => {
-                              RetrieveUserInputs(user);
-                              setModalTitle(() => {
-                                if (pathname.includes("vendedores")) {
-                                  return "Actualizar Vendedor";
-                                } else if (pathname.includes("supervisores")) {
-                                  return "Actualizar Supervisor";
-                                } else if (pathname.includes("gerentes")) {
-                                  return "Actualizar Gerente";
-                                } else {
-                                  return "Actualizar Usuario";
-                                }
-                              });
-                            }}
-                          >
-                            <Edit className="edit" />
-                          </button>
-
-                          <button
-                            type="button"
-                            className="btn btn-danger btn-delete"
-                            onClick={() =>
-                              Swal.fire({
-                                title: pathname.includes("vendedores")
-                                  ? "Esta seguro de que desea eliminar el siguiente vendedor: " +
-                                    user.nombre +
-                                    "?"
-                                  : pathname.includes("supervisores")
-                                  ? "Esta seguro de que desea eliminar el siguiente supervisor: " +
-                                    user.nombre +
-                                    "?"
-                                  : pathname.includes("gerentes")
-                                  ? "Esta seguro de que desea eliminar el siguiente gerente: " +
-                                    user.nombre +
-                                    "?"
-                                  : "Esta seguro de que desea eliminar el siguiente usuario: " +
-                                    user.nombre +
-                                    "?",
-                                text: "Una vez eliminado, no se podra recuperar",
-                                icon: "warning",
-                                showCancelButton: true,
-                                confirmButtonColor: "#F8BB86",
-                                cancelButtonColor: "#6c757d",
-                                confirmButtonText: "Aceptar",
-                                cancelButtonText: "Cancelar",
-                                focusCancel: true,
-                              }).then((result) => {
-                                if (result.isConfirmed) {
-                                  DeleteUser(user.idUsuario);
-                                }
-                              })
-                            }
-                          >
-                            <Delete className="delete" />
-                          </button>
-                        </td>
-                      </tr>
-                    </tbody>
-                  );
-                })
-            ) : (
-              <tbody>
-                <tr className="tr-name1">
-                  <td className="table-name table-name1" colSpan={13}>
-                    Sin registros
-                  </td>
+          {isLoading ? (
+            <div className="loading-generaltable-div">
+              <Loader />
+              <p className="bold-loading">Cargando usuarios...</p>
+            </div>
+          ) : (
+            <table
+              className="table table-dark table-bordered table-hover table-list"
+              align="center"
+            >
+              <thead>
+                <tr className="table-header">
+                  <th className="table-title" scope="col">
+                    #
+                  </th>
+                  <th className="table-title" scope="col">
+                    Nombre completo
+                  </th>
+                  <th className="table-title" scope="col">
+                    Usuario
+                  </th>
+                  <th className="table-title" scope="col">
+                    Email
+                  </th>
+                  <th className="table-title" scope="col">
+                    Rol
+                  </th>
+                  <th className="table-title" scope="col">
+                    Activo
+                  </th>
+                  <th className="table-title" scope="col">
+                    Acciones
+                  </th>
                 </tr>
-              </tbody>
-            )}
-          </table>
+              </thead>
+
+              {users.length > 0 ? (
+                usersTable
+                  .filter((user) => user.rol !== "SuperAdmin")
+                  .map(function fn(user, index) {
+                    return (
+                      <tbody key={1 + user.idUsuario}>
+                        <tr>
+                          <th scope="row" className="table-name">
+                            {index + 1}
+                          </th>
+                          <td className="table-name">{user.nombre}</td>
+                          <td className="table-name">{user.username}</td>
+                          <td className="table-name">{user.email}</td>
+                          <td
+                            className={`table-name ${
+                              user.rol === "Predeterminado"
+                                ? "predeterminado"
+                                : ""
+                            }`}
+                          >
+                            {user.rol}
+                          </td>
+
+                          {user.activo ? (
+                            <td className="table-name">
+                              <div className="status-btns">
+                                <div className="circulo-verificado"></div>
+                                <p className="status-name">Si</p>
+                                {(user.rol !== "Predeterminado" ||
+                                  (user.rol === "Predeterminado" &&
+                                    (pathname.includes("vendedores") ||
+                                      pathname.includes("gerentes") ||
+                                      pathname.includes("supervisores")))) && (
+                                  <button
+                                    type="button"
+                                    className="btn btn-light btn-delete4"
+                                    aria-label="Desverificar"
+                                    onClick={() => {
+                                      Pending(user);
+                                    }}
+                                  >
+                                    <Pendiente className="edit3" />
+                                  </button>
+                                )}
+                              </div>
+                            </td>
+                          ) : (
+                            <td className="table-name">
+                              <div className="status-btns">
+                                <div className="circulo-pendiente"></div>
+                                <p className="status-name">No</p>
+                                {(user.rol !== "Predeterminado" ||
+                                  (user.rol === "Predeterminado" &&
+                                    (pathname.includes("vendedores") ||
+                                      pathname.includes("gerentes") ||
+                                      pathname.includes("supervisores")))) && (
+                                  <button
+                                    type="button"
+                                    className="btn btn-light btn-delete4"
+                                    aria-label="Verificar"
+                                    onClick={() => {
+                                      Verify(user);
+                                    }}
+                                  >
+                                    <Verificar className="edit3" />
+                                  </button>
+                                )}
+                              </div>
+                            </td>
+                          )}
+
+                          <td className="table-name">
+                            <button
+                              type="button"
+                              className="btn btn-warning btn-edit"
+                              aria-label="Modificar"
+                              data-bs-toggle="modal"
+                              data-bs-target="#modal"
+                              onClick={() => {
+                                RetrieveUserInputs(user);
+                                setModalTitle(() => {
+                                  if (pathname.includes("vendedores")) {
+                                    return "Actualizar Vendedor";
+                                  } else if (
+                                    pathname.includes("supervisores")
+                                  ) {
+                                    return "Actualizar Supervisor";
+                                  } else if (pathname.includes("gerentes")) {
+                                    return "Actualizar Gerente";
+                                  } else {
+                                    return "Actualizar Usuario";
+                                  }
+                                });
+                              }}
+                            >
+                              <Edit className="edit" />
+                            </button>
+
+                            <button
+                              type="button"
+                              className="btn btn-danger btn-delete"
+                              aria-label="Eliminar"
+                              onClick={() =>
+                                Swal.fire({
+                                  title: pathname.includes("vendedores")
+                                    ? "Esta seguro de que desea eliminar el siguiente vendedor: " +
+                                      user.nombre +
+                                      "?"
+                                    : pathname.includes("supervisores")
+                                    ? "Esta seguro de que desea eliminar el siguiente supervisor: " +
+                                      user.nombre +
+                                      "?"
+                                    : pathname.includes("gerentes")
+                                    ? "Esta seguro de que desea eliminar el siguiente gerente: " +
+                                      user.nombre +
+                                      "?"
+                                    : "Esta seguro de que desea eliminar el siguiente usuario: " +
+                                      user.nombre +
+                                      "?",
+                                  text: "Una vez eliminado, no se podra recuperar",
+                                  icon: "warning",
+                                  showCancelButton: true,
+                                  confirmButtonColor: "#F8BB86",
+                                  cancelButtonColor: "#6c757d",
+                                  confirmButtonText: "Aceptar",
+                                  cancelButtonText: "Cancelar",
+                                  focusCancel: true,
+                                }).then((result) => {
+                                  if (result.isConfirmed) {
+                                    DeleteUser(user.idUsuario);
+                                  }
+                                })
+                              }
+                            >
+                              <Delete className="delete" />
+                            </button>
+                          </td>
+                        </tr>
+                      </tbody>
+                    );
+                  })
+              ) : (
+                <tbody>
+                  <tr className="tr-name1">
+                    <td className="table-name table-name1" colSpan={13}>
+                      Sin registros
+                    </td>
+                  </tr>
+                </tbody>
+              )}
+            </table>
+          )}
 
           <div className="pagination-count-container2">
             <div className="pagination-count">
@@ -1830,17 +1954,17 @@ function UserManager() {
 
             {users.length > 0 ? (
               <ul className="pagination-manager">
-                <div className="page-item">
+                <li className="page-item">
                   <div className="page-link" onClick={prePage}>
                     {"<"}
                   </div>
-                </div>
+                </li>
 
-                <div className="numbers">
+                <li className="numbers">
                   {numbers.map((n, i) => {
                     if (n === currentPage) {
                       return (
-                        <ul className="page-item-container">
+                        <ul className="page-item-container" key={i}>
                           <li className="page-item active" key={i}>
                             <div className="page-link">{n}</div>
                           </li>
@@ -1853,14 +1977,16 @@ function UserManager() {
                         n <= currentPage + maxPageNumbersToShow)
                     ) {
                       return (
-                        <li className="page-item" key={i}>
-                          <div
-                            className="page-link"
-                            onClick={() => changeCPage(n)}
-                          >
-                            {n}
-                          </div>
-                        </li>
+                        <ul className="page-item-container" key={i}>
+                          <li className="page-item" key={i}>
+                            <div
+                              className="page-link"
+                              onClick={() => changeCPage(n)}
+                            >
+                              {n}
+                            </div>
+                          </li>
+                        </ul>
                       );
                     } else if (
                       (n === currentPage - maxPageNumbersToShow - 1 &&
@@ -1871,21 +1997,23 @@ function UserManager() {
                           npage - minPageNumbersToShow)
                     ) {
                       return (
-                        <li className="page-item" key={i}>
-                          <div className="page-link">...</div>
-                        </li>
+                        <ul className="page-item-container" key={i}>
+                          <li className="page-item" key={i}>
+                            <div className="page-link">...</div>
+                          </li>
+                        </ul>
                       );
                     } else {
                       return null;
                     }
                   })}
-                </div>
+                </li>
 
-                <div className="page-item">
+                <li className="page-item">
                   <div className="page-link" onClick={nextPage}>
                     {">"}
                   </div>
-                </div>
+                </li>
               </ul>
             ) : (
               <></>

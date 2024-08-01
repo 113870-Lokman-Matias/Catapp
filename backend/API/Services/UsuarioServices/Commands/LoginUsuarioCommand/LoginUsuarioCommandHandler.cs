@@ -71,10 +71,10 @@ namespace API.Services.UsuarioServices.Commands.LoginUsuarioCommand
                         var tokendesc = new SecurityTokenDescriptor
                         {
                             Subject = new ClaimsIdentity(
-                                new Claim[] { new Claim(ClaimTypes.Name, usuario.Username), new Claim(ClaimTypes.Name, usuario.Nombre), new Claim(ClaimTypes.Role, usuario.IdRolNavigation.Nombre) }
+                                new Claim[] { new Claim(ClaimTypes.NameIdentifier, usuario.Username), new Claim(ClaimTypes.Name, usuario.Nombre), new Claim(ClaimTypes.Role, usuario.IdRolNavigation.Nombre) }
                             ),
 
-                            Expires = DateTime.UtcNow.AddHours(3),
+                            Expires = DateTime.UtcNow.AddHours(6),
                             SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(tokenkey), SecurityAlgorithms.HmacSha256)
                         };
                         var token = tokenhandler.CreateToken(tokendesc);

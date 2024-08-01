@@ -2,8 +2,8 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 15.1
--- Dumped by pg_dump version 15.1
+-- Dumped from database version 15.3
+-- Dumped by pg_dump version 15.3
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -93,6 +93,53 @@ ALTER TABLE public.clientes_id_cliente_seq OWNER TO postgres;
 --
 
 ALTER SEQUENCE public.clientes_id_cliente_seq OWNED BY public.clientes.id_cliente;
+
+
+--
+-- Name: configuraciones; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.configuraciones (
+    id_configuracion integer NOT NULL,
+    direccion text,
+    url_direccion text,
+    horarios text,
+    cbu text,
+    alias text,
+    whatsapp text DEFAULT 0 NOT NULL,
+    telefono text,
+    facebook text,
+    url_facebook text,
+    instagram text,
+    url_instagram text,
+    monto_mayorista real DEFAULT 0 NOT NULL,
+    url_logo text,
+    codigo text
+);
+
+
+ALTER TABLE public.configuraciones OWNER TO postgres;
+
+--
+-- Name: configuraciones_id_configuracion_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.configuraciones_id_configuracion_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.configuraciones_id_configuracion_seq OWNER TO postgres;
+
+--
+-- Name: configuraciones_id_configuracion_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.configuraciones_id_configuracion_seq OWNED BY public.configuraciones.id_configuracion;
 
 
 --
@@ -248,9 +295,13 @@ ALTER SEQUENCE public.divisas_id_divisa_seq OWNED BY public.divisas.id_divisa;
 
 CREATE TABLE public.envios (
     id_envio integer NOT NULL,
-    precio real DEFAULT 0 NOT NULL,
+    habilitado boolean DEFAULT false NOT NULL,
+    costo real DEFAULT 0 NOT NULL,
     fecha_modificacion timestamp with time zone NOT NULL,
-    ultimo_modificador text NOT NULL
+    ultimo_modificador text NOT NULL,
+    nombre text NOT NULL,
+    disponibilidad_catalogo integer NOT NULL,
+    aclaracion text
 );
 
 
@@ -279,46 +330,15 @@ ALTER SEQUENCE public.envios_id_envio_seq OWNED BY public.envios.id_envio;
 
 
 --
--- Name: metodos_entrega; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public.metodos_entrega (
-    id_metodo_entrega integer NOT NULL,
-    nombre text NOT NULL
-);
-
-
-ALTER TABLE public.metodos_entrega OWNER TO postgres;
-
---
--- Name: metodos_entrega_id_metodo_entrega_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
-CREATE SEQUENCE public.metodos_entrega_id_metodo_entrega_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER TABLE public.metodos_entrega_id_metodo_entrega_seq OWNER TO postgres;
-
---
--- Name: metodos_entrega_id_metodo_entrega_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
---
-
-ALTER SEQUENCE public.metodos_entrega_id_metodo_entrega_seq OWNED BY public.metodos_entrega.id_metodo_entrega;
-
-
---
 -- Name: metodos_pago; Type: TABLE; Schema: public; Owner: postgres
 --
 
 CREATE TABLE public.metodos_pago (
     id_metodo_pago integer NOT NULL,
-    nombre text NOT NULL
+    nombre text NOT NULL,
+    habilitado boolean NOT NULL,
+    disponibilidad integer NOT NULL,
+    disponibilidad_catalogo integer NOT NULL
 );
 
 
@@ -355,6 +375,9 @@ CREATE TABLE public.pedidos (
     costo_envio real NOT NULL,
     fecha timestamp with time zone NOT NULL,
     verificado boolean DEFAULT false NOT NULL,
+    direccion text,
+    entre_calles text,
+    payment_id text,
     id_tipo_pedido integer NOT NULL,
     id_vendedor integer,
     id_metodo_pago integer NOT NULL,
@@ -383,8 +406,11 @@ CREATE TABLE public.productos (
     id_imagen text NOT NULL,
     url_imagen text NOT NULL,
     ocultar boolean DEFAULT false NOT NULL,
+    en_promocion boolean DEFAULT false NOT NULL,
+    en_destacado boolean DEFAULT false NOT NULL,
     id_divisa integer NOT NULL,
-    stock_transitorio integer NOT NULL
+    stock_transitorio integer NOT NULL,
+    id_subcategoria integer
 );
 
 
@@ -444,6 +470,42 @@ ALTER TABLE public.roles_id_rol_seq OWNER TO postgres;
 --
 
 ALTER SEQUENCE public.roles_id_rol_seq OWNED BY public.roles.id_rol;
+
+
+--
+-- Name: subcategorias; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.subcategorias (
+    id_subcategoria integer NOT NULL,
+    nombre text NOT NULL,
+    ocultar boolean DEFAULT false NOT NULL,
+    id_categoria integer NOT NULL
+);
+
+
+ALTER TABLE public.subcategorias OWNER TO postgres;
+
+--
+-- Name: subcategorias_id_subcategoria_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.subcategorias_id_subcategoria_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.subcategorias_id_subcategoria_seq OWNER TO postgres;
+
+--
+-- Name: subcategorias_id_subcategoria_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.subcategorias_id_subcategoria_seq OWNED BY public.subcategorias.id_subcategoria;
 
 
 --
@@ -535,6 +597,13 @@ ALTER TABLE ONLY public.clientes ALTER COLUMN id_cliente SET DEFAULT nextval('pu
 
 
 --
+-- Name: configuraciones id_configuracion; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.configuraciones ALTER COLUMN id_configuracion SET DEFAULT nextval('public.configuraciones_id_configuracion_seq'::regclass);
+
+
+--
 -- Name: cotizaciones id_cotizacion; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -570,13 +639,6 @@ ALTER TABLE ONLY public.envios ALTER COLUMN id_envio SET DEFAULT nextval('public
 
 
 --
--- Name: metodos_entrega id_metodo_entrega; Type: DEFAULT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.metodos_entrega ALTER COLUMN id_metodo_entrega SET DEFAULT nextval('public.metodos_entrega_id_metodo_entrega_seq'::regclass);
-
-
---
 -- Name: metodos_pago id_metodo_pago; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -595,6 +657,13 @@ ALTER TABLE ONLY public.productos ALTER COLUMN id_producto SET DEFAULT nextval('
 --
 
 ALTER TABLE ONLY public.roles ALTER COLUMN id_rol SET DEFAULT nextval('public.roles_id_rol_seq'::regclass);
+
+
+--
+-- Name: subcategorias id_subcategoria; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.subcategorias ALTER COLUMN id_subcategoria SET DEFAULT nextval('public.subcategorias_id_subcategoria_seq'::regclass);
 
 
 --
@@ -624,6 +693,15 @@ COPY public.categorias (id_categoria, nombre, id_imagen, url_imagen, ocultar) FR
 --
 
 COPY public.clientes (id_cliente, nombre_completo, dni, telefono, direccion, entre_calles) FROM stdin;
+\.
+
+
+--
+-- Data for Name: configuraciones; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.configuraciones (id_configuracion, direccion, url_direccion, horarios, cbu, alias, whatsapp, telefono, facebook, url_facebook, instagram, url_instagram, monto_mayorista, url_logo, codigo) FROM stdin;
+1	\N	\N	\N	\N	\N	0	\N	\N	\N	\N	\N	0	\N	\N
 \.
 
 
@@ -666,18 +744,10 @@ COPY public.divisas (id_divisa, nombre) FROM stdin;
 -- Data for Name: envios; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.envios (id_envio, precio, fecha_modificacion, ultimo_modificador) FROM stdin;
-2	0	2024-03-25 14:00:00-03	SuperAdmin
-\.
-
-
---
--- Data for Name: metodos_entrega; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.metodos_entrega (id_metodo_entrega, nombre) FROM stdin;
-1	Lo retiro por el local
-2	Envío a domicilio
+COPY public.envios (id_envio, habilitado, costo, fecha_modificacion, ultimo_modificador, nombre, disponibilidad_catalogo, aclaracion) FROM stdin;
+1	t	0	2024-03-25 14:00:00-03	SuperAdmin	Retiro por el local	3	\N
+2	t	0	2024-03-25 14:00:00-03	SuperAdmin	Envío a domicilio	1	Dentro anillo de circunvalación
+3	t	0	2024-03-25 14:00:00-03	SuperAdmin	Envío a domicilio	1	Fuera anillo de circunvalación
 \.
 
 
@@ -685,12 +755,12 @@ COPY public.metodos_entrega (id_metodo_entrega, nombre) FROM stdin;
 -- Data for Name: metodos_pago; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.metodos_pago (id_metodo_pago, nombre) FROM stdin;
-1	Efectivo
-2	Transferencia
-3	Tarjeta de débito
-4	Tarjeta de crédito
-5	Mercado Pago
+COPY public.metodos_pago (id_metodo_pago, nombre, habilitado, disponibilidad, disponibilidad_catalogo) FROM stdin;
+1	Efectivo	f	1	3
+2	Transferencia	f	1	1
+3	Tarjeta de débito	f	1	1
+4	Tarjeta de crédito	f	1	1
+5	Mercado Pago	f	3	1
 \.
 
 
@@ -698,7 +768,7 @@ COPY public.metodos_pago (id_metodo_pago, nombre) FROM stdin;
 -- Data for Name: pedidos; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.pedidos (id_pedido, costo_envio, fecha, verificado, id_tipo_pedido, id_vendedor, id_metodo_pago, id_cliente, id_metodo_entrega) FROM stdin;
+COPY public.pedidos (id_pedido, costo_envio, fecha, verificado, direccion, entre_calles, payment_id, id_tipo_pedido, id_vendedor, id_metodo_pago, id_cliente, id_metodo_entrega) FROM stdin;
 \.
 
 
@@ -706,7 +776,7 @@ COPY public.pedidos (id_pedido, costo_envio, fecha, verificado, id_tipo_pedido, 
 -- Data for Name: productos; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.productos (id_producto, nombre, descripcion, precio, porcentaje_minorista, porcentaje_mayorista, precio_minorista, precio_mayorista, stock, id_categoria, id_imagen, url_imagen, ocultar, id_divisa, stock_transitorio) FROM stdin;
+COPY public.productos (id_producto, nombre, descripcion, precio, porcentaje_minorista, porcentaje_mayorista, precio_minorista, precio_mayorista, stock, id_categoria, id_imagen, url_imagen, ocultar, en_promocion, en_destacado, id_divisa, stock_transitorio, id_subcategoria) FROM stdin;
 \.
 
 
@@ -721,6 +791,14 @@ COPY public.roles (id_rol, nombre) FROM stdin;
 4	Supervisor
 5	Vendedor
 6	Predeterminado
+\.
+
+
+--
+-- Data for Name: subcategorias; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.subcategorias (id_subcategoria, nombre, ocultar, id_categoria) FROM stdin;
 \.
 
 
@@ -759,6 +837,13 @@ SELECT pg_catalog.setval('public.clientes_id_cliente_seq', 1, false);
 
 
 --
+-- Name: configuraciones_id_configuracion_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.configuraciones_id_configuracion_seq', 1, true);
+
+
+--
 -- Name: cotizaciones_id_cotizacion_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
@@ -790,14 +875,7 @@ SELECT pg_catalog.setval('public.divisas_id_divisa_seq', 2, true);
 -- Name: envios_id_envio_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.envios_id_envio_seq', 2, true);
-
-
---
--- Name: metodos_entrega_id_metodo_entrega_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('public.metodos_entrega_id_metodo_entrega_seq', 2, true);
+SELECT pg_catalog.setval('public.envios_id_envio_seq', 3, true);
 
 
 --
@@ -819,6 +897,13 @@ SELECT pg_catalog.setval('public.productos_id_producto_seq', 1, false);
 --
 
 SELECT pg_catalog.setval('public.roles_id_rol_seq', 6, true);
+
+
+--
+-- Name: subcategorias_id_subcategoria_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.subcategorias_id_subcategoria_seq', 1, false);
 
 
 --
@@ -849,6 +934,14 @@ ALTER TABLE ONLY public.categorias
 
 ALTER TABLE ONLY public.clientes
     ADD CONSTRAINT clientes_pkey PRIMARY KEY (id_cliente);
+
+
+--
+-- Name: configuraciones configuraciones_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.configuraciones
+    ADD CONSTRAINT configuraciones_pkey PRIMARY KEY (id_configuracion);
 
 
 --
@@ -892,14 +985,6 @@ ALTER TABLE ONLY public.envios
 
 
 --
--- Name: metodos_entrega metodos_entrega_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.metodos_entrega
-    ADD CONSTRAINT metodos_entrega_pkey PRIMARY KEY (id_metodo_entrega);
-
-
---
 -- Name: metodos_pago metodos_pago_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -929,6 +1014,14 @@ ALTER TABLE ONLY public.productos
 
 ALTER TABLE ONLY public.roles
     ADD CONSTRAINT roles_pkey PRIMARY KEY (id_rol);
+
+
+--
+-- Name: subcategorias subcategorias_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.subcategorias
+    ADD CONSTRAINT subcategorias_pkey PRIMARY KEY (id_subcategoria);
 
 
 --
@@ -1004,6 +1097,13 @@ CREATE INDEX fki_fk_rol ON public.usuarios USING btree (id_rol);
 
 
 --
+-- Name: fki_fk_subcategoria; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX fki_fk_subcategoria ON public.productos USING btree (id_subcategoria);
+
+
+--
 -- Name: fki_fk_tipo_pedido; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -1022,6 +1122,14 @@ CREATE INDEX fki_fk_vendedor ON public.pedidos USING btree (id_vendedor);
 --
 
 ALTER TABLE ONLY public.productos
+    ADD CONSTRAINT fk_categoria FOREIGN KEY (id_categoria) REFERENCES public.categorias(id_categoria) NOT VALID;
+
+
+--
+-- Name: subcategorias fk_categoria; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.subcategorias
     ADD CONSTRAINT fk_categoria FOREIGN KEY (id_categoria) REFERENCES public.categorias(id_categoria) NOT VALID;
 
 
@@ -1046,7 +1154,7 @@ ALTER TABLE ONLY public.productos
 --
 
 ALTER TABLE ONLY public.pedidos
-    ADD CONSTRAINT fk_metodo_entrega FOREIGN KEY (id_metodo_entrega) REFERENCES public.metodos_entrega(id_metodo_entrega) NOT VALID;
+    ADD CONSTRAINT fk_metodo_entrega FOREIGN KEY (id_metodo_entrega) REFERENCES public.envios(id_envio) NOT VALID;
 
 
 --
@@ -1087,6 +1195,14 @@ ALTER TABLE ONLY public.detalles_stock
 
 ALTER TABLE ONLY public.usuarios
     ADD CONSTRAINT fk_rol FOREIGN KEY (id_rol) REFERENCES public.roles(id_rol) NOT VALID;
+
+
+--
+-- Name: productos fk_subcategoria; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.productos
+    ADD CONSTRAINT fk_subcategoria FOREIGN KEY (id_subcategoria) REFERENCES public.subcategorias(id_subcategoria) NOT VALID;
 
 
 --

@@ -1,25 +1,3 @@
-.adminpanel-container {
-  min-height: 100vh;
-  width: 100%;
-  object-fit: contain;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  padding: 50px 0;
-}
-
-.adminpanel-content {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  text-align: justify;
-  padding: 0 10%;
-}
-
 .category-btn {
   width: 200px;
   height: 150px;
@@ -152,10 +130,47 @@
   fill: #ffffff;
 }
 
+.term-faq-title {
+  transition: color 0.3s ease;
+  margin-bottom: 0;
+  color: #000000;
+  font-weight: 600;
+  text-decoration: none;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.term-faq-title:hover {
+  color: #929292;
+}
+
 .botones-panel-div {
   display: flex;
   flex-direction: row;
   gap: 10px;
+}
+
+.antes-faqs-terms {
+  margin-bottom: 20px;
+}
+
+.faqs-term-svg {
+  transition: color 0.3s ease;
+  fill: #000000;
+  width: 20px;
+  height: 20px;
+}
+
+.faqs-term-svg:hover {
+  fill: #929292;
+}
+
+.faqs-terms-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
 }
 
 @media (max-width: 1040px) {
@@ -183,18 +198,6 @@
 
   .seccion-dividida {
     flex-direction: column;
-  }
-
-  .adminpanel-content {
-    padding-top: 7%;
-  }
-
-  .adminpanel-container {
-    height: 100%;
-  }
-
-  .error {
-    margin-top: 70px;
   }
 }
 

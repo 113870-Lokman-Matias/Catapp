@@ -8,6 +8,7 @@ namespace API.Models
         public Producto()
         {
             DetallePedidos = new HashSet<DetallePedido>();
+            DetallesStocks = new HashSet<DetallesStock>();
         }
 
         public int IdProducto { get; set; }
@@ -23,11 +24,15 @@ namespace API.Models
         public string IdImagen { get; set; } = null!;
         public string UrlImagen { get; set; } = null!;
         public bool Ocultar { get; set; }
+        public bool EnPromocion { get; set; }
+        public bool EnDestacado { get; set; }
         public int IdDivisa { get; set; }
         public int StockTransitorio { get; set; }
+        public int? IdSubcategoria { get; set; }
 
         public virtual Categoria IdCategoriaNavigation { get; set; } = null!;
         public virtual Divisa IdDivisaNavigation { get; set; } = null!;
+        public virtual Subcategoria? IdSubcategoriaNavigation { get; set; }
         public virtual ICollection<DetallePedido> DetallePedidos { get; set; }
         public virtual ICollection<DetallesStock> DetallesStocks { get; set; }
     }

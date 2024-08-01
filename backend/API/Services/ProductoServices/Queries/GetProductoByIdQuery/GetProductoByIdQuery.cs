@@ -3,5 +3,5 @@ using MediatR;
 
 namespace API.Services.ProductoServices.Queries.GetProductoByIdQuery
 {
-  public record GetProductoByIdQuery(int id) : IRequest<ProductoDto>;
+  public record GetProductoByIdQuery(int id, int client) : IRequest<ProductoDto>;
 }

@@ -20,17 +20,10 @@ async function UpdateCotizacionDolar(data, headers) {
 }
 //#endregion
 
-//#region Función para obtener las cotizaciones del dolar blue en tiempo real (consumo de API externa)
-async function GetCotizacionDolarBlue(state) {
+//#region Función para obtener las cotizaciones y fecha del dolar blue en tiempo real (consumo de API externa)
+async function GetCotizacionFechaDolarBlue(state) {
   const result = await axios.get("https://api.bluelytics.com.ar/v2/latest");
-  state(result.data.blue);
-}
-//#endregion
-
-//#region Función para obtener la fecha de la cotización del dolar blue (consumo de API externa)
-async function GetFechaDolarBlue(state) {
-  const result = await axios.get("https://api.bluelytics.com.ar/v2/latest");
-  state(result.data.last_update);
+  return result.data;
 }
 //#endregion
 
@@ -39,7 +32,6 @@ export {
   GetCotizacionDolar,
   UpdateCotizacionDolar,
   GetCotizacionDolarUnicamente,
-  GetCotizacionDolarBlue,
-  GetFechaDolarBlue,
+  GetCotizacionFechaDolarBlue,
 };
 //#endregion

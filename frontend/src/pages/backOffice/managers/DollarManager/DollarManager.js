@@ -1,7 +1,6 @@
 import Swal from "sweetalert2";
 import $ from "jquery";
-import { useNavigate } from "react-router-dom";
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet";
 
@@ -21,20 +20,22 @@ import { ReactComponent as AvgInput } from "../../../../assets/svgs/avg.svg";
 import { ReactComponent as SellInput } from "../../../../assets/svgs/sell.svg";
 //#endregion
 
+import Loader from "../../../../components/Loaders/LoaderCircle";
+
 import {
   GetCotizacionDolar,
   UpdateCotizacionDolar,
-  GetCotizacionDolarBlue,
-  GetFechaDolarBlue,
+  GetCotizacionFechaDolarBlue,
 } from "../../../../services/DollarService";
 
 import { formatDate } from "../../../../utils/DateFormat";
 
 function DollarManager() {
   //#region Constantes
-  const [idDolar, setIdDolar] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const [precio, setNombre] = useState("");
+  const [idDolar, setIdDolar] = useState("");
+  const [precio, setPrecio] = useState("");
   const [prevPrecio, setPrevPrecio] = useState("");
 
   const [cotizacionDolar, setCotizacionDolar] = useState([]);
@@ -42,85 +43,50 @@ function DollarManager() {
   const [cotizacionDolarBlue, setCotizacionDolarBlue] = useState([]);
   const [fechaDolarBlue, setFechaDolarBlue] = useState([]);
 
-  const tableRef = useRef(null);
-
   const token = localStorage.getItem("token"); // Obtener el token del localStorage
 
   const headers = {
     Authorization: `Bearer ${token}`, // Agregar el encabezado Authorization con el valor del token
   };
-
-  const navigate = useNavigate();
   //#endregion
 
   //#region UseEffect
   useEffect(() => {
-    (async () => await [GetCotizacionDolar(setCotizacionDolar)])();
-    const token = localStorage.getItem("token");
+    (async () => {
+      setIsLoading(true);
 
-    if (token) {
-      const expiracionEnSegundos = JSON.parse(atob(token.split(".")[1])).exp;
-      const expiracionEnMilisegundos = expiracionEnSegundos * 1000;
-      const fechaExpiracion = new Date(expiracionEnMilisegundos);
-      const fechaActual = new Date();
-
-      if (fechaExpiracion <= fechaActual) {
-        localStorage.removeItem("token");
-        navigate("/login");
+      try {
+        await Promise.all([GetCotizacionDolar(setCotizacionDolar)]);
+        setIsLoading(false);
+      } catch (error) {
+        // Manejar errores aquí si es necesario
+        setIsLoading(false);
       }
-
-      const temporizador = setInterval(() => {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          clearInterval(temporizador);
-          return;
-        }
-
-        const expiracionEnSegundos = JSON.parse(atob(token.split(".")[1])).exp;
-        const expiracionEnMilisegundos = expiracionEnSegundos * 1000;
-        const fechaExpiracion = new Date(expiracionEnMilisegundos);
-        const fechaActual = new Date();
-
-        if (fechaExpiracion <= fechaActual) {
-          localStorage.removeItem("token");
-          Swal.fire({
-            icon: "warning",
-            title: "Tu sesión ha expirado",
-            text: "Te estamos redirigiendo a la página de autenticación...",
-            timer: 4500,
-            timerProgressBar: true,
-            showConfirmButton: false,
-          });
-          navigate("/login");
-        }
-      }, 3 * 60 * 60 * 1000); // 3 horas
-
-      return () => {
-        clearInterval(temporizador);
-      };
-    }
-  }, [navigate]);
+    })();
+  }, []);
   //#endregion
 
   //#region Función para limpiar el valor del input del formulario
   function ClearCotizacionDolarInputs() {
     setIdDolar("");
 
-    setNombre("");
+    setPrecio("");
   }
   //#endregion
 
   //#region Función para obtener los valores almacenados de la cotización del dolar blue y cargarlos en sus inputs correspondientes
   async function RetrieveDolarBlue() {
-    await GetCotizacionDolarBlue(setCotizacionDolarBlue);
-    await GetFechaDolarBlue(setFechaDolarBlue);
+    const result = await GetCotizacionFechaDolarBlue();
+
+    setCotizacionDolarBlue(result.blue);
+    setFechaDolarBlue(result.last_update);
   }
   //#endregion
 
   //#region Función para obtener los valores almacenados de la cotización del dolar y cargarlos en sus inputs correspondientes
   function RetrieveCotizacionInputs(cotizacion) {
-    setIdDolar(cotizacion.idDolar);
-    setNombre(cotizacion.precio);
+    setIdDolar(cotizacion.idCotizacion);
+    setPrecio(cotizacion.precio);
 
     setPrevPrecio(cotizacion.precio);
   }
@@ -186,32 +152,23 @@ function DollarManager() {
       });
     } else if (IsValid() === true && IsUpdated() === true) {
       try {
-        if (token) {
-          const nombreUsuario = JSON.parse(atob(token.split(".")[1]))
-            .unique_name[1];
-          const nombreUsuarioDecodificado = decodeURIComponent(
-            escape(nombreUsuario)
-          ).replace(/Ã­/g, "í");
+        await UpdateCotizacionDolar(
+          {
+            idDolar: idDolar,
+            precio: precio,
+          },
+          headers
+        );
+        Swal.fire({
+          icon: "success",
+          title: "Cotización de dolar actualizada exitosamente!",
+          showConfirmButton: false,
+          timer: 2000,
+        });
+        CloseModal();
+        await GetCotizacionDolar(setCotizacionDolar);
 
-          await UpdateCotizacionDolar(
-            {
-              idDolar: idDolar,
-              precio: precio,
-              ultimoModificador: nombreUsuarioDecodificado,
-            },
-            headers
-          );
-          Swal.fire({
-            icon: "success",
-            title: "Cotización de dolar actualizada exitosamente!",
-            showConfirmButton: false,
-            timer: 2000,
-          });
-          CloseModal();
-          await GetCotizacionDolar(setCotizacionDolar);
-
-          ClearCotizacionDolarInputs();
-        }
+        ClearCotizacionDolarInputs();
       } catch (err) {
         Swal.fire({
           icon: "error",
@@ -229,17 +186,14 @@ function DollarManager() {
   return (
     <div>
       <Helmet>
-        <title>Catapp | Administrar Cotización del Dolar</title>
+        <title>Catapp | Gestionar Cotización del Dolar</title>
       </Helmet>
 
       <section className="general-container">
         <div className="general-content">
           <div className="general-title">
             <div className="title-header">
-              <Link
-                to="/panel-de-administrador"
-                className="btn btn-info btn-back"
-              >
+              <Link to="/panel" className="btn btn-info btn-back">
                 <div className="btn-back-content">
                   <Back className="back" />
                   <p className="p-back">Regresar</p>
@@ -310,7 +264,7 @@ function DollarManager() {
                             id="precio"
                             value={precio}
                             onChange={(event) => {
-                              setNombre(event.target.value);
+                              setPrecio(event.target.value);
                             }}
                           />
                         </div>
@@ -501,69 +455,77 @@ function DollarManager() {
           <br />
 
           {/* tabla con la cotización del dolar */}
-          <table
-            className="table table-dark table-bordered table-hover table-list"
-            align="center"
-          >
-            <thead>
-              <tr className="table-header">
-                <th className="table-title" scope="col">
-                  Cotización del dolar
-                </th>
-                <th className="table-title" scope="col">
-                  Modificado por
-                </th>
-                <th className="table-title" scope="col">
-                  Fecha de modificación
-                </th>
-                <th className="table-title" scope="col">
-                  Acción
-                </th>
-              </tr>
-            </thead>
-
-            {cotizacionDolar ? (
-              <tbody key={1 + cotizacionDolar.idDolar}>
-                <tr>
-                  <td className="table-name table-cotizacion">
-                    {cotizacionDolar && cotizacionDolar.precio !== undefined
-                      ? `$${cotizacionDolar.precio.toLocaleString()}`
-                      : ""}
-                  </td>
-
-                  <td className="table-name table-cotizacion">
-                    {cotizacionDolar.ultimoModificador}
-                  </td>
-
-                  <td className="table-name table-cotizacion">
-                    {formatDate(cotizacionDolar.fechaModificacion)}
-                  </td>
-
-                  <td className="table-name">
-                    <button
-                      type="button"
-                      className="btn btn-warning btn-edit"
-                      data-bs-toggle="modal"
-                      data-bs-target="#modal"
-                      onClick={() => {
-                        RetrieveCotizacionInputs(cotizacionDolar);
-                      }}
-                    >
-                      <Edit className="edit" />
-                    </button>
-                  </td>
+          {isLoading ? (
+            <div className="loading-generaltable-div">
+              <Loader />
+              <p className="bold-loading">Cargando cotización del dolar...</p>
+            </div>
+          ) : (
+            <table
+              className="table table-dark table-bordered table-hover table-list"
+              align="center"
+            >
+              <thead>
+                <tr className="table-header">
+                  <th className="table-title" scope="col">
+                    Cotización del dolar
+                  </th>
+                  <th className="table-title" scope="col">
+                    Modificado por
+                  </th>
+                  <th className="table-title" scope="col">
+                    Fecha de modificación
+                  </th>
+                  <th className="table-title" scope="col">
+                    Acción
+                  </th>
                 </tr>
-              </tbody>
-            ) : (
-              <tbody>
-                <tr className="tr-name1">
-                  <td className="table-name table-name1" colSpan={4}>
-                    Sin registros
-                  </td>
-                </tr>
-              </tbody>
-            )}
-          </table>
+              </thead>
+
+              {cotizacionDolar ? (
+                <tbody key={1 + cotizacionDolar.idCotizacion}>
+                  <tr>
+                    <td className="table-name table-cotizacion">
+                      {cotizacionDolar && cotizacionDolar.precio !== undefined
+                        ? `$${cotizacionDolar.precio.toLocaleString()}`
+                        : ""}
+                    </td>
+
+                    <td className="table-name table-cotizacion">
+                      {cotizacionDolar.ultimoModificador}
+                    </td>
+
+                    <td className="table-name table-cotizacion">
+                      {formatDate(cotizacionDolar.fechaModificacion)}
+                    </td>
+
+                    <td className="table-name">
+                      <button
+                        type="button"
+                        className="btn btn-warning btn-edit"
+                        aria-label="Modificar"
+                        data-bs-toggle="modal"
+                        data-bs-target="#modal"
+                        onClick={() => {
+                          RetrieveCotizacionInputs(cotizacionDolar);
+                        }}
+                      >
+                        <Edit className="edit" />
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              ) : (
+                <tbody>
+                  <tr className="tr-name1">
+                    <td className="table-name table-name1" colSpan={4}>
+                      Sin registros
+                    </td>
+                  </tr>
+                </tbody>
+              )}
+            </table>
+          )}
         </div>
       </section>
     </div>

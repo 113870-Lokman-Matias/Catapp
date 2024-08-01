@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useContext } from "react";
 import { Link } from "react-router-dom";
+import { Context } from "../../common/Context";
 
 import "./Header.css";
 
-import logo from "../../assets/images/logo.png";
-
 function Header() {
+  const { urlLogo } = useContext(Context);
+
   const [color, setColor] = useState(false);
   const changeColor = () => {
     if (window.scrollY >= 100) {
@@ -17,23 +18,23 @@ function Header() {
 
   window.addEventListener("scroll", changeColor);
 
-  useEffect(() => {
-    (async () => [])();
-  }, []);
-
   return (
     <nav className={color ? "header-nav header-nav-bg" : "header-nav"}>
-      <Link
-        to="/"
-        className={color ? "header-a-logo  header-a-logo-bg " : "header-a-logo"}
-      >
-        <img
-          className={color ? "header-logo  header-logo-bg " : "header-logo"}
-          width={140}
-          src={logo}
-          alt="logo"
-        />
-      </Link>
+      {urlLogo && urlLogo !== "" && (
+        <Link
+          to="/"
+          className={
+            color ? "header-a-logo  header-a-logo-bg " : "header-a-logo"
+          }
+        >
+          <img
+            className={color ? "header-logo  header-logo-bg " : "header-logo"}
+            width={140}
+            src={urlLogo}
+            alt="logo"
+          />
+        </Link>
+      )}
     </nav>
   );
 }

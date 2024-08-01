@@ -1,7 +1,7 @@
 import axios from "axios";
 
 //#region Función para obtener las categorías para la lista administrativa
-async function GetCategoriesManage(state) {
+async function GetCategoriesManage() {
   const token = localStorage.getItem("token"); // Obtener el token almacenado en el localStorage
   const headers = {
     Authorization: `Bearer ${token}`, // Agregar el encabezado Authorization con el valor del token
@@ -11,14 +11,42 @@ async function GetCategoriesManage(state) {
     headers,
   });
   const categorias = result.data.categorias || [];
-  state(categorias);
+  return categorias;
 }
 //#endregion
 
-//#region Función para obtener todas los categorías
+//#region Función para obtener todas los categorías para el catalogo
 async function GetCategories(state) {
   const result = await axios.get("https://localhost:7207/categoria");
   state(result.data.categorias);
+}
+//#endregion
+
+//#region Función para obtener todas los categorías para el catalogo minorista
+async function GetCategoriesMinorista(state) {
+  const result = await axios.get("https://localhost:7207/categoria/minorista");
+  state(result.data.categorias);
+}
+//#endregion
+
+//#region Función para obtener todas los categorías para el catalogo mayorista
+async function GetCategoriesMayorista(state) {
+  const result = await axios.get("https://localhost:7207/categoria/mayorista");
+  state(result.data.categorias);
+}
+//#endregion
+
+//#region Función para obtener una categoría por su ID
+async function GetCategoryById(id) {
+  const token = localStorage.getItem("token"); // Obtener el token almacenado en el localStorage
+  const headers = {
+    Authorization: `Bearer ${token}`, // Agregar el encabezado Authorization con el valor del token
+  };
+
+  const response = await axios.get(`https://localhost:7207/categoria/id/${id}`, {
+    headers,
+  });
+  return response.data;
 }
 //#endregion
 
@@ -68,6 +96,9 @@ const UploadImagesCategory = async (imageSelected) => {
 export {
   GetCategoriesManage,
   GetCategories,
+  GetCategoriesMinorista,
+  GetCategoriesMayorista,
+  GetCategoryById,
   SaveCategories,
   UpdateCategories,
   DeleteCategories,

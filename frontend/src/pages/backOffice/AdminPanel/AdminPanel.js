@@ -1,9 +1,8 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import Swal from "sweetalert2";
 import $ from "jquery";
 
-import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet";
 
@@ -15,6 +14,7 @@ import { ReactComponent as Categories } from "../../../assets/svgs/category.svg"
 import { ReactComponent as Orders } from "../../../assets/svgs/orders.svg";
 import { ReactComponent as Seller } from "../../../assets/svgs/seller.svg";
 import { ReactComponent as Shipment } from "../../../assets/svgs/shipment.svg";
+import { ReactComponent as Payment } from "../../../assets/svgs/paymentInput.svg";
 import { ReactComponent as Dolar } from "../../../assets/svgs/dolar.svg";
 import { ReactComponent as Logout } from "../../../assets/svgs/logout.svg";
 import { ReactComponent as Statistic } from "../../../assets/svgs/statistic.svg";
@@ -22,26 +22,27 @@ import { ReactComponent as Manager } from "../../../assets/svgs/manager2.svg";
 import { ReactComponent as Supervisor } from "../../../assets/svgs/supervisor.svg";
 import { ReactComponent as Users } from "../../../assets/svgs/users.svg";
 import { ReactComponent as ResetPassword } from "../../../assets/svgs/resetpassword.svg";
+import { ReactComponent as Settings } from "../../../assets/svgs/settings.svg";
 import { ReactComponent as PasswordInput } from "../../../assets/svgs/password.svg";
 import { ReactComponent as Update } from "../../../assets/svgs/update.svg";
 import { ReactComponent as Close } from "../../../assets/svgs/closebtn.svg";
 import { ReactComponent as Show } from "../../../assets/svgs/visible.svg";
 import { ReactComponent as Hide } from "../../../assets/svgs/invisible.svg";
+import { ReactComponent as Terms } from "../../../assets/svgs/terms.svg";
+import { ReactComponent as Faqs } from "../../../assets/svgs/faqs.svg";
 //#endregion
 
 import { UpdatePasswordUsers } from "../../../services/UserService";
 
 function AdminPanel() {
   //#region Constantes
-  const navigate = useNavigate();
-
   const token = localStorage.getItem("token");
-  const nombreUsuario = JSON.parse(atob(token.split(".")[1])).unique_name[1];
+  const nombreUsuario = JSON.parse(atob(token.split(".")[1])).unique_name;
   const nombreUsuarioDecodificado = decodeURIComponent(
     escape(nombreUsuario)
   ).replace(/Ã­/g, "í");
   const rolUsuario = JSON.parse(atob(token.split(".")[1])).role;
-  const username = JSON.parse(atob(token.split(".")[1])).unique_name[0];
+  const username = JSON.parse(atob(token.split(".")[1])).nameid;
 
   const headers = {
     Authorization: `Bearer ${token}`, // Agregar el encabezado Authorization con el valor del token
@@ -52,54 +53,6 @@ function AdminPanel() {
 
   const [showPassword, setShowPassword] = useState(false);
   const [showPasswordRepeat, setShowPasswordRepeat] = useState(false);
-  //#endregion
-
-  //#region UseEffect
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-
-    if (token) {
-      const expiracionEnSegundos = JSON.parse(atob(token.split(".")[1])).exp;
-      const expiracionEnMilisegundos = expiracionEnSegundos * 1000;
-      const fechaExpiracion = new Date(expiracionEnMilisegundos);
-      const fechaActual = new Date();
-
-      if (fechaExpiracion <= fechaActual) {
-        localStorage.removeItem("token");
-        navigate("/login");
-      }
-
-      const temporizador = setInterval(() => {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          clearInterval(temporizador);
-          return;
-        }
-
-        const expiracionEnSegundos = JSON.parse(atob(token.split(".")[1])).exp;
-        const expiracionEnMilisegundos = expiracionEnSegundos * 1000;
-        const fechaExpiracion = new Date(expiracionEnMilisegundos);
-        const fechaActual = new Date();
-
-        if (fechaExpiracion <= fechaActual) {
-          localStorage.removeItem("token");
-          Swal.fire({
-            icon: "warning",
-            title: "Tu sesión ha expirado",
-            text: "Te estamos redirigiendo a la página de autenticación...",
-            timer: 4500,
-            timerProgressBar: true,
-            showConfirmButton: false,
-          });
-          navigate("/login");
-        }
-      }, 3 * 60 * 60 * 1000); // 3 horas
-
-      return () => {
-        clearInterval(temporizador);
-      };
-    }
-  }, [navigate]);
   //#endregion
 
   //#region Función para cerrar el modal manualmente mediante el codigo
@@ -240,10 +193,10 @@ function AdminPanel() {
   return (
     <div>
       <Helmet>
-        <title>Catapp | Panel de administrador</title>
+        <title>Catapp | Panel</title>
       </Helmet>
-      <section id="notfound" className="adminpanel-container">
-        <div className="adminpanel-content">
+      <section className="general-container">
+        <div className="general-content">
           <div className="wel-out">
             <h2 className="error welc-title">
               ¡Bienvenido {nombreUsuarioDecodificado}!
@@ -254,6 +207,7 @@ function AdminPanel() {
                 className="btn-logout"
                 data-bs-toggle="modal"
                 data-bs-target="#modal"
+                aria-label="Cambiar Contraseña"
                 onClick={() => {
                   ClearPasswordInputs();
                   setTimeout(function () {
@@ -264,7 +218,17 @@ function AdminPanel() {
                 <ResetPassword className="logout" />
               </button>
 
-              <Link to="/login" className="btn-logout">
+              {(rolUsuario === "Supervisor" || rolUsuario === "SuperAdmin") && (
+                <Link
+                  to="/gestionar-configuraciones"
+                  className="btn-logout"
+                  aria-label="Configuraciones"
+                >
+                  <Settings className="logout" />
+                </Link>
+              )}
+
+              <Link to="/login" className="btn-logout" aria-label="Logout">
                 <Logout className="logout" />
               </Link>
             </div>
@@ -284,7 +248,7 @@ function AdminPanel() {
               <div className="modal-content">
                 <div className="modal-header">
                   <h1 className="modal-title" id="exampleModalLabel">
-                    Actulizar Contraseña
+                    Actualizar Contraseña
                   </h1>
                 </div>
                 <div className="modal-body">
@@ -319,7 +283,7 @@ function AdminPanel() {
                         </div>
 
                         <label className="label">Repetir contraseña:</label>
-                        <div className="form-group-input password-input">
+                        <div className="form-group-input password-input2">
                           <span className="input-group-text">
                             <PasswordInput className="input-group-svg" />
                           </span>
@@ -390,16 +354,16 @@ function AdminPanel() {
           </div>
 
           <h2 className="title-error">
-            Cliqué en la sección que desee administrar
+            Cliqué en la sección que desee gestionar
           </h2>
 
-          <div className="secciones">
+          <div className="secciones antes-faqs-terms">
             <div className="seccion-dividida2">
               {(rolUsuario === "Vendedor" ||
                 rolUsuario === "Supervisor" ||
                 rolUsuario === "SuperAdmin") && (
                 <Link
-                  to="/administrar-productos"
+                  to="/gestionar-productos"
                   className="btn btn-dark category-btn"
                 >
                   <Products className="category-svg" />
@@ -411,7 +375,7 @@ function AdminPanel() {
                 rolUsuario === "Supervisor" ||
                 rolUsuario === "SuperAdmin") && (
                 <Link
-                  to="/administrar-categorias"
+                  to="/gestionar-categorias"
                   className="btn btn-dark category-btn"
                 >
                   <Categories className="category-svg" />
@@ -419,9 +383,11 @@ function AdminPanel() {
                 </Link>
               )}
 
-              {(rolUsuario === "Supervisor" || rolUsuario === "SuperAdmin") && (
+              {(rolUsuario === "Vendedor" ||
+                rolUsuario === "Supervisor" ||
+                rolUsuario === "SuperAdmin") && (
                 <Link
-                  to="/administrar-pedidos"
+                  to="/gestionar-pedidos"
                   className="btn btn-dark category-btn"
                 >
                   <Orders className="category-svg" />
@@ -441,7 +407,7 @@ function AdminPanel() {
 
               {rolUsuario === "SuperAdmin" && (
                 <Link
-                  to="/administrar-usuarios"
+                  to="/gestionar-usuarios"
                   className="btn btn-dark category-btn"
                 >
                   <Users className="category-svg" />
@@ -451,7 +417,7 @@ function AdminPanel() {
 
               {rolUsuario === "Admin" && (
                 <Link
-                  to="/administrar-gerentes"
+                  to="/gestionar-gerentes"
                   className="btn btn-dark category-btn"
                 >
                   <Manager className="category-svg" />
@@ -461,7 +427,7 @@ function AdminPanel() {
 
               {rolUsuario === "Gerente" && (
                 <Link
-                  to="/administrar-supervisores"
+                  to="/gestionar-supervisores"
                   className="btn btn-dark category-btn"
                 >
                   <Supervisor className="category-svg" />
@@ -471,7 +437,7 @@ function AdminPanel() {
 
               {rolUsuario === "Supervisor" && (
                 <Link
-                  to="/administrar-vendedores"
+                  to="/gestionar-vendedores"
                   className="btn btn-dark category-btn"
                 >
                   <Seller className="category-svg" />
@@ -481,23 +447,58 @@ function AdminPanel() {
 
               {(rolUsuario === "Supervisor" || rolUsuario === "SuperAdmin") && (
                 <Link
-                  to="/administrar-envio"
+                  to="/gestionar-entregas"
                   className="btn btn-dark category-btn"
                 >
                   <Shipment className="category-svg" />
-                  <p className="category-title">Envío</p>
+                  <p className="category-title">Entregas</p>
                 </Link>
               )}
 
               {(rolUsuario === "Supervisor" || rolUsuario === "SuperAdmin") && (
                 <Link
-                  to="/administrar-cotizacion"
+                  to="/gestionar-cotizacion"
                   className="btn btn-dark category-btn"
                 >
                   <Dolar className="category-svg" />
-                  <p className="category-title">Dolar</p>
+                  <p className="category-title">Dólar</p>
                 </Link>
               )}
+
+              {(rolUsuario === "Supervisor" || rolUsuario === "SuperAdmin") && (
+                <Link
+                  to="/gestionar-medios-pago"
+                  className="btn btn-dark category-btn"
+                >
+                  <Payment className="category-svg" />
+                  <p className="category-title">Medios de pago</p>
+                </Link>
+              )}
+            </div>
+          </div>
+
+          <div className="social-media">
+            <div className="faqs-terms-container">
+              <Link
+                to="/terminos-y-condiciones"
+                aria-label="Términos y condiciones"
+              >
+                <Terms className="faqs-term-svg" />
+              </Link>
+              <Link to="/terminos-y-condiciones" className="term-faq-title">
+                Términos y condiciones
+              </Link>
+            </div>
+            <div className="faqs-terms-container">
+              <Link
+                to="/preguntas-frecuentes"
+                aria-label="Preguntas frecuentes"
+              >
+                <Faqs className="faqs-term-svg" />
+              </Link>
+              <Link to="/preguntas-frecuentes" className="term-faq-title">
+                Preguntas frecuentes
+              </Link>
             </div>
           </div>
         </div>

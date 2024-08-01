@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Swal from "sweetalert2";
 import $ from "jquery";
 
@@ -8,6 +8,7 @@ import { Helmet } from "react-helmet";
 
 //#region SVG'S
 import { ReactComponent as Panel } from "../../../assets/svgs/manager.svg";
+import { ReactComponent as Logout } from "../../../assets/svgs/logout.svg";
 import { ReactComponent as Show } from "../../../assets/svgs/visible.svg";
 import { ReactComponent as Hide } from "../../../assets/svgs/invisible.svg";
 //#endregion
@@ -23,54 +24,6 @@ function Login() {
   const [username, setUserName] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  //#endregion
-
-  //#region UseEffect
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-
-    if (token) {
-      const expiracionEnSegundos = JSON.parse(atob(token.split(".")[1])).exp;
-      const expiracionEnMilisegundos = expiracionEnSegundos * 1000;
-      const fechaExpiracion = new Date(expiracionEnMilisegundos);
-      const fechaActual = new Date();
-
-      if (fechaExpiracion <= fechaActual) {
-        localStorage.removeItem("token");
-        navigate("/login");
-      }
-
-      const temporizador = setInterval(() => {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          clearInterval(temporizador);
-          return;
-        }
-
-        const expiracionEnSegundos = JSON.parse(atob(token.split(".")[1])).exp;
-        const expiracionEnMilisegundos = expiracionEnSegundos * 1000;
-        const fechaExpiracion = new Date(expiracionEnMilisegundos);
-        const fechaActual = new Date();
-
-        if (fechaExpiracion <= fechaActual) {
-          localStorage.removeItem("token");
-          Swal.fire({
-            icon: "warning",
-            title: "Tu sesión ha expirado",
-            text: "Te estamos redirigiendo a la página de autenticación...",
-            timer: 4500,
-            timerProgressBar: true,
-            showConfirmButton: false,
-          });
-          navigate("/login");
-        }
-      }, 3 * 60 * 60 * 1000); // 3 horas
-
-      return () => {
-        clearInterval(temporizador);
-      };
-    }
-  }, [navigate]);
   //#endregion
 
   //#region Función para limpiar todos los valores de los inputs del formulario del login
@@ -120,7 +73,6 @@ function Login() {
     if (IsValid() === true) {
       try {
         const response = await LoginUser(username, password);
-        console.log(response);
         if (response === true) {
           Swal.fire({
             icon: "success",
@@ -129,7 +81,7 @@ function Login() {
             timer: 2000,
           });
           ClearLoginInputs();
-          navigate("/panel-de-administrador");
+          navigate("/panel");
         } else if (response.errorMessage === "Usuario desactivado") {
           Swal.fire({
             title: "Usuario desactivado",
@@ -254,18 +206,16 @@ function Login() {
           <div className="notfound-content">
             <h2 className="title-login">
               Usted se encuentra logueado con el usuario:{" "}
-              <b>{JSON.parse(atob(token.split(".")[1])).unique_name[0]}</b>
+              <b>{JSON.parse(atob(token.split(".")[1])).nameid}</b>
             </h2>
 
-            <Link
-              to="/panel-de-administrador"
-              className="btn btn-dark category-btn"
-            >
+            <Link to="/panel" className="btn btn-dark category-btn">
               <Panel className="category-svg" />
               <p className="category-title">Dashboard</p>
             </Link>
 
             <button className="login-button" onClick={handleLogout}>
+              <Logout className="logout-svg" />
               Cerrar sesión
             </button>
           </div>

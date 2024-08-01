@@ -15,6 +15,7 @@
 .header-nav-bg {
   background-image: linear-gradient(#031a2be7, #031a2be8);
   transition: 0.25s;
+  height: 80px;
 }
 
 .header-a-logo {
@@ -31,6 +32,10 @@
   -o-transition: all 0.3s;
   transition: all 0.3s;
   width: 150px;
+}
+
+.header-logo-bg{
+  width: 100px;
 }
 
 .header-a-logo:hover {
@@ -209,6 +214,7 @@
 
 .header-burger-menu-bg {
   fill: #fff;
+  width: 30px;
 }
 
 .header-burger-menu-bg:hover,
@@ -235,6 +241,7 @@
 
 .header-close-menu-bg {
   fill: #fff;
+  width: 30px;
 }
 
 .header-close-menu-bg:hover {

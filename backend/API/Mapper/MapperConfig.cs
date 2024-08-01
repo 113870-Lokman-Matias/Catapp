@@ -27,10 +27,31 @@ using API.Services.ProductoServices.Commands.DeleteProductoCommand;
 using API.Services.ProductoServices.Commands.UpdateStockProductoCommand;
 
 using API.Dtos.EnvioDto;
-using API.Services.EnvioServices.Commands.UpdateCostoEnvioCommand;
+using API.Services.EnvioServices.Commands.CreateEnvioCommand;
+using API.Services.EnvioServices.Commands.UpdateEnvioCommand;
+using API.Services.EnvioServices.Commands.DeleteEnvioCommand;
 
 using API.Dtos.StockDtos;
 using API.Services.StockServices.Commands.CreateDetalleStockCommand;
+
+using API.Dtos.PedidoDtos;
+using API.Services.PedidoServices.Commands.CreatePedidoCommand;
+using API.Services.PedidoServices.Commands.UpdatePedidoCommand;
+using API.Services.PedidoServices.Commands.DeletePedidoCommand;
+using API.Services.PedidoServices.Commands.UpdateVerificadoPedidoCommand;
+
+using API.Dtos.MetodoPagoDto;
+using API.Services.MetodoPagoServices.Commands.CreateMetodoPagoCommand;
+using API.Services.MetodoPagoServices.Commands.UpdateMetodoPagoCommand;
+using API.Services.MetodoPagoServices.Commands.DeleteMetodoPagoCommand;
+
+using API.Dtos.ConfiguracionDto;
+using API.Services.ConfiguracionServices.Commands.UpdateConfiguracionCommand;
+
+using API.Dtos.SubcategoriaDtos;
+using API.Services.SubcategoriaServices.Commands.CreateSubcategoriaCommand;
+using API.Services.SubcategoriaServices.Commands.UpdateSubcategoriaCommand;
+using API.Services.SubcategoriaServices.Commands.DeleteSubcategoriaCommand;
 
 namespace API.Mapper
 {
@@ -38,7 +59,7 @@ namespace API.Mapper
   {
     public MapperConfig()
     {
-      // Mapper para usuarios
+      // Mapper para Usuarios
       CreateMap<Usuario, UsuarioDto>()
           .ForMember(dest => dest.Rol, opt => opt.MapFrom(src => src.IdRolNavigation.Nombre));
       CreateMap<Usuario, CreateUsuarioCommand>().ReverseMap();
@@ -64,19 +85,46 @@ namespace API.Mapper
       // Mapper para Productos
       CreateMap<Producto, ProductoDto>()
           .ForMember(dest => dest.NombreCategoria, opt => opt.MapFrom(src => src.IdCategoriaNavigation.Nombre));
+      CreateMap<Producto, ProductoDto>()
+          .ForMember(dest => dest.NombreSubcategoria, opt => opt.MapFrom(src => src.IdSubcategoriaNavigation.Nombre));
       CreateMap<Producto, CreateProductoCommand>().ReverseMap();
       CreateMap<Producto, UpdateProductoCommand>().ReverseMap();
       CreateMap<Producto, UpdateStockProductoCommand>().ReverseMap();
       CreateMap<Producto, DeleteProductoCommand>().ReverseMap();
 
-      // Mapper para envios
+      // Mapper para Envios
       CreateMap<EnvioDto, Envio>().ReverseMap();
-      CreateMap<Envio, UpdateCostoEnvioCommand>().ReverseMap();
+      CreateMap<Envio, CreateEnvioCommand>().ReverseMap();
+      CreateMap<Envio, UpdateEnvioCommand>().ReverseMap();
+      CreateMap<Envio, DeleteEnvioCommand>().ReverseMap();
 
       // Mapper para Detalles de stock
       CreateMap<DetallesStock, StockDto>()
           .ForMember(dest => dest.NombreProducto, opt => opt.MapFrom(src => src.IdProductoNavigation.Nombre));
       CreateMap<DetallesStock, CreateDetalleStockCommand>().ReverseMap();
+
+      // Mapper para Pedidos
+      CreateMap<PedidoDto, Pedido>().ReverseMap();
+      CreateMap<Pedido, CreatePedidoCommand>().ReverseMap();
+      CreateMap<Pedido, UpdatePedidoCommand>().ReverseMap();
+      CreateMap<Pedido, UpdateVerificadoPedidoCommand>().ReverseMap();
+      CreateMap<Pedido, DeletePedidoCommand>().ReverseMap();
+
+      // Mapper para Metodos de pago
+      CreateMap<MetodoPagoDto, MetodosPago>().ReverseMap();
+      CreateMap<MetodosPago, CreateMetodoPagoCommand>().ReverseMap();
+      CreateMap<MetodosPago, UpdateMetodoPagoCommand>().ReverseMap();
+      CreateMap<MetodosPago, DeleteMetodoPagoCommand>().ReverseMap();
+
+      // Mapper para Configuraciones
+      CreateMap<ConfiguracionDto, Configuracion>().ReverseMap();
+      CreateMap<Configuracion, UpdateConfiguracionCommand>().ReverseMap();
+
+      // Mapper para Subcategorías
+      CreateMap<SubcategoriaDto, Subcategoria>().ReverseMap();
+      CreateMap<Subcategoria, CreateSubcategoriaCommand>().ReverseMap();
+      CreateMap<Subcategoria, UpdateSubcategoriaCommand>().ReverseMap();
+      CreateMap<Subcategoria, DeleteSubcategoriaCommand>().ReverseMap();
     }
   }
 }

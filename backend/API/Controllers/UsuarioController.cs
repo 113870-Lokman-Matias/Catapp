@@ -15,6 +15,7 @@ using API.Services.UsuarioServices.Commands.SearchUsuarioCommand;
 using API.Services.UsuarioServices.Commands.VerifyUsuarioCommand;
 using API.Services.UsuarioServices.Commands.UpdateUsuarioNoLogueadoPasswordCommand;
 using API.Services.UsuarioServices.Commands.UpdateUsuarioPasswordCommand;
+using Microsoft.AspNetCore.SignalR;
 
 namespace API.Controllers;
 
@@ -24,10 +25,12 @@ namespace API.Controllers;
 public class UsuarioController : ControllerBase
 {
   private readonly IMediator _mediator;
+  private readonly IHubContext<GeneralHub> _hubContext;
 
-  public UsuarioController(IMediator mediator)
+  public UsuarioController(IMediator mediator, IHubContext<GeneralHub> hubContext)
   {
     _mediator = mediator;
+    _hubContext = hubContext;
   }
 
   [HttpPost]
@@ -40,7 +43,7 @@ public class UsuarioController : ControllerBase
 
 
   [HttpGet("manage/{role}")]
-  [Authorize(Roles = "SuperAdmin, Admin, Gerente, Supervisor")]
+  [Authorize(Roles = "SuperAdmin, Admin, Gerente, Supervisor, Vendedor")]
   public Task<ListaUsuariosDto> GetUsuariosByRoleManage(string role)
   {
     var usuariosByRoleManage = _mediator.Send(new GetUsuariosByRolManageQuery(role));
@@ -68,6 +71,9 @@ public class UsuarioController : ControllerBase
   public async Task<UsuarioDto> CreateUsuario(CreateUsuarioCommand command)
   {
     var usuarioCreado = await _mediator.Send(command);
+
+    await _hubContext.Clients.All.SendAsync("MensajeCrudVendedor", "Se ha creado un nuevo vendedor");
+
     return usuarioCreado;
   }
 
@@ -85,6 +91,9 @@ public class UsuarioController : ControllerBase
   {
     command.IdUsuario = id;
     var usuarioActualizado = await _mediator.Send(command);
+
+    await _hubContext.Clients.All.SendAsync("MensajeCrudVendedor", "Se ha creado actualizado un vendedor existente");
+
     return usuarioActualizado;
   }
 
@@ -110,6 +119,9 @@ public class UsuarioController : ControllerBase
   {
     command.IdUsuario = id;
     var usuarioActivoActualizado = await _mediator.Send(command);
+
+    await _hubContext.Clients.All.SendAsync("MensajeCrudVendedor", "Se ha Se ha creado actualizado el estado de un vendedor existente");
+
     return usuarioActivoActualizado;
   }
 
@@ -118,6 +130,9 @@ public class UsuarioController : ControllerBase
   public async Task<UsuarioDto> DeleteUsuario(int id)
   {
     var usuarioEliminado = await _mediator.Send(new DeleteUsuarioCommand { IdUsuario = id });
+
+    await _hubContext.Clients.All.SendAsync("MensajeCrudVendedor", "Se ha Se ha eliminado actualizado un vendedor existente");
+
     return usuarioEliminado;
   }
 

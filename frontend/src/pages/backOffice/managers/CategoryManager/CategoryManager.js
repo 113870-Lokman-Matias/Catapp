@@ -1,8 +1,7 @@
 import Swal from "sweetalert2";
 import { ReactComponent as Filter } from "../../../../assets/svgs/filter.svg";
 import $ from "jquery";
-import { useNavigate } from "react-router-dom";
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet";
 
@@ -18,8 +17,11 @@ import { ReactComponent as Close } from "../../../../assets/svgs/closebtn.svg";
 import { ReactComponent as Back } from "../../../../assets/svgs/back.svg";
 
 import { ReactComponent as CategoryInput } from "../../../../assets/svgs/category.svg";
+import { ReactComponent as Subcategory } from "../../../../assets/svgs/subcategory.svg";
 import { ReactComponent as ImageInput } from "../../../../assets/svgs/imageinput.svg";
 //#endregion
+
+import Loader from "../../../../components/Loaders/LoaderCircle";
 
 import {
   GetCategoriesManage,
@@ -31,6 +33,8 @@ import {
 
 function CategoryManager() {
   //#region Constantes
+  const [isLoading, setIsLoading] = useState(false);
+
   const [idCategoria, setIdCategoria] = useState("");
 
   const [nombre, setNombre] = useState("");
@@ -61,14 +65,10 @@ function CategoryManager() {
 
   const [hidden, setHidden] = useState(false);
 
-  const tableRef = useRef(null);
-
   const token = localStorage.getItem("token"); // Obtener el token del localStorage
   const headers = {
     Authorization: `Bearer ${token}`, // Agregar el encabezado Authorization con el valor del token
   };
-
-  const navigate = useNavigate();
 
   //#region Constantes de la paginacion
   const [currentPage, setCurrentPage] = useState(1);
@@ -86,11 +86,24 @@ function CategoryManager() {
 
   //#region UseEffect
   useEffect(() => {
-    (async () =>
-      await [
-        GetCategoriesManage(setCategories),
-        GetCategoriesManage(setOriginalCategoriesList),
-      ])();
+    (async () => {
+      setIsLoading(true);
+
+      try {
+        const result = await GetCategoriesManage();
+        const filteredCategories = result.filter(
+          (category) =>
+            category.nombre !== "Promociones" &&
+            category.nombre !== "Destacados"
+        );
+        setCategories(filteredCategories);
+        setOriginalCategoriesList(filteredCategories);
+        setIsLoading(false);
+      } catch (error) {
+        // Manejar errores aquí si es necesario
+        setIsLoading(false);
+      }
+    })();
 
     if (window.matchMedia("(max-width: 500px)").matches) {
       setCategoriesPerPage(1);
@@ -117,51 +130,7 @@ function CategoryManager() {
       setCategoriesPerPage(10);
       setMaxPageNumbersToShow(9);
     }
-
-    const token = localStorage.getItem("token");
-
-    if (token) {
-      const expiracionEnSegundos = JSON.parse(atob(token.split(".")[1])).exp;
-      const expiracionEnMilisegundos = expiracionEnSegundos * 1000;
-      const fechaExpiracion = new Date(expiracionEnMilisegundos);
-      const fechaActual = new Date();
-
-      if (fechaExpiracion <= fechaActual) {
-        localStorage.removeItem("token");
-        navigate("/login");
-      }
-
-      const temporizador = setInterval(() => {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          clearInterval(temporizador);
-          return;
-        }
-
-        const expiracionEnSegundos = JSON.parse(atob(token.split(".")[1])).exp;
-        const expiracionEnMilisegundos = expiracionEnSegundos * 1000;
-        const fechaExpiracion = new Date(expiracionEnMilisegundos);
-        const fechaActual = new Date();
-
-        if (fechaExpiracion <= fechaActual) {
-          localStorage.removeItem("token");
-          Swal.fire({
-            icon: "warning",
-            title: "Tu sesión ha expirado",
-            text: "Te estamos redirigiendo a la página de autenticación...",
-            timer: 4500,
-            timerProgressBar: true,
-            showConfirmButton: false,
-          });
-          navigate("/login");
-        }
-      }, 3 * 60 * 60 * 1000); // 3 horas
-
-      return () => {
-        clearInterval(temporizador);
-      };
-    }
-  }, [navigate]);
+  }, []);
   //#endregion
 
   //#region Función para borrar cualquier filtro
@@ -170,8 +139,22 @@ function CategoryManager() {
     setFilterName("");
     setFilterType("");
     setTitle("Detalles de Categorías");
-    document.getElementById("clear-filter").style.display = "none";
-    document.getElementById("clear-filter2").style.display = "none"; // esconde del DOM el boton de limpiar filtros
+
+    const clearFilter = document.getElementById("clear-filter");
+    const clearFilter2 = document.getElementById("clear-filter2");
+
+    if (clearFilter) {
+      clearFilter.style.display = "none";
+    } else {
+      console.log("clear-filter element not found");
+    }
+
+    if (clearFilter2) {
+      clearFilter2.style.display = "none";
+    } else {
+      console.log("clear-filter2 element not found");
+    }
+
     setCurrentPage(1);
     if (hidden === true) {
       setHidden(false);
@@ -258,10 +241,16 @@ function CategoryManager() {
   //#endregion
 
   //#region Función para volver el formulario a su estado inicial, borrando los valores de los inputs, cargando los selects y refrezcando la lista de categorías
-  function InitialState() {
+  async function InitialState() {
     ClearCategoryInputs();
-    GetCategoriesManage(setCategories);
-    GetCategoriesManage(setOriginalCategoriesList);
+
+    const result = await GetCategoriesManage();
+    const filteredCategories = result.filter(
+      (category) =>
+        category.nombre !== "Promociones" && category.nombre !== "Destacados"
+    );
+    setCategories(filteredCategories);
+    setOriginalCategoriesList(filteredCategories);
   }
   //#endregion
 
@@ -499,7 +488,14 @@ function CategoryManager() {
 
         // InitialState();
         ClearCategoryInputs();
-        await GetCategoriesManage(setCategories);
+
+        const result = await GetCategoriesManage();
+        const filteredCategories = result.filter(
+          (category) =>
+            category.nombre !== "Promociones" &&
+            category.nombre !== "Destacados"
+        );
+        setCategories(filteredCategories);
 
         setCategories((prevCategories) => {
           setOriginalCategoriesList(prevCategories);
@@ -574,17 +570,14 @@ function CategoryManager() {
   return (
     <div>
       <Helmet>
-        <title>Catapp | Administrar Categorías</title>
+        <title>Catapp | Gestionar Categorías</title>
       </Helmet>
 
       <section className="general-container">
         <div className="general-content">
           <div className="general-title">
             <div className="title-header">
-              <Link
-                to="/panel-de-administrador"
-                className="btn btn-info btn-back"
-              >
+              <Link to="/panel" className="btn btn-info btn-back">
                 <div className="btn-back-content">
                   <Back className="back" />
                   <p className="p-back">Regresar</p>
@@ -592,32 +585,36 @@ function CategoryManager() {
               </Link>
 
               <h2 className="title title-general">{title}</h2>
-              <button
-                type="button"
-                className="btn btn-success btn-add"
-                data-bs-toggle="modal"
-                data-bs-target="#modal"
-                onClick={() => {
-                  ClearCategoryInputs();
-                  setModalTitle("Registrar Categoría");
-                  setTimeout(function () {
-                    $("#nombre").focus();
-                  }, 500);
-                  setOcultar(false);
-                }}
-              >
-                <div className="btn-add-content">
-                  <Add className="add" />
-                  <p className="p-add">Añadir</p>
-                </div>
-              </button>
+
+              {isLoading === false && (
+                <button
+                  type="button"
+                  className="btn btn-success btn-add"
+                  data-bs-toggle="modal"
+                  data-bs-target="#modal"
+                  onClick={() => {
+                    ClearCategoryInputs();
+                    setModalTitle("Registrar Categoría");
+                    setTimeout(function () {
+                      $("#nombre").focus();
+                    }, 500);
+                    setOcultar(false);
+                  }}
+                >
+                  <div className="btn-add-content">
+                    <Add className="add" />
+                    <p className="p-add">Añadir</p>
+                  </div>
+                </button>
+              )}
             </div>
 
-            {categories.length > 1 || categories.length === 0 ? (
-              <p className="total">Hay {categories.length} categorías.</p>
-            ) : (
-              <p className="total">Hay {categories.length} categoría.</p>
-            )}
+            {isLoading === false &&
+              (categories.length > 1 || categories.length === 0 ? (
+                <p className="total">Hay {categories.length} categorías.</p>
+              ) : (
+                <p className="total">Hay {categories.length} categoría.</p>
+              ))}
           </div>
 
           {/* modal con el formulario para registrar/actualizar una categoría */}
@@ -877,153 +874,186 @@ function CategoryManager() {
             </div>
           </div>
 
-          <div className="filters-left3">
-            <div className="pagination-count-filter">
-              <button
-                className="btn btn-secondary btn-filters"
-                data-bs-toggle="modal"
-                data-bs-target="#modal-filters"
-              >
-                <div
-                  className="filter-btn-title-container-2"
-                  id="filter-btn-title-container"
+          {(categories.length > 0 ||
+            (categories.length === 0 && hidden === true)) && (
+            <div className="filters-left3">
+              <div className="pagination-count-filter">
+                <button
+                  className="btn btn-secondary btn-filters"
+                  data-bs-toggle="modal"
+                  data-bs-target="#modal-filters"
                 >
-                  <p className="filter-btn">
-                    <Filter className="filter-svg2" />
-                  </p>
-                  <p className="filter-title2">Filtro</p>
-                </div>
-              </button>
+                  <div
+                    className="filter-btn-title-container-2"
+                    id="filter-btn-title-container"
+                  >
+                    <p className="filter-btn">
+                      <Filter className="filter-svg2" />
+                    </p>
+                    <p className="filter-title2">Filtro</p>
+                  </div>
+                </button>
 
-              <button
-                id="clear-filter"
-                className="clear-filter2"
-                onClick={ClearFilter}
-              >
-                <Close className="close-svg2" />
-                <p className="clear-filter-p">{filterName}</p>
-              </button>
+                <button
+                  id="clear-filter"
+                  className="clear-filter2"
+                  onClick={ClearFilter}
+                >
+                  <Close className="close-svg2" />
+                  <p className="clear-filter-p">{filterName}</p>
+                </button>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* tabla de categorías */}
-          <table
-            className="table table-dark table-bordered table-hover table-list"
-            align="center"
-          >
-            <thead>
-              <tr className="table-header">
-                <th className="table-title" scope="col">
-                  #
-                </th>
-                <th className="table-title" scope="col">
-                  Nombre
-                </th>
-                <th className="table-title" scope="col">
-                  Oculta
-                </th>
-                <th className="table-title" scope="col">
-                  Imagen
-                </th>
-                <th className="table-title" scope="col">
-                  Acciones
-                </th>
-              </tr>
-            </thead>
-
-            {categories.length > 0 ? (
-              categoriesTable.map(function fn(category, index) {
-                return (
-                  <tbody key={1 + category.idCategoria}>
-                    <tr>
-                      <th scope="row" className="table-name">
-                        {index + 1}
-                      </th>
-                      <td className="table-name">{category.nombre}</td>
-                      {category.ocultar ? (
-                        <td className="table-name">Si</td>
-                      ) : (
-                        <td className="table-name">No</td>
-                      )}
-                      <td className="table-name">
-                        <img
-                          src={category.urlImagen}
-                          onClick={() =>
-                            Swal.fire({
-                              title: category.nombre,
-                              imageUrl: `${category.urlImagen}`,
-                              imageWidth: 600,
-                              imageHeight: 200,
-                              imageAlt: "Vista Categoría",
-                              confirmButtonColor: "#6c757d",
-                              confirmButtonText: "Cerrar",
-                              focusConfirm: true,
-                            })
-                          }
-                          className="list-img"
-                          alt="Categoría"
-                        />
-                      </td>
-
-                      <td className="table-name">
-                        <button
-                          type="button"
-                          className="btn btn-warning btn-edit"
-                          data-bs-toggle="modal"
-                          data-bs-target="#modal"
-                          onClick={() => {
-                            RetrieveCategoryInputs(category);
-                            setModalTitle("Actualizar Categoría");
-                          }}
-                        >
-                          <Edit className="edit" />
-                        </button>
-
-                        <button
-                          type="button"
-                          className="btn btn-danger btn-delete"
-                          onClick={() =>
-                            Swal.fire({
-                              title:
-                                "Esta seguro de que desea eliminar la siguiente categoría: " +
-                                category.nombre +
-                                "?",
-                              imageUrl: `${category.urlImagen}`,
-                              imageWidth: 300,
-                              imageHeight: 200,
-                              imageAlt: "Categoría a eliminar",
-                              text: "Una vez eliminada, no se podra recuperar",
-                              icon: "warning",
-                              showCancelButton: true,
-                              confirmButtonColor: "#F8BB86",
-                              cancelButtonColor: "#6c757d",
-                              confirmButtonText: "Aceptar",
-                              cancelButtonText: "Cancelar",
-                              focusCancel: true,
-                            }).then((result) => {
-                              if (result.isConfirmed) {
-                                DeleteCategory(category.idCategoria);
-                              }
-                            })
-                          }
-                        >
-                          <Delete className="delete" />
-                        </button>
-                      </td>
-                    </tr>
-                  </tbody>
-                );
-              })
-            ) : (
-              <tbody>
-                <tr className="tr-name1">
-                  <td className="table-name table-name1" colSpan={13}>
-                    Sin registros
-                  </td>
+          {isLoading ? (
+            <div className="loading-generaltable-div">
+              <Loader />
+              <p className="bold-loading">Cargando categorías...</p>
+            </div>
+          ) : (
+            <table
+              className="table table-dark table-bordered table-hover table-list"
+              align="center"
+            >
+              <thead>
+                <tr className="table-header">
+                  <th className="table-title" scope="col">
+                    #
+                  </th>
+                  <th className="table-title" scope="col">
+                    Nombre
+                  </th>
+                  <th className="table-title" scope="col">
+                    Oculta
+                  </th>
+                  <th className="table-title" scope="col">
+                    Imagen
+                  </th>
+                  <th className="table-title" scope="col">
+                    Acciones
+                  </th>
                 </tr>
-              </tbody>
-            )}
-          </table>
+              </thead>
+
+              {categories.length > 0 ? (
+                categoriesTable.map(function fn(category, index) {
+                  return (
+                    <tbody key={1 + category.idCategoria}>
+                      <tr>
+                        <th scope="row" className="table-name">
+                          {index + 1}
+                        </th>
+                        <td className="table-name">{category.nombre}</td>
+
+                        {category.ocultar ? (
+                          <td className="table-name">
+                            <div className="status-btns">
+                              <div className="circulo-pendiente"></div>
+                              <p className="status-name">Si</p>
+                            </div>
+                          </td>
+                        ) : (
+                          <td className="table-name">
+                            <div className="status-btns">
+                              <div className="circulo-verificado"></div>
+                              <p className="status-name">No</p>
+                            </div>
+                          </td>
+                        )}
+
+                        <td className="table-name">
+                          <img
+                            src={category.urlImagen}
+                            onClick={() =>
+                              Swal.fire({
+                                title: category.nombre,
+                                imageUrl: `${category.urlImagen}`,
+                                imageWidth: 600,
+                                imageHeight: 200,
+                                imageAlt: "Vista Categoría",
+                                confirmButtonColor: "#6c757d",
+                                confirmButtonText: "Cerrar",
+                                focusConfirm: true,
+                              })
+                            }
+                            className="list-img"
+                            alt="Categoría"
+                          />
+                        </td>
+
+                        <td className="table-name">
+                          <Link
+                            to={`/gestionar-subcategorias/${category.idCategoria}`}
+                            title="Gestionar subcategorías"
+                            type="button"
+                            className="btn btn-secondary btn-subcategories"
+                          >
+                            <Subcategory className="delete" />
+                          </Link>
+
+                          <button
+                            type="button"
+                            className="btn btn-warning btn-edit"
+                            aria-label="Modificar"
+                            data-bs-toggle="modal"
+                            data-bs-target="#modal"
+                            onClick={() => {
+                              RetrieveCategoryInputs(category);
+                              setModalTitle("Actualizar Categoría");
+                            }}
+                          >
+                            <Edit className="edit" />
+                          </button>
+
+                          <button
+                            type="button"
+                            className="btn btn-danger btn-delete"
+                            aria-label="Eliminar"
+                            onClick={() =>
+                              Swal.fire({
+                                title:
+                                  "Esta seguro de que desea eliminar la siguiente categoría: " +
+                                  category.nombre +
+                                  "?",
+                                imageUrl: `${category.urlImagen}`,
+                                imageWidth: 300,
+                                imageHeight: 200,
+                                imageAlt: "Categoría a eliminar",
+                                text: "Una vez eliminada, no se podra recuperar",
+                                icon: "warning",
+                                showCancelButton: true,
+                                confirmButtonColor: "#F8BB86",
+                                cancelButtonColor: "#6c757d",
+                                confirmButtonText: "Aceptar",
+                                cancelButtonText: "Cancelar",
+                                focusCancel: true,
+                              }).then((result) => {
+                                if (result.isConfirmed) {
+                                  DeleteCategory(category.idCategoria);
+                                }
+                              })
+                            }
+                          >
+                            <Delete className="delete" />
+                          </button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  );
+                })
+              ) : (
+                <tbody>
+                  <tr className="tr-name1">
+                    <td className="table-name table-name1" colSpan={13}>
+                      Sin registros
+                    </td>
+                  </tr>
+                </tbody>
+              )}
+            </table>
+          )}
 
           <div className="pagination-count-container2">
             <div className="pagination-count">
@@ -1045,17 +1075,17 @@ function CategoryManager() {
 
             {categories.length > 0 ? (
               <ul className="pagination-manager">
-                <div className="page-item">
+                <li className="page-item">
                   <div className="page-link" onClick={prePage}>
                     {"<"}
                   </div>
-                </div>
+                </li>
 
-                <div className="numbers">
+                <li className="numbers">
                   {numbers.map((n, i) => {
                     if (n === currentPage) {
                       return (
-                        <ul className="page-item-container">
+                        <ul className="page-item-container" key={i}>
                           <li className="page-item active" key={i}>
                             <div className="page-link">{n}</div>
                           </li>
@@ -1068,14 +1098,16 @@ function CategoryManager() {
                         n <= currentPage + maxPageNumbersToShow)
                     ) {
                       return (
-                        <li className="page-item" key={i}>
-                          <div
-                            className="page-link"
-                            onClick={() => changeCPage(n)}
-                          >
-                            {n}
-                          </div>
-                        </li>
+                        <ul className="page-item-container" key={i}>
+                          <li className="page-item" key={i}>
+                            <div
+                              className="page-link"
+                              onClick={() => changeCPage(n)}
+                            >
+                              {n}
+                            </div>
+                          </li>
+                        </ul>
                       );
                     } else if (
                       (n === currentPage - maxPageNumbersToShow - 1 &&
@@ -1086,21 +1118,23 @@ function CategoryManager() {
                           npage - minPageNumbersToShow)
                     ) {
                       return (
-                        <li className="page-item" key={i}>
-                          <div className="page-link">...</div>
-                        </li>
+                        <ul className="page-item-container" key={i}>
+                          <li className="page-item" key={i}>
+                            <div className="page-link">...</div>
+                          </li>
+                        </ul>
                       );
                     } else {
                       return null;
                     }
                   })}
-                </div>
+                </li>
 
-                <div className="page-item">
+                <li className="page-item">
                   <div className="page-link" onClick={nextPage}>
                     {">"}
                   </div>
-                </div>
+                </li>
               </ul>
             ) : (
               <></>
